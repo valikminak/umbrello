@@ -1,0 +1,30 @@
+[
+  {
+    "q": "fox",
+    "right": "лисиця",
+    "wrong": ["коробка", "туман", "факс"]
+  },
+  {
+    "q": "Choose the correct sentence (Past Simple):",
+    "right": "She played football yesterday.",
+    "wrong": [
+      "She plays football yesterday.",
+      "She will play football yesterday.",
+      "She play football yesterday."
+    ]
+  },
+  {
+    "q": "Choose the correct question: «Він ходить до школи щодня?»",
+    "right": "Does he go to school every day?",
+    "wrong": [
+      "Do he go to school every day?",
+      "Does he goes to school every day?",
+      "Did he go to school every day?"
+    ]
+  },
+  {
+    "q": "Tomorrow we ___ to the cinema.",
+    "right": "will go",
+    "wrong": ["went", "go", "goes"]
+  }
+]
