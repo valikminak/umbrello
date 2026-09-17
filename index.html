@@ -6,7 +6,6 @@
 <title>English Test</title>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <style>
-  /* ===== НАЛАШТУВАННЯ: ваш username у Telegram задається нижче у скрипті ===== */
   :root{
     --bg: var(--tg-theme-bg-color, #F4F6FA);
     --card: var(--tg-theme-section-bg-color, #FFFFFF);
@@ -70,6 +69,9 @@
        padding:16px;cursor:pointer;background:var(--accent);color:var(--accent-text);margin-bottom:10px}
   .btn.ghost{background:var(--card);color:var(--accent)}
   h2{margin:0 0 4px;font-size:24px}
+  .status{min-height:22px;margin:0 0 14px;font-size:15px;font-weight:600;color:var(--hint)}
+  .status.ok{color:var(--ok)}
+  .status.bad{color:var(--bad)}
 
   @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
@@ -78,8 +80,8 @@
 <div class="app" id="app"><div class="center"><p class="sub">Loading…</p></div></div>
 
 <script>
-const TEACHER = "valikminak";
-const TEST_FILE = "test.json";
+const WORKER_URL = "https://umbrello.valikminak.workers.dev/";
+const TEST_FILE = "test.json"; // tasks
 
 const tg = window.Telegram && window.Telegram.WebApp;
 if (tg) { tg.ready(); tg.expand(); }
@@ -152,25 +154,43 @@ function finish() {
       <p class="sub">first try · mistakes: ${mistakes}</p>
       ${log.length ? `<div class="mistakes">${log.map(m =>
         `<div>${esc(m.q)}<br><b>${esc(m.right)}</b> <span>· mistakes: ${m.tries}</span></div>`).join("")}</div>` : ""}
-      <button class="btn" id="send">Send to teacher</button>
-      <button class="btn ghost" id="again">Try again</button>
+      <p class="status" id="status"></p>
+      <button class="btn ghost" id="retry" style="display:none">Send again</button>
+      <button class="btn" id="again">Try again</button>
+      <button class="btn ghost" id="close">Finish</button>
     </div>`;
-  document.getElementById("send").onclick = send;
   document.getElementById("again").onclick = start;
+  document.getElementById("close").onclick = () => { if (tg) tg.close(); else window.close(); };
+  document.getElementById("retry").onclick = send;
+  send();
 }
 
-function send() {
+async function send() {
+  const status = document.getElementById("status");
+  const retry = document.getElementById("retry");
   const total = questions.length;
-  const name = tg && tg.initDataUnsafe && tg.initDataUnsafe.user ? tg.initDataUnsafe.user.first_name : "";
-  let text = `📝 Результат тесту${name ? " — " + name : ""}\n` +
-    `З першої спроби: ${total - log.length} з ${total}\n` +
+  let text = `З першої спроби: ${total - log.length} з ${total}\n` +
     `Усього помилок: ${mistakes}`;
   if (log.length) {
     text += "\n\nПомилки:\n" + log.map(m => `• ${m.q} → ${m.right} (${m.tries})`).join("\n");
   }
-  if (text.length > 3000) text = text.slice(0, 2990) + "\n…";
-  const url = `https://t.me/${TEACHER}?text=${encodeURIComponent(text)}`;
-  if (tg && tg.openTelegramLink) tg.openTelegramLink(url); else window.open(url, "_blank");
+  status.className = "status";
+  status.textContent = "Sending result…";
+  retry.style.display = "none";
+  try {
+    const res = await fetch(WORKER_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ initData: tg ? tg.initData : "", text })
+    });
+    if (!res.ok) throw new Error(res.status);
+    status.className = "status ok";
+    status.textContent = "Result sent to teacher ✓";
+  } catch (e) {
+    status.className = "status bad";
+    status.textContent = "Couldn't send the result.";
+    retry.style.display = "block";
+  }
 }
 
 load();
