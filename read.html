@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Read</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="app" id="app"><div class="center"><p class="sub">Loading…</p></div></div>
+<div class="backdrop" id="backdrop"></div>
+<div class="sheet" id="sheet">
+  <div class="en" id="sheetEn"></div>
+  <div class="uk" id="sheetUk"></div>
+  <button class="speak" id="sheetSpeak">🔊 Listen</button>
+</div>
+
+<script src="config.js"></script>
+<script src="app.js"></script>
+<script>
+const app = document.getElementById("app");
+const sheet = document.getElementById("sheet"), backdrop = document.getElementById("backdrop");
+backTo("index.html");
+
+let story = null, clicks = {}, startedAt = Date.now(), sent = false;
+
+async function load() {
+  try {
+    story = await loadJSON("read.json");
+    if (!story.sentences || !story.sentences.length) throw new Error("У файлі немає тексту");
+    story.dict = story.dict || {};
+    render();
+  } catch (e) {
+    showError(app, e, load);
+  }
+}
+
+/* ---- пошук перекладу: точне слово, потім початкова форма ---- */
+function lookup(word) {
+  const w = word.toLowerCase();
+  const d = story.dict;
+  if (d[w] !== undefined) return { key: w, uk: d[w] };
+  const forms = [];
+  if (w.endsWith("'s")) forms.push(w.slice(0, -2));
+  if (w.endsWith("ies")) forms.push(w.slice(0, -3) + "y");
+  if (w.endsWith("es")) forms.push(w.slice(0, -2));
+  if (w.endsWith("s")) forms.push(w.slice(0, -1));
+  if (w.endsWith("ed")) { forms.push(w.slice(0, -2), w.slice(0, -1), w.slice(0, -3)); }
+  if (w.endsWith("ing")) { forms.push(w.slice(0, -3), w.slice(0, -3) + "e", w.slice(0, -4)); }
+  for (const f of forms) if (d[f] !== undefined) return { key: f, uk: d[f] };
+  return { key: w, uk: null };
+}
+
+function renderSentence(en) {
+  const parts = en.split(/([A-Za-z']+)/).filter(p => p !== "");
+  let html = "", i = 0;
+  while (i < parts.length) {
+    if (!/^[A-Za-z']+$/.test(parts[i])) { html += esc(parts[i]); i++; continue; }
+    let matched = null;
+    for (let n = 3; n >= 2; n--) {
+      const chunk = parts.slice(i, i + n * 2 - 1);
+      if (chunk.length < n * 2 - 1) continue;
+      const onlySpaces = chunk.filter((_, k) => k % 2 === 1).every(x => x === " ");
+      if (!onlySpaces) continue;
+      const phrase = chunk.join("").toLowerCase();
+      if (story.dict[phrase] !== undefined) { matched = { text: chunk.join(""), key: phrase, len: chunk.length }; break; }
+    }
+    if (matched) {
+      html += `<span class="w" data-key="${esc(matched.key)}">${esc(matched.text)}</span>`;
+      i += matched.len;
+    } else {
+      const { key } = lookup(parts[i]);
+      html += `<span class="w" data-key="${esc(key)}">${esc(parts[i])}</span>`;
+      i++;
+    }
+  }
+  return html;
+}
+
+function render() {
+  let body = "<p>";
+  story.sentences.forEach((s, i) => {
+    if (s.p && i > 0) body += "</p><p>";
+    body += `<span class="sent" data-i="${i}">${renderSentence(s.en)}</span>` +
+            (s.uk ? `<span class="tr" data-i="${i}" title="Переклад речення">⇄</span>` : "") + " ";
+  });
+  body += "</p>";
+
+  app.innerHTML = `
+    <h1>${esc(story.title || "Reading")}</h1>
+    <p class="sub">Tap a word to see the translation. Tap ⇄ for the whole sentence.</p>
+    <div class="story" id="story">${body}</div>
+    <p class="status" id="status"></p>
+    <button class="btn ghost" id="retry" style="display:none">Send again</button>
+    ${story.questions && story.questions.length ? `<button class="btn" id="quiz">Take the quiz</button>` : ""}
+    <button class="btn ghost" id="finish">Finish</button>`;
+
+  app.querySelectorAll(".w").forEach(el => el.onclick = () => openWord(el));
+  app.querySelectorAll(".tr").forEach(el => el.onclick = () => openSentence(+el.dataset.i));
+  const q = app.querySelector("#quiz");
+  if (q) q.onclick = startQuiz;
+  app.querySelector("#finish").onclick = finishReading;
+}
+
+function openSheet(en, uk) {
+  document.getElementById("sheetEn").textContent = en;
+  const ukEl = document.getElementById("sheetUk");
+  ukEl.textContent = uk || "— немає в словнику —";
+  ukEl.className = "uk" + (uk ? "" : " none");
+  document.getElementById("sheetSpeak").onclick = () => speak(en);
+  sheet.classList.add("open"); backdrop.classList.add("open");
+  speak(en);
+}
+function closeSheet() { sheet.classList.remove("open"); backdrop.classList.remove("open"); }
+backdrop.onclick = closeSheet;
+
+function openWord(el) {
+  const key = el.dataset.key;
+  clicks[key] = (clicks[key] || 0) + 1;
+  el.classList.add("seen");
+  document.querySelectorAll(`.w[data-key="${CSS.escape(key)}"]`).forEach(x => x.classList.add("seen"));
+  openSheet(el.textContent, story.dict[key] !== undefined ? story.dict[key] : null);
+}
+function openSentence(i) {
+  const s = story.sentences[i];
+  openSheet(s.en, s.uk);
+}
+
+function readingText() {
+  const minutes = Math.max(1, Math.round((Date.now() - startedAt) / 60000));
+  const words = Object.entries(clicks).sort((a, b) => b[1] - a[1]);
+  let text = `«${story.title || "Reading"}» · ${minutes} хв\n\n`;
+  text += words.length
+    ? "Слова (кліків):\n" + words.map(([w, n]) => `• ${w} (${n})`).join("\n")
+    : "Жодного слова не відкрито.";
+  return text;
+}
+
+function finishReading() {
+  const status = app.querySelector("#status"), retry = app.querySelector("#retry");
+  const send = () => sendReport("📖 Reading", readingText(), status, retry);
+  retry.onclick = send;
+  send().then(ok => { if (ok) setTimeout(() => { if (tg) tg.close(); }, 900); });
+}
+
+function startQuiz() {
+  closeSheet();
+  const list = story.questions.filter(x => x && x.q && x.right && Array.isArray(x.wrong));
+  runQuiz(app, list, r => {
+    app.innerHTML = quizSummaryHTML(r);
+    const status = app.querySelector("#status"), retry = app.querySelector("#retry");
+    app.querySelector("#again").onclick = () => startQuiz();
+    app.querySelector("#menu").onclick = () => { location.href = "index.html"; };
+    const send = () => sendReport("📖 Reading", readingText() + "\n\nТест за текстом:\n" + quizReportText(r), status, retry);
+    retry.onclick = send;
+    send();
+  });
+}
+
+load();
+</script>
+</body>
+</html>

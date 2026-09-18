@@ -1,30 +1,117 @@
 [
   {
-    "q": "fox",
-    "right": "лисиця",
-    "wrong": ["коробка", "туман", "факс"]
+    "q": "then",
+    "right": "потім",
+    "wrong": ["зараз", "знову", "ніколи"]
   },
   {
-    "q": "Choose the correct sentence (Past Simple):",
-    "right": "She played football yesterday.",
+    "q": "suddenly",
+    "right": "раптом",
+    "wrong": ["повільно", "спочатку", "разом"]
+  },
+  {
+    "q": "remember",
+    "right": "пам'ятати, згадати",
+    "wrong": ["забувати", "повторювати", "нагадувати комусь"]
+  },
+  {
+    "q": "in front of",
+    "right": "перед (чимось)",
+    "wrong": ["позаду", "поруч із", "всередині"]
+  },
+  {
+    "q": "health",
+    "right": "здоров'я",
+    "wrong": ["хвороба", "лікарня", "здоровий"]
+  },
+
+  {
+    "q": "I can't ___ her name.",
+    "right": "remember",
+    "wrong": ["forget", "know", "think"]
+  },
+  {
+    "q": "First we do our homework. ___ we watch a film.",
+    "right": "Then",
+    "wrong": ["Suddenly", "Now", "Always"]
+  },
+  {
+    "q": "___ the phone rang and everybody looked at me.",
+    "right": "Suddenly",
+    "wrong": ["Then", "Usually", "Slowly"]
+  },
+  {
+    "q": "Sport is good for your ___.",
+    "right": "health",
+    "wrong": ["healthy", "heart", "hospital"]
+  },
+  {
+    "q": "He is standing in front of the door.",
+    "right": "Він стоїть перед дверима.",
     "wrong": [
-      "She plays football yesterday.",
-      "She will play football yesterday.",
-      "She play football yesterday."
+      "Він стоїть за дверима.",
+      "Він стоїть біля вікна.",
+      "Він іде до дверей."
+    ]
+  },
+
+  {
+    "q": "I ___ this song. It's my favourite.",
+    "right": "know",
+    "wrong": ["am knowing", "knows", "am know"]
+  },
+  {
+    "q": "Look! The baby ___.",
+    "right": "is sleeping",
+    "wrong": ["sleeps", "sleep", "is sleep"]
+  },
+  {
+    "q": "She ___ coffee every morning.",
+    "right": "drinks",
+    "wrong": ["is drinking", "drink", "are drinking"]
+  },
+  {
+    "q": "Ти знайомишся з людиною і хочеш запитати, ким вона працює. Як спитати?",
+    "right": "What do you do?",
+    "wrong": ["What are you doing?", "What you do?", "What do you doing?"]
+  },
+  {
+    "q": "These days she ___ a lot, because exams are near.",
+    "right": "is studying",
+    "wrong": ["studies", "study", "is study"]
+  },
+  {
+    "q": "Sorry, I can't call you. My phone ___ right now.",
+    "right": "isn't working",
+    "wrong": ["doesn't work", "isn't work", "not working"]
+  },
+  {
+    "q": "Вона цього тижня не працює, бо у відпустці. Як це сказати?",
+    "right": "She isn't working this week.",
+    "wrong": [
+      "She doesn't work this week.",
+      "She isn't work this week.",
+      "She doesn't working this week."
+    ]
+  },
+
+  {
+    "q": "Suddenly he ___ my name and smiled.",
+    "right": "remembered",
+    "wrong": ["remembers", "is remembering", "remember"]
+  },
+  {
+    "q": "These days she is thinking about her health.",
+    "right": "Останнім часом вона думає про своє здоров'я.",
+    "wrong": [
+      "Вона завжди думає про своє здоров'я.",
+      "Вона думала про своє здоров'я.",
+      "Вона хоче бути здоровою."
     ]
   },
   {
-    "q": "Choose the correct question: «Він ходить до школи щодня?»",
-    "right": "Does he go to school every day?",
-    "wrong": [
-      "Do he go to school every day?",
-      "Does he goes to school every day?",
-      "Did he go to school every day?"
-    ]
-  },
-  {
-    "q": "Tomorrow we ___ to the cinema.",
-    "right": "will go",
-    "wrong": ["went", "go", "goes"]
+    "q": "Every day I go to school. Then I ___ my friends in front of the door.",
+    "right": "meet",
+    "wrong": ["am meeting", "meets", "meeting"]
   }
 ]

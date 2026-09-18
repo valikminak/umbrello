@@ -1,0 +1,1 @@
+const WORKER_URL = "https://umbrello.valikminak.workers.dev";

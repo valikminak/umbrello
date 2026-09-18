@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Test</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="app" id="app"><div class="center"><p class="sub">Loading…</p></div></div>
+<script src="config.js"></script>
+<script src="app.js"></script>
+<script>
+const app = document.getElementById("app");
+backTo("index.html");
+
+let questions = [];
+
+async function load() {
+  try {
+    const data = await loadJSON("test.json");
+    questions = data.filter(x => x && x.q && x.right && Array.isArray(x.wrong));
+    if (!questions.length) throw new Error("У файлі немає завдань");
+    start();
+  } catch (e) {
+    showError(app, e, load);
+  }
+}
+
+function start() {
+  runQuiz(app, questions, finish);
+}
+
+function finish(r) {
+  app.innerHTML = quizSummaryHTML(r);
+  const status = app.querySelector("#status"), retry = app.querySelector("#retry");
+  app.querySelector("#again").onclick = start;
+  app.querySelector("#menu").onclick = () => { location.href = "index.html"; };
+  const send = () => sendReport("📝 Тест", quizReportText(r), status, retry);
+  retry.onclick = send;
+  send();
+}
+
+load();
+</script>
+</body>
+</html>

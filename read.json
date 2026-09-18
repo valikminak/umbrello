@@ -1,0 +1,183 @@
+{
+  "title": "A Strange Morning",
+  "sentences": [
+    {
+      "en": "Every morning Anna goes to work at eight o'clock.",
+      "uk": "Щоранку Анна йде на роботу о восьмій."
+    },
+    {
+      "en": "She likes her quiet street and the small shop in front of her house.",
+      "uk": "Їй подобається її тиха вулиця і маленький магазин перед її будинком."
+    },
+    {
+      "en": "But this morning something is different.",
+      "uk": "Але цього ранку щось інакше."
+    },
+    {
+      "en": "Suddenly a big dog runs out of the shop.",
+      "uk": "Раптом великий пес вибігає з магазину.",
+      "p": true
+    },
+    {
+      "en": "The dog stops in front of Anna and looks at her.",
+      "uk": "Пес зупиняється перед Анною і дивиться на неї."
+    },
+    {
+      "en": "Then it sits down and waits.",
+      "uk": "Потім він сідає і чекає."
+    },
+    {
+      "en": "\"I know this dog,\" Anna thinks, \"but I can't remember his name.\"",
+      "uk": "«Я знаю цього пса, — думає Анна, — але не можу згадати його ім'я»."
+    },
+    {
+      "en": "An old man comes out of the shop.",
+      "uk": "Зі магазину виходить старий чоловік.",
+      "p": true
+    },
+    {
+      "en": "He is walking slowly, because his health is not very good these days.",
+      "uk": "Він іде повільно, бо останнім часом його здоров'я не дуже добре."
+    },
+    {
+      "en": "\"Good morning! You are Anna, right? This is Max, your grandmother's dog.\"",
+      "uk": "«Доброго ранку! Ви ж Анна, так? Це Макс, пес вашої бабусі»."
+    },
+    {
+      "en": "Now Anna remembers everything.",
+      "uk": "Тепер Анна пам'ятає все.",
+      "p": true
+    },
+    {
+      "en": "She is late for work, but she is not thinking about work now.",
+      "uk": "Вона запізнюється на роботу, але зараз вона не думає про роботу."
+    },
+    {
+      "en": "She is sitting on the street with Max, and she is smiling.",
+      "uk": "Вона сидить на вулиці з Максом і усміхається."
+    }
+  ],
+  "dict": {
+    "morning": "ранок",
+    "goes": "йде, ходить",
+    "work": "робота; працювати",
+    "o'clock": "година (про час)",
+    "likes": "подобається",
+    "quiet": "тихий",
+    "street": "вулиця",
+    "small": "маленький",
+    "shop": "магазин",
+    "in front of": "перед (чимось)",
+    "house": "будинок",
+    "but": "але",
+    "something": "щось",
+    "different": "інший, інакший",
+    "suddenly": "раптом",
+    "big": "великий",
+    "dog": "пес, собака",
+    "runs": "біжить",
+    "out of": "з, назовні",
+    "stops": "зупиняється",
+    "looks": "дивиться",
+    "then": "потім",
+    "sits down": "сідає",
+    "waits": "чекає",
+    "know": "знати",
+    "thinks": "думає",
+    "can't": "не може",
+    "remember": "пам'ятати, згадати",
+    "name": "ім'я",
+    "old": "старий",
+    "man": "чоловік",
+    "comes out": "виходить",
+    "walking": "іде пішки",
+    "slowly": "повільно",
+    "because": "тому що",
+    "health": "здоров'я",
+    "these days": "останнім часом",
+    "right": "так, правильно",
+    "grandmother": "бабуся",
+    "now": "тепер, зараз",
+    "remembers": "пам'ятає, згадує",
+    "everything": "все",
+    "late": "пізно; запізнюватися",
+    "thinking": "думає (зараз)",
+    "sitting": "сидить",
+    "smiling": "усміхається",
+    "a": "артикль «один, якийсь»",
+    "an": "артикль «один, якийсь»",
+    "the": "означений артикль",
+    "and": "і",
+    "at": "о, біля",
+    "to": "до",
+    "of": "з, від",
+    "in": "в, у",
+    "on": "на",
+    "with": "з (кимось)",
+    "for": "для",
+    "about": "про",
+    "this": "цей",
+    "these": "ці",
+    "every": "кожен",
+    "very": "дуже",
+    "good": "добрий",
+    "not": "не",
+    "is": "є (він/вона/воно)",
+    "are": "є (ти/ми/вони)",
+    "he": "він",
+    "she": "вона",
+    "it": "воно, це",
+    "i": "я",
+    "you": "ти, ви",
+    "her": "її",
+    "his": "його",
+    "your": "твій, ваш",
+    "eight": "вісім",
+    "days": "дні",
+    "front": "передня частина",
+    "sits": "сидить, сідає",
+    "comes": "приходить",
+    "out": "назовні",
+    "down": "вниз",
+    "anna": "Анна (ім'я)",
+    "max": "Макс (ім'я)"
+  },
+  "questions": [
+    {
+      "q": "Where does Anna go every morning?",
+      "right": "To work.",
+      "wrong": [
+        "To the shop.",
+        "To her grandmother.",
+        "To the park."
+      ]
+    },
+    {
+      "q": "Why is the old man walking slowly?",
+      "right": "Because his health is not good these days.",
+      "wrong": [
+        "Because he is late for work.",
+        "Because the dog is waiting.",
+        "Because the street is quiet."
+      ]
+    },
+    {
+      "q": "Anna can't ___ the dog's name.",
+      "right": "remember",
+      "wrong": [
+        "remembers",
+        "remembering",
+        "remembered"
+      ]
+    },
+    {
+      "q": "At the end of the story Anna ___ on the street with Max.",
+      "right": "is sitting",
+      "wrong": [
+        "sits",
+        "sit",
+        "is sit"
+      ]
+    }
+  ]
+}
