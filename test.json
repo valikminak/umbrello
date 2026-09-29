@@ -12,7 +12,7 @@
   {
     "q": "remember",
     "right": "пам'ятати, згадати",
-    "wrong": ["забувати", "повторювати", "нагадувати комусь"]
+    "wrong": ["забувати", "гуляти", "пити"]
   },
   {
     "q": "in front of",
@@ -22,96 +22,51 @@
   {
     "q": "health",
     "right": "здоров'я",
-    "wrong": ["хвороба", "лікарня", "здоровий"]
+    "wrong": ["школа", "вода", "будинок"]
   },
-
   {
-    "q": "I can't ___ her name.",
+    "q": "Я пам'ятаю тебе: I ___ you.",
     "right": "remember",
-    "wrong": ["forget", "know", "think"]
+    "wrong": ["walk", "drink", "run"]
   },
   {
-    "q": "First we do our homework. ___ we watch a film.",
-    "right": "Then",
-    "wrong": ["Suddenly", "Now", "Always"]
+    "q": "I ___ every day for my health. (Щодня — це звичка.)",
+    "right": "walk",
+    "wrong": ["am walking", "walks", "am walk"]
   },
   {
-    "q": "___ the phone rang and everybody looked at me.",
-    "right": "Suddenly",
-    "wrong": ["Then", "Usually", "Slowly"]
+    "q": "I ___ now for my health. (Я гуляю просто зараз.)",
+    "right": "am walking",
+    "wrong": ["walk", "walks", "am walk"]
   },
   {
-    "q": "Sport is good for your ___.",
-    "right": "health",
-    "wrong": ["healthy", "heart", "hospital"]
-  },
-  {
-    "q": "He is standing in front of the door.",
-    "right": "Він стоїть перед дверима.",
-    "wrong": [
-      "Він стоїть за дверима.",
-      "Він стоїть біля вікна.",
-      "Він іде до дверей."
-    ]
-  },
-
-  {
-    "q": "I ___ this song. It's my favourite.",
-    "right": "know",
-    "wrong": ["am knowing", "knows", "am know"]
-  },
-  {
-    "q": "Look! The baby ___.",
-    "right": "is sleeping",
-    "wrong": ["sleeps", "sleep", "is sleep"]
-  },
-  {
-    "q": "She ___ coffee every morning.",
+    "q": "Every day, Anna walks. Then she ___ water. (Щодня — це звичка.)",
     "right": "drinks",
-    "wrong": ["is drinking", "drink", "are drinking"]
+    "wrong": ["is drinking", "drink", "is drink"]
   },
   {
-    "q": "Ти знайомишся з людиною і хочеш запитати, ким вона працює. Як спитати?",
-    "right": "What do you do?",
-    "wrong": ["What are you doing?", "What you do?", "What do you doing?"]
+    "q": "Now Anna ___ water. (Вона п'є просто зараз.)",
+    "right": "is drinking",
+    "wrong": ["drinks", "drink", "is drink"]
   },
   {
-    "q": "These days she ___ a lot, because exams are near.",
-    "right": "is studying",
-    "wrong": ["studies", "study", "is study"]
+    "q": "Max usually ___ in front of Anna. (Зазвичай — це звичка.)",
+    "right": "sits",
+    "wrong": ["is sitting", "sit", "is sit"]
   },
   {
-    "q": "Sorry, I can't call you. My phone ___ right now.",
-    "right": "isn't working",
-    "wrong": ["doesn't work", "isn't work", "not working"]
+    "q": "Look! Max ___ in front of Anna now. (Він сидить просто зараз.)",
+    "right": "is sitting",
+    "wrong": ["sits", "sit", "is sit"]
   },
   {
-    "q": "Вона цього тижня не працює, бо у відпустці. Як це сказати?",
-    "right": "She isn't working this week.",
-    "wrong": [
-      "She doesn't work this week.",
-      "She isn't work this week.",
-      "She doesn't working this week."
-    ]
-  },
-
-  {
-    "q": "Suddenly he ___ my name and smiled.",
-    "right": "remembered",
-    "wrong": ["remembers", "is remembering", "remember"]
+    "q": "They usually ___ in the park. (Зазвичай — це звичка.)",
+    "right": "run",
+    "wrong": ["are running", "runs", "are run"]
   },
   {
-    "q": "These days she is thinking about her health.",
-    "right": "Останнім часом вона думає про своє здоров'я.",
-    "wrong": [
-      "Вона завжди думає про своє здоров'я.",
-      "Вона думала про своє здоров'я.",
-      "Вона хоче бути здоровою."
-    ]
-  },
-  {
-    "q": "Every day I go to school. Then I ___ my friends in front of the door.",
-    "right": "meet",
-    "wrong": ["am meeting", "meets", "meeting"]
+    "q": "Look! They ___ in front of us now. (Вони біжать просто зараз.)",
+    "right": "are running",
+    "wrong": ["run", "runs", "are run"]
   }
 ]

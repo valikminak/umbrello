@@ -1,182 +1,108 @@
 {
-  "title": "A Strange Morning",
+  "title": "Anna and Max",
   "sentences": [
     {
-      "en": "Every morning Anna goes to work at eight o'clock.",
-      "uk": "Щоранку Анна йде на роботу о восьмій."
+      "en": "Every day, Anna walks in the park.",
+      "uk": "Щодня Анна гуляє в парку."
     },
     {
-      "en": "She likes her quiet street and the small shop in front of her house.",
-      "uk": "Їй подобається її тиха вулиця і маленький магазин перед її будинком."
+      "en": "She walks for her health.",
+      "uk": "Вона гуляє заради свого здоров'я."
     },
     {
-      "en": "But this morning something is different.",
-      "uk": "Але цього ранку щось інакше."
+      "en": "Then she drinks water.",
+      "uk": "Потім вона п'є воду."
     },
     {
-      "en": "Suddenly a big dog runs out of the shop.",
-      "uk": "Раптом великий пес вибігає з магазину.",
+      "en": "She usually sits in front of a tree.",
+      "uk": "Зазвичай вона сидить перед деревом."
+    },
+    {
+      "en": "Now Anna is walking in the park.",
+      "uk": "Зараз Анна гуляє в парку.",
       "p": true
     },
     {
-      "en": "The dog stops in front of Anna and looks at her.",
-      "uk": "Пес зупиняється перед Анною і дивиться на неї."
+      "en": "Suddenly, a dog is running in front of her.",
+      "uk": "Раптом перед нею біжить собака."
     },
     {
-      "en": "Then it sits down and waits.",
-      "uk": "Потім він сідає і чекає."
+      "en": "\"I remember you, Max!\"",
+      "uk": "«Я пам'ятаю тебе, Максе!»"
     },
     {
-      "en": "\"I know this dog,\" Anna thinks, \"but I can't remember his name.\"",
-      "uk": "«Я знаю цього пса, — думає Анна, — але не можу згадати його ім'я»."
-    },
-    {
-      "en": "An old man comes out of the shop.",
-      "uk": "Зі магазину виходить старий чоловік.",
+      "en": "Now Max is sitting in front of Anna.",
+      "uk": "Зараз Макс сидить перед Анною.",
       "p": true
     },
     {
-      "en": "He is walking slowly, because his health is not very good these days.",
-      "uk": "Він іде повільно, бо останнім часом його здоров'я не дуже добре."
+      "en": "Anna is drinking water now.",
+      "uk": "Анна зараз п'є воду."
     },
     {
-      "en": "\"Good morning! You are Anna, right? This is Max, your grandmother's dog.\"",
-      "uk": "«Доброго ранку! Ви ж Анна, так? Це Макс, пес вашої бабусі»."
-    },
-    {
-      "en": "Now Anna remembers everything.",
-      "uk": "Тепер Анна пам'ятає все.",
-      "p": true
-    },
-    {
-      "en": "She is late for work, but she is not thinking about work now.",
-      "uk": "Вона запізнюється на роботу, але зараз вона не думає про роботу."
-    },
-    {
-      "en": "She is sitting on the street with Max, and she is smiling.",
-      "uk": "Вона сидить на вулиці з Максом і усміхається."
+      "en": "She is smiling.",
+      "uk": "Вона усміхається."
     }
   ],
   "dict": {
-    "morning": "ранок",
-    "goes": "йде, ходить",
-    "work": "робота; працювати",
-    "o'clock": "година (про час)",
-    "likes": "подобається",
-    "quiet": "тихий",
-    "street": "вулиця",
-    "small": "маленький",
-    "shop": "магазин",
-    "in front of": "перед (чимось)",
-    "house": "будинок",
-    "but": "але",
-    "something": "щось",
-    "different": "інший, інакший",
-    "suddenly": "раптом",
-    "big": "великий",
-    "dog": "пес, собака",
-    "runs": "біжить",
-    "out of": "з, назовні",
-    "stops": "зупиняється",
-    "looks": "дивиться",
     "then": "потім",
-    "sits down": "сідає",
-    "waits": "чекає",
-    "know": "знати",
-    "thinks": "думає",
-    "can't": "не може",
+    "suddenly": "раптом",
     "remember": "пам'ятати, згадати",
-    "name": "ім'я",
-    "old": "старий",
-    "man": "чоловік",
-    "comes out": "виходить",
-    "walking": "іде пішки",
-    "slowly": "повільно",
-    "because": "тому що",
+    "in front of": "перед (чимось)",
     "health": "здоров'я",
-    "these days": "останнім часом",
-    "right": "так, правильно",
-    "grandmother": "бабуся",
-    "now": "тепер, зараз",
-    "remembers": "пам'ятає, згадує",
-    "everything": "все",
-    "late": "пізно; запізнюватися",
-    "thinking": "думає (зараз)",
-    "sitting": "сидить",
-    "smiling": "усміхається",
-    "a": "артикль «один, якийсь»",
-    "an": "артикль «один, якийсь»",
-    "the": "означений артикль",
-    "and": "і",
-    "at": "о, біля",
-    "to": "до",
-    "of": "з, від",
-    "in": "в, у",
-    "on": "на",
-    "with": "з (кимось)",
-    "for": "для",
-    "about": "про",
-    "this": "цей",
-    "these": "ці",
-    "every": "кожен",
-    "very": "дуже",
-    "good": "добрий",
-    "not": "не",
-    "is": "є (він/вона/воно)",
-    "are": "є (ти/ми/вони)",
-    "he": "він",
-    "she": "вона",
-    "it": "воно, це",
-    "i": "я",
-    "you": "ти, ви",
-    "her": "її",
-    "his": "його",
-    "your": "твій, ваш",
-    "eight": "вісім",
-    "days": "дні",
-    "front": "передня частина",
-    "sits": "сидить, сідає",
-    "comes": "приходить",
-    "out": "назовні",
-    "down": "вниз",
+    "every day": "щодня — звичка (Present Simple)",
+    "usually": "зазвичай — звичка (Present Simple)",
+    "now": "зараз, у цю мить",
+    "walks": "гуляє, ходить пішки (тут — звичка, Present Simple)",
+    "drinks": "п'є (тут — звичка, Present Simple)",
+    "sits": "сидить (тут — звичка, Present Simple)",
+    "is walking": "гуляє зараз — is + walking (Present Continuous)",
+    "is running": "біжить зараз — is + running (Present Continuous)",
+    "is sitting": "сидить зараз — is + sitting (Present Continuous)",
+    "is drinking": "п'є зараз — is + drinking (Present Continuous)",
+    "is smiling": "усміхається зараз — is + smiling (Present Continuous)",
+    "park": "парк",
+    "water": "вода",
+    "tree": "дерево",
+    "dog": "собака",
     "anna": "Анна (ім'я)",
-    "max": "Макс (ім'я)"
+    "max": "Макс (ім'я)",
+    "i": "я",
+    "you": "ти; тебе",
+    "she": "вона",
+    "her": "її; нею (in front of her — перед нею)",
+    "in": "у, в",
+    "for": "для, заради",
+    "a": "артикль перед назвою одного предмета або істоти",
+    "the": "артикль перед назвою відомого предмета, місця або істоти"
   },
   "questions": [
     {
-      "q": "Where does Anna go every morning?",
-      "right": "To work.",
+      "q": "Де Анна гуляє щодня?",
+      "right": "In the park.",
+      "wrong": ["At home.", "At school.", "In a shop."]
+    },
+    {
+      "q": "Де Макс сидить наприкінці тексту?",
+      "right": "In front of Anna.",
+      "wrong": ["In front of a shop.", "In front of a house.", "In front of a school."]
+    },
+    {
+      "q": "Anna drinks water every day. Про що це речення?",
+      "right": "Про звичку: вона п'є воду щодня.",
       "wrong": [
-        "To the shop.",
-        "To her grandmother.",
-        "To the park."
+        "Про дію зараз: вона п'є воду цієї миті.",
+        "Про звичку: вона гуляє щодня.",
+        "Про дію зараз: вона сидить перед деревом."
       ]
     },
     {
-      "q": "Why is the old man walking slowly?",
-      "right": "Because his health is not good these days.",
+      "q": "Anna is drinking water now. Про що це речення?",
+      "right": "Про дію зараз: вона п'є воду цієї миті.",
       "wrong": [
-        "Because he is late for work.",
-        "Because the dog is waiting.",
-        "Because the street is quiet."
-      ]
-    },
-    {
-      "q": "Anna can't ___ the dog's name.",
-      "right": "remember",
-      "wrong": [
-        "remembers",
-        "remembering",
-        "remembered"
-      ]
-    },
-    {
-      "q": "At the end of the story Anna ___ on the street with Max.",
-      "right": "is sitting",
-      "wrong": [
-        "sits",
-        "sit",
-        "is sit"
+        "Про звичку: вона п'є воду щодня.",
+        "Про дію зараз: вона гуляє парком.",
+        "Про звичку: вона сидить перед деревом."
       ]
     }
   ]
