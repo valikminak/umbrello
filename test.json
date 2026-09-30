@@ -1,72 +1,102 @@
 [
   {
-    "q": "then",
-    "right": "потім",
-    "wrong": ["зараз", "знову", "ніколи"]
+    "q": "climb",
+    "right": "лізти, підніматися",
+    "wrong": ["падати", "сидіти", "плавати"]
   },
   {
-    "q": "suddenly",
-    "right": "раптом",
-    "wrong": ["повільно", "спочатку", "разом"]
+    "q": "That's right.",
+    "right": "Це правильно.",
+    "wrong": ["Це неправильно.", "Поверни праворуч.", "Повертайся назад."]
   },
   {
-    "q": "remember",
-    "right": "пам'ятати, згадати",
-    "wrong": ["забувати", "гуляти", "пити"]
+    "q": "Turn right.",
+    "right": "Поверни праворуч.",
+    "wrong": ["Поверни ліворуч.", "Іди прямо.", "Це правильно."]
   },
   {
-    "q": "in front of",
-    "right": "перед (чимось)",
-    "wrong": ["позаду", "поруч із", "всередині"]
+    "q": "move",
+    "right": "рухатися; пересувати",
+    "wrong": ["пам'ятати", "слухати", "спати"]
   },
   {
-    "q": "health",
-    "right": "здоров'я",
-    "wrong": ["школа", "вода", "будинок"]
+    "q": "mouth",
+    "right": "рот",
+    "wrong": ["ніс", "око", "вухо"]
   },
   {
-    "q": "Я пам'ятаю тебе: I ___ you.",
-    "right": "remember",
-    "wrong": ["walk", "drink", "run"]
+    "q": "That's wrong.",
+    "right": "Це неправильно.",
+    "wrong": ["Це правильно.", "Це праворуч.", "Це позаду."]
   },
   {
-    "q": "I ___ every day for my health. (Щодня — це звичка.)",
-    "right": "walk",
-    "wrong": ["am walking", "walks", "am walk"]
+    "q": "Come back.",
+    "right": "Повертайся назад.",
+    "wrong": ["Іди вперед.", "Поверни праворуч.", "Зачини двері."]
   },
   {
-    "q": "I ___ now for my health. (Я гуляю просто зараз.)",
-    "right": "am walking",
-    "wrong": ["walk", "walks", "am walk"]
+    "q": "smoke",
+    "right": "дим",
+    "wrong": ["поворот", "бочка", "яблуко"]
   },
   {
-    "q": "Every day, Anna walks. Then she ___ water. (Щодня — це звичка.)",
-    "right": "drinks",
-    "wrong": ["is drinking", "drink", "is drink"]
+    "q": "listen",
+    "right": "слухати",
+    "wrong": ["говорити", "дивитися", "читати"]
   },
   {
-    "q": "Now Anna ___ water. (Вона п'є просто зараз.)",
-    "right": "is drinking",
-    "wrong": ["drinks", "drink", "is drink"]
+    "q": "Close the door. (Що означає close у цьому реченні?)",
+    "right": "зачиняти",
+    "wrong": ["відчиняти", "рухатися", "слухати"]
   },
   {
-    "q": "Max usually ___ in front of Anna. (Зазвичай — це звичка.)",
-    "right": "sits",
-    "wrong": ["is sitting", "sit", "is sit"]
+    "q": "Bill usually ___ to music.",
+    "right": "listens",
+    "wrong": ["is listening", "listen", "is listen"]
   },
   {
-    "q": "Look! Max ___ in front of Anna now. (Він сидить просто зараз.)",
-    "right": "is sitting",
-    "wrong": ["sits", "sit", "is sit"]
+    "q": "Now Samantha ___ to music.",
+    "right": "is listening",
+    "wrong": ["listens", "listen", "is listen"]
   },
   {
-    "q": "They usually ___ in the park. (Зазвичай — це звичка.)",
-    "right": "run",
-    "wrong": ["are running", "runs", "are run"]
+    "q": "This cat usually ___ trees.",
+    "right": "climbs",
+    "wrong": ["is climbing", "climb", "is climb"]
   },
   {
-    "q": "Look! They ___ in front of us now. (Вони біжать просто зараз.)",
-    "right": "are running",
-    "wrong": ["run", "runs", "are run"]
+    "q": "Look! The cat ___ a tree now.",
+    "right": "is climbing",
+    "wrong": ["climbs", "climb", "is climb"]
+  },
+  {
+    "q": "Він узагалі не курить: He ___.",
+    "right": "doesn't smoke",
+    "wrong": ["isn't smoking", "don't smoke", "doesn't smokes"]
+  },
+  {
+    "q": "Вони зараз не рухаються: They ___ now.",
+    "right": "aren't moving",
+    "wrong": ["don't move", "aren't move", "doesn't move"]
+  },
+  {
+    "q": "___ you usually close the gate?",
+    "right": "Do",
+    "wrong": ["Are", "Does", "Is"]
+  },
+  {
+    "q": "___ you closing the gate now?",
+    "right": "Are",
+    "wrong": ["Do", "Does", "Is"]
+  },
+  {
+    "q": "Ми вже домовилися: I ___ my friend tomorrow.",
+    "right": "am meeting",
+    "wrong": ["meet", "meets", "am meet"]
+  },
+  {
+    "q": "We are meeting tomorrow. (Що тут означає Present Continuous?)",
+    "right": "Майбутню зустріч, про яку вже домовилися.",
+    "wrong": ["Зустріч, що триває просто зараз.", "Звичку зустрічатися щодня.", "Зустріч, яка була вчора."]
   }
 ]

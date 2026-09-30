@@ -1,108 +1,158 @@
 {
-  "title": "Anna and Max",
+  "title": "Pizza for a Monster",
   "sentences": [
     {
-      "en": "Every day, Anna walks in the park.",
-      "uk": "Щодня Анна гуляє в парку."
+      "en": "Sam usually delivers pizza to houses.",
+      "uk": "Зазвичай Сем доставляє піцу до будинків."
     },
     {
-      "en": "She walks for her health.",
-      "uk": "Вона гуляє заради свого здоров'я."
+      "en": "Then he goes back to the cafe.",
+      "uk": "Потім він повертається до кафе."
     },
     {
-      "en": "Then she drinks water.",
-      "uk": "Потім вона п'є воду."
-    },
-    {
-      "en": "She usually sits in front of a tree.",
-      "uk": "Зазвичай вона сидить перед деревом."
-    },
-    {
-      "en": "Now Anna is walking in the park.",
-      "uk": "Зараз Анна гуляє в парку.",
+      "en": "But today he is delivering pizza to a film studio.",
+      "uk": "Але сьогодні він доставляє піцу на кіностудію.",
       "p": true
     },
     {
-      "en": "Suddenly, a dog is running in front of her.",
-      "uk": "Раптом перед нею біжить собака."
+      "en": "Now he is climbing the stairs.",
+      "uk": "Зараз він піднімається сходами."
     },
     {
-      "en": "\"I remember you, Max!\"",
-      "uk": "«Я пам'ятаю тебе, Максе!»"
+      "en": "On the right, smoke is coming from a room.",
+      "uk": "Праворуч із кімнати йде дим."
     },
     {
-      "en": "Now Max is sitting in front of Anna.",
-      "uk": "Зараз Макс сидить перед Анною.",
+      "en": "A green monster is standing in front of him with its mouth open.",
+      "uk": "Перед ним стоїть зелений монстр із відкритим ротом.",
       "p": true
     },
     {
-      "en": "Anna is drinking water now.",
-      "uk": "Анна зараз п'є воду."
+      "en": "Sam isn't moving.",
+      "uk": "Сем не рухається."
     },
     {
-      "en": "She is smiling.",
-      "uk": "Вона усміхається."
+      "en": "Suddenly, the monster is talking: \"Pizza?\"",
+      "uk": "Раптом монстр починає говорити: «Піца?»"
+    },
+    {
+      "en": "\"Yes… Am I in the wrong room?\"",
+      "uk": "«Так… Я не в тій кімнаті?»"
+    },
+    {
+      "en": "\"No, this is the right room! Close the door and listen.\"",
+      "uk": "«Ні, це саме та кімната! Зачини двері й послухай».",
+      "p": true
+    },
+    {
+      "en": "\"I'm an actor, and I'm hungry.\"",
+      "uk": "«Я актор, і я голодний»."
+    },
+    {
+      "en": "\"My mouth is big, but I can't eat pizza with this mask!\"",
+      "uk": "«Мій рот великий, але я не можу їсти піцу в цій масці!»"
     }
   ],
   "dict": {
+    "climb": "лізти, підніматися",
+    "is climbing": "піднімається зараз — is + climbing (Present Continuous)",
+    "right": "правильний; правий, праворуч",
+    "on the right": "праворуч, з правого боку",
+    "right room": "правильна кімната; саме та кімната, яка потрібна",
+    "move": "рухатися; пересувати",
+    "isn't moving": "не рухається зараз — isn't + moving (Present Continuous)",
+    "mouth": "рот",
+    "wrong": "неправильний; неправильно",
+    "wrong room": "не та кімната",
+    "back": "назад",
+    "goes back": "повертається (зазвичай — Present Simple)",
+    "smoke": "тут: дим; як дієслово — курити",
+    "listen": "слухати; тут: послухай",
+    "close": "зачиняти, закривати; тут: зачини",
     "then": "потім",
     "suddenly": "раптом",
-    "remember": "пам'ятати, згадати",
-    "in front of": "перед (чимось)",
-    "health": "здоров'я",
-    "every day": "щодня — звичка (Present Simple)",
+    "in front of": "перед (кимось або чимось)",
     "usually": "зазвичай — звичка (Present Simple)",
     "now": "зараз, у цю мить",
-    "walks": "гуляє, ходить пішки (тут — звичка, Present Simple)",
-    "drinks": "п'є (тут — звичка, Present Simple)",
-    "sits": "сидить (тут — звичка, Present Simple)",
-    "is walking": "гуляє зараз — is + walking (Present Continuous)",
-    "is running": "біжить зараз — is + running (Present Continuous)",
-    "is sitting": "сидить зараз — is + sitting (Present Continuous)",
-    "is drinking": "п'є зараз — is + drinking (Present Continuous)",
-    "is smiling": "усміхається зараз — is + smiling (Present Continuous)",
-    "park": "парк",
-    "water": "вода",
-    "tree": "дерево",
-    "dog": "собака",
-    "anna": "Анна (ім'я)",
-    "max": "Макс (ім'я)",
+    "today": "сьогодні",
+    "delivers": "доставляє (зазвичай — Present Simple)",
+    "is delivering": "доставляє зараз — is + delivering (Present Continuous)",
+    "is coming": "йде, виходить зараз — is + coming (Present Continuous)",
+    "is standing": "стоїть зараз — is + standing (Present Continuous)",
+    "is talking": "говорить зараз — is + talking (Present Continuous)",
+    "sam": "Сем (ім'я)",
+    "pizza": "піца",
+    "houses": "будинки",
+    "film studio": "кіностудія",
+    "stairs": "сходи",
+    "room": "кімната",
+    "green": "зелений",
+    "monster": "монстр",
+    "open": "відкритий",
+    "door": "двері",
+    "actor": "актор",
+    "hungry": "голодний",
+    "big": "великий",
+    "eat": "їсти",
+    "mask": "маска",
+    "can't": "не можу, не може",
+    "i'm": "I am — я є; тут: я",
+    "am i": "чи я…? (початок запитання)",
+    "is": "є",
+    "he": "він",
+    "him": "його; ним (in front of him — перед ним)",
+    "its": "його, її (про істоту або предмет)",
     "i": "я",
-    "you": "ти; тебе",
-    "she": "вона",
-    "her": "її; нею (in front of her — перед нею)",
+    "my": "мій",
+    "this": "цей; це",
+    "yes": "так",
+    "no": "ні",
+    "but": "але",
+    "and": "і, й",
+    "to": "до, на",
+    "from": "з, із",
     "in": "у, в",
-    "for": "для, заради",
-    "a": "артикль перед назвою одного предмета або істоти",
-    "the": "артикль перед назвою відомого предмета, місця або істоти"
+    "with": "з, із; тут також: у (with this mask — у цій масці)",
+    "a": "неозначений артикль: один, якийсь",
+    "an": "неозначений артикль перед голосним звуком",
+    "the": "означений артикль: відомий предмет, місце або істота",
+    "cafe": "кафе"
   },
   "questions": [
     {
-      "q": "Де Анна гуляє щодня?",
-      "right": "In the park.",
-      "wrong": ["At home.", "At school.", "In a shop."]
-    },
-    {
-      "q": "Де Макс сидить наприкінці тексту?",
-      "right": "In front of Anna.",
-      "wrong": ["In front of a shop.", "In front of a house.", "In front of a school."]
-    },
-    {
-      "q": "Anna drinks water every day. Про що це речення?",
-      "right": "Про звичку: вона п'є воду щодня.",
+      "q": "Where is Sam delivering pizza today?",
+      "right": "To a film studio.",
       "wrong": [
-        "Про дію зараз: вона п'є воду цієї миті.",
-        "Про звичку: вона гуляє щодня.",
-        "Про дію зараз: вона сидить перед деревом."
+        "To a house.",
+        "To a cafe.",
+        "To a park."
       ]
     },
     {
-      "q": "Anna is drinking water now. Про що це речення?",
-      "right": "Про дію зараз: вона п'є воду цієї миті.",
+      "q": "Who is the monster?",
+      "right": "An actor.",
       "wrong": [
-        "Про звичку: вона п'є воду щодня.",
-        "Про дію зараз: вона гуляє парком.",
-        "Про звичку: вона сидить перед деревом."
+        "A doctor.",
+        "A teacher.",
+        "A cook."
+      ]
+    },
+    {
+      "q": "Does Sam usually deliver pizza to houses?",
+      "right": "Yes, he does.",
+      "wrong": [
+        "No, he doesn't.",
+        "Yes, he is.",
+        "No, he isn't."
+      ]
+    },
+    {
+      "q": "Is Sam moving in front of the monster?",
+      "right": "No, he isn't.",
+      "wrong": [
+        "Yes, he is.",
+        "No, he doesn't.",
+        "Yes, he does."
       ]
     }
   ]
