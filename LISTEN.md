@@ -38,15 +38,20 @@ package installation or build step is required. Open `listen.html` from the menu
 3. Publish the changed files with your usual GitHub Pages workflow.
    Lesson link: `listen.html?lesson=my-lesson`.
 
-The optional `note` field in a lesson is shown above its player.
+The title is shown only in the lesson list. The exercise shows the video,
+phrase counter, word buttons and playback controls.
 Do not repeat the full transcript separately: `segments[].text` is enough.
 
 ## Test lesson
 
-The supplied Counting Stars lesson contains only one short quotation (7 words),
-not the full song. Its provisional 0–5 second boundaries come from the English
-captions of the [selected video](https://www.youtube.com/watch?v=hT_nvWreIhg).
-The caption export reports whole seconds; check the cut by ear in Telegram.
+The Counting Stars lesson uses the lyrics supplied by the user, divided into
+69 main-vocal phrases. Parenthesized backing vocals (hey/ooh) are omitted from
+the word exercise. Contractions and dropped-g apostrophes are preserved.
+Timings follow the English captions of the
+[selected video](https://www.youtube.com/watch?v=hT_nvWreIhg), with instrumental
+breaks skipped. The available caption export reports whole seconds; these are
+caption-aligned boundaries, not verified subsecond audio cuts. Check the cuts
+by ear and adjust `start`/`end` directly when needed.
 The site neither downloads the video nor stores an audio copy.
 
 ## Playback
@@ -54,7 +59,8 @@ The site neither downloads the video nor stores an audio copy.
 - Listen starts a bounded clip through the official YouTube IFrame API.
 - At the end, the player pauses and the word buttons appear.
 - Incorrect choices leave the answer untouched. Identical words are interchangeable.
-- Listen again replays the current phrase and preserves the answer so far.
+- Listen again starts a fresh attempt: clears the answer, reshuffles every word
+  and hides Next, including after a correct answer.
 - The next phrase starts only when Next phrase is clicked. Finishing never starts
   the next video automatically.
 - Leaving the page or putting it in the background pauses playback.

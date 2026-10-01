@@ -25,6 +25,7 @@ test('YouTube links support playlist parameters, short links and embed URLs', ()
 test('tokenization handles punctuation, contractions and repeated words', () => {
   assert.deepEqual(words('“We’re here,” she said. We’re here!'), ["We're", 'here', 'she', 'said', "We're", 'here']);
   assert.deepEqual(validateLesson(sample()).segments[0].words, ['we', 'learn', 'and', 'we', 'listen']);
+  assert.deepEqual(words("I'm goin' and she's dreamin’"), ["I'm", "goin'", 'and', "she's", "dreamin'"]);
 });
 
 test('rejects missing, negative, overlapping, nonnumeric or backwards timings', () => {
@@ -138,7 +139,10 @@ test('play → pause → wrong choice → duplicate words → repeat → next �
   app.click('playPhrase');
   assert.equal(app.node('puzzle').hidden, true);
   app.endClip();
-  assert.equal(app.node('answer').textContent, 'we learn', 'Repeat preserves the answer');
+  assert.equal(app.node('answer').textContent, '', 'Repeat clears the answer');
+  assert.equal(app.node('nextPhrase').hidden, true);
+  assert.ok(app.node('wordBank').children.every(button => !button.disabled));
+  app.choose('we'); app.choose('learn');
   app.choose('and'); app.choose('we'); app.choose('listen');
   assert.equal(app.node('nextPhrase').hidden, false);
   assert.equal(app.player.loads.length, 2, 'Correct answer does not autoplay');
@@ -147,8 +151,7 @@ test('play → pause → wrong choice → duplicate words → repeat → next �
   app.endClip();
   app.choose('try'); app.choose('another'); app.choose('phrase');
   app.click('nextPhrase');
-  assert.match(app.node('listenStatus').textContent, /completed/);
-  assert.equal(app.node('progress').style.width, '100%');
+  assert.match(app.node('listenStatus').textContent, /Complete/);
   app.click('playPhrase');
   assert.equal(app.player.loads.at(-1).startSeconds, 0);
   assert.equal(app.node('answer').textContent, '');
@@ -159,7 +162,7 @@ test('manual pause, backgrounding and native clip end stop playback safely', asy
   app.click('playPhrase'); app.player.state(1);
   app.click('pausePhrase'); app.player.state(2);
   assert.equal(app.node('puzzle').hidden, true, 'Do not reveal words before finishing');
-  assert.match(app.node('listenStatus').textContent, /Paused/);
+  assert.equal(app.node('pausePhrase').hidden, true);
   app.click('playPhrase'); app.player.state(1);
   app.document.hidden = true; app.events.visibilitychange();
   assert.equal(app.player.paused, true);
@@ -174,4 +177,18 @@ test('embedding failure disables playback and offers retry', async () => {
   assert.equal(app.node('playPhrase').disabled, true);
   assert.equal(app.node('retryPlayer').hidden, false);
   assert.match(app.node('listenStatus').textContent, /blocked embedded playback/);
+});
+
+test('replaying a solved phrase clears the solution and allows solving again', async () => {
+  const app = await controller();
+  app.click('playPhrase'); app.endClip();
+  for (const word of ['we', 'learn', 'and', 'we', 'listen']) app.choose(word);
+  assert.equal(app.node('answer').textContent, 'We learn and we listen.');
+  app.click('playPhrase');
+  assert.equal(app.node('answer').textContent, '');
+  assert.equal(app.node('nextPhrase').hidden, true);
+  app.endClip();
+  for (const word of ['we', 'learn', 'and', 'we', 'listen']) app.choose(word);
+  assert.equal(app.node('nextPhrase').hidden, false);
+  assert.equal(app.node('counter').textContent, '1 / 2');
 });

@@ -3,7 +3,7 @@
   "use strict";
 
   function words(text) {
-    return text.replace(/[’‘]/g, "'").match(/[\p{L}\p{N}]+(?:['-][\p{L}\p{N}]+)*/gu) || [];
+    return text.replace(/[’‘]/g, "'").match(/[\p{L}\p{N}]+(?:['-][\p{L}\p{N}]+)*'?/gu) || [];
   }
 
   function videoId(value) {
@@ -36,7 +36,7 @@
       previousEnd = segment.end;
       return { start: segment.start, end: segment.end, text: segment.text.trim(), words: words(segment.text).map(w => w.toLowerCase()) };
     });
-    return { title: data.title, videoId: id, note: typeof data.note === "string" ? data.note : "", segments };
+    return { title: data.title, videoId: id, segments };
   }
 
   function shuffledTokens(items, random = Math.random) {
