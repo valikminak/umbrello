@@ -118,7 +118,7 @@ async function controller() {
       super(); this.time = 0; this.paused = true; this.ended = false;
       this.duration = 13; this.readyState = 4; this.seeks = [];
       this.sources = []; this.playCalls = 0; this.loadCalls = 0;
-      this.rejectNextPlay = false;
+      this.rejectNextPlay = false; this.deferPauseEvents = false; this.pendingPauseEvents = [];
     }
     set src(value) { this.sources.push(value); this.source = value; }
     get src() { return this.source; }
@@ -137,7 +137,10 @@ async function controller() {
     pause() {
       const wasPlaying = !this.paused;
       this.paused = true;
-      if (wasPlaying) this.emit('pause');
+      if (wasPlaying) {
+        if (this.deferPauseEvents) this.pendingPauseEvents.push(() => this.emit('pause'));
+        else this.emit('pause');
+      }
     }
     load() { this.loadCalls++; }
   }
@@ -196,3 +199,156 @@ async function controller() {
   return { node, nodes, click, tick, choose, solveFirst, solveSecond,
     video, document, events, intervals, frames, timeouts, flush };
 }
+
+test('one source plays from zero through all gaps and the outro without seeking', async () => {
+  const app = await controller();
+  assert.deepEqual(app.video.sources, [sample().video]);
+  assert.equal(app.video.playCalls, 0, 'Page load never starts playback');
+  assert.equal(app.video.currentTime, 0, 'Keep the intro before the first lyric');
+  assert.deepEqual(app.video.seeks, []);
+  app.click('playPhrase');
+  assert.equal(app.video.paused, false);
+  app.tick(4.124);
+  assert.equal(app.video.paused, false, 'Do not round fractional phrase ends down');
+  app.tick(4.125);
+  assert.equal(app.video.paused, true);
+  assert.equal(app.node('puzzle').hidden, false);
+
+  app.choose('listen');
+  assert.equal(app.node('answer').textContent, '', 'Wrong words never advance the answer');
+  assert.equal(app.video.playCalls, 1);
+  app.solveFirst();
+  // Deliberately no promise/timer flush: play must happen within the last click.
+  assert.equal(app.video.playCalls, 2, 'The final correct word immediately resumes playback');
+  assert.equal(app.video.paused, false);
+  assert.equal(app.video.currentTime, 4.125, 'Continue where playback paused');
+  assert.equal(app.node('puzzle').hidden, true);
+  assert.equal(app.node('counter').textContent, '2 / 2');
+  assert.equal(app.nodes.has('nextPhrase'), false, 'No extra Next button');
+  app.tick(5);
+  assert.equal(app.video.paused, false, 'Play the instrumental gap before the next lyric');
+  app.tick(10.274);
+  assert.equal(app.video.paused, false);
+  app.tick(10.275);
+  assert.equal(app.video.paused, true);
+  app.solveSecond();
+  assert.equal(app.video.playCalls, 3);
+  assert.equal(app.video.paused, false, 'The final answer resumes the outro');
+  app.tick(12.9);
+  assert.equal(app.video.paused, false, 'Do not finish while the outro is still playing');
+  assert.deepEqual(app.video.seeks, [], 'Only user-requested Repeat/restart may seek');
+  assert.deepEqual(app.video.sources, [sample().video], 'Do not reload the source between phrases');
+  assert.equal(app.video.loadCalls, 0, 'Normal playback never calls load()');
+
+  app.video.time = app.video.duration;
+  app.video.ended = true; app.video.paused = true; app.video.emit('ended');
+  assert.equal(app.node('playPhrase').hidden, false, 'Show restart after the real video ends');
+  app.click('playPhrase');
+  assert.deepEqual(app.video.seeks, [0], 'Explicit restart rewinds to zero');
+  assert.equal(app.video.playCalls, 4);
+  assert.equal(app.node('counter').textContent, '1 / 2');
+  assert.deepEqual(app.video.sources, [sample().video]);
+});
+
+test('case-different duplicate tokens are interchangeable and each is consumed once', async () => {
+  const app = await controller();
+  app.click('playPhrase'); app.tick(4.125);
+  const bank = () => app.node('wordBank').children;
+  assert.ok(bank().some(button => button.textContent === 'We'), 'Keep written case on buttons');
+  const lowercase = bank().find(button => button.textContent === 'we');
+  lowercase.emit('click');
+  assert.equal(app.node('answer').textContent, 'We',
+    'A lowercase duplicate is valid while preserving the sentence capitalization');
+  lowercase.emit('click');
+  assert.equal(words(app.node('answer').textContent).length, 1, 'Used tokens cannot be selected twice');
+  app.choose('learn'); app.choose('and'); app.choose('We'); app.choose('listen');
+  assert.equal(app.video.playCalls, 2);
+  assert.equal(app.video.paused, false);
+});
+
+test('Repeat explicitly rewinds the current phrase and clears every selected word', async () => {
+  const app = await controller();
+  app.click('playPhrase'); app.tick(4.125);
+  app.choose('we'); app.choose('learn');
+  assert.equal(words(app.node('answer').textContent).length, 2);
+  app.click('repeatPhrase');
+  assert.deepEqual(app.video.seeks, [0.131]);
+  assert.equal(app.node('answer').textContent, '');
+  assert.equal(app.node('puzzle').hidden, true);
+  app.video.emit('seeked');
+  assert.equal(app.video.paused, false);
+  app.tick(4.125);
+  assert.ok(app.node('wordBank').children.every(button => !button.disabled));
+  app.solveFirst();
+  app.tick(10.275);
+  app.choose('try');
+  app.click('repeatPhrase');
+  assert.deepEqual(app.video.seeks, [0.131, 6.5]);
+  assert.equal(app.node('answer').textContent, '');
+  app.video.emit('seeked'); app.tick(10.275); app.solveSecond();
+  assert.equal(app.video.paused, false);
+  assert.deepEqual(app.video.sources, [sample().video]);
+});
+
+test('play rejection offers an explicit retry without resetting progress or seeking', async () => {
+  const app = await controller();
+  app.video.rejectNextPlay = true;
+  app.click('playPhrase');
+  await app.flush();
+  assert.equal(app.video.paused, true);
+  assert.equal(app.node('playPhrase').hidden, false);
+  app.click('playPhrase');
+  assert.equal(app.video.paused, false);
+  app.tick(4.125);
+  app.video.rejectNextPlay = true;
+  app.solveFirst();
+  assert.equal(app.video.playCalls, 3, 'Try continuing in the word-click gesture');
+  await app.flush();
+  assert.equal(app.video.paused, true);
+  assert.equal(app.node('playPhrase').hidden, false);
+  app.click('playPhrase');
+  assert.equal(app.video.paused, false);
+  assert.equal(app.video.currentTime, 4.125);
+  app.tick(10.275);
+  assert.equal(app.node('puzzle').hidden, false);
+  app.solveSecond();
+  assert.deepEqual(app.video.seeks, []);
+  assert.deepEqual(app.video.sources, [sample().video]);
+});
+
+test('backgrounding pauses and explicit resume preserves the current playback position', async () => {
+  const app = await controller();
+  app.click('playPhrase'); app.tick(1.25);
+  app.document.hidden = true;
+  app.events.get('visibilitychange')();
+  assert.equal(app.video.paused, true);
+  assert.equal(app.node('puzzle').hidden, true, 'Do not reveal an unfinished phrase');
+  assert.equal(app.frames.size, 0);
+  app.document.hidden = false;
+  app.events.get('visibilitychange')();
+  assert.equal(app.video.paused, true, 'Returning to the page does not autoplay');
+  app.click('playPhrase');
+  assert.equal(app.video.currentTime, 1.25);
+  assert.equal(app.video.paused, false);
+  app.tick(4.15);
+  assert.equal(app.video.paused, true, 'A delayed frame still catches the boundary');
+  assert.equal(app.video.currentTime, 4.15, 'Do not rewind after a late frame');
+  app.solveFirst();
+  app.events.get('pagehide')();
+  assert.equal(app.video.paused, true);
+  assert.deepEqual(app.video.seeks, []);
+});
+
+
+test('a queued pause event from Repeat cannot cancel the newly resumed playback', async () => {
+  const app = await controller();
+  app.video.deferPauseEvents = true;
+  app.click('playPhrase'); app.tick(2);
+  app.click('repeatPhrase');
+  assert.equal(app.video.paused, false);
+  for (const event of app.video.pendingPauseEvents.splice(0)) event();
+  assert.equal(app.video.paused, false, 'Ignore stale pause events after a newer play request');
+  app.tick(4.125);
+  assert.equal(app.node('puzzle').hidden, false);
+  assert.deepEqual(app.video.seeks, [0.131]);
+});

@@ -1,7 +1,7 @@
 # Listen
 
 A static page with one native HTML video player. The video streams directly
-from its public R2 object URL. No YouTube API, backend, Cloudflare SDK, tokens,
+from its public Supabase Storage URL. No YouTube API, backend, storage SDK, tokens,
 package installation or build step is needed.
 
 ## Playback
@@ -50,19 +50,18 @@ Add the new lesson to `listen.json`:
 }
 ```
 
-## R2 video
+## Supabase video
 
-Use a stable public HTTPS object URL, not a dashboard link, S3 API endpoint or
+Use a stable public HTTPS object URL, not a dashboard link, API endpoint or
 an expiring signed URL. MP4 with H.264 video and AAC audio is recommended for
 mobile compatibility. Set the object's Content-Type to `video/mp4`. Byte-range
 responses allow the browser to buffer and seek efficiently. Keep the original
 video timeline when converting the file.
 
 The player uses `<video src>` directly, without `crossorigin`, canvas, or
-JavaScript fetching of the media bytes. It does not need R2 credentials or a
-CORS configuration for ordinary video playback. For a long-lived deployment,
-Cloudflare recommends a custom domain; `r2.dev` is intended for development.
-See [R2 public buckets](https://developers.cloudflare.com/r2/buckets/public-buckets/).
+JavaScript fetching of the media bytes. It does not need Supabase API keys or
+SDKs. The current public URL is already in `listen/counting-stars.json`.
+Another public file host, including R2, works with the same `video` field.
 
 ## Counting Stars timing
 
