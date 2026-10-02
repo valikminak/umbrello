@@ -1,85 +1,84 @@
 # Listen
 
-Static HTML + JavaScript, served by GitHub Pages. No backend, API key,
-package installation or build step is required. Open `listen.html` from the menu.
-
-## Add a lesson
-
-1. Create `listen/my-lesson.json`:
-
-   ```json
-   {
-     "title": "My lesson",
-     "youtube": "https://www.youtube.com/watch?v=VIDEO_ID",
-     "segments": [
-       { "start": 12.5, "end": 17.2, "text": "Today is a good day" },
-       { "start": 18, "end": 22.4, "text": "Let us walk together" }
-     ]
-   }
-   ```
-
-   These sentences are format examples, not a transcript of the test video.
-   Supply the text you want to use. Times are seconds from the beginning of
-   that exact YouTube video, including its intro. Fractions are allowed.
-   Phrases must be chronological, must not overlap, and must have `end > start`.
-   Leave a small gap before the next phrase where possible.
-
-2. Add an entry to `listen.json`:
-
-   ```json
-   {
-     "id": "my-lesson",
-     "title": "My lesson",
-     "description": "A short description",
-     "file": "listen/my-lesson.json"
-   }
-   ```
-
-3. Publish the changed files with your usual GitHub Pages workflow.
-   Lesson link: `listen.html?lesson=my-lesson`.
-
-The title is shown only in the lesson list. The exercise shows the video,
-phrase counter, word buttons and playback controls.
-Do not repeat the full transcript separately: `segments[].text` is enough.
-
-## Test lesson
-
-The Counting Stars lesson uses the lyrics supplied by the user, divided into
-69 main-vocal phrases. Parenthesized backing vocals (hey/ooh) are omitted from
-the word exercise. Contractions and dropped-g apostrophes are preserved.
-Timings follow the English captions of the
-[selected video](https://www.youtube.com/watch?v=hT_nvWreIhg), with instrumental
-breaks skipped. The available caption export reports whole seconds; these are
-caption-aligned boundaries, not verified subsecond audio cuts. Check the cuts
-by ear and adjust `start`/`end` directly when needed.
-The site neither downloads the video nor stores an audio copy.
+A static page with one native HTML video player. The video streams directly
+from its public R2 object URL. No YouTube API, backend, Cloudflare SDK, tokens,
+package installation or build step is needed.
 
 ## Playback
 
-- Listen starts a bounded clip through the official YouTube IFrame API.
-- At the end, the player pauses and the word buttons appear.
-- Incorrect choices leave the answer untouched. Identical words are interchangeable.
-- Listen again starts a fresh attempt: clears the answer, reshuffles every word
-  and hides Next, including after a correct answer.
-- The next phrase starts only when Next phrase is clicked. Finishing never starts
-  the next video automatically.
-- Leaving the page or putting it in the background pauses playback.
-- Progress lives only in the current page; refreshing starts over.
+1. Press Play once. The video starts at the beginning.
+2. At each phrase's `end`, playback pauses and shuffled words appear below it.
+3. Click the words in the order heard. A wrong word does not advance the answer.
+4. The last correct word immediately resumes the same video at its current
+   position. There is no Next button and no automatic seeking.
+5. Instrumental passages and the outro play in full. The lesson finishes when
+   the video itself ends.
 
-The player stays visible, including YouTube controls. If the browser blocks
-playback, press Play inside the video. Videos must permit embedding. Ads,
-network conditions and Telegram's browser can affect playback. A connection
-error displays Retry and a link to the original video. Opening the original
-video does not carry over the exercise.
+Repeat is the only phrase-level action that rewinds: it clears the answer and
+returns to that phrase's `start`. Leaving the app pauses playback; returning
+shows a Play button. If a browser rejects playback, Play retries without losing
+the current position. Progress is kept only in the current page.
 
-## Local checks
+## Lesson files
 
-Serve the repository over HTTP (opening the HTML as `file://` will not work):
+`listen.json` lists the available lessons. Each lesson has its own JSON file:
+
+```json
+{
+  "title": "My lesson",
+  "video": "https://media.example.com/my-video.mp4",
+  "segments": [
+    { "start": 12.52, "end": 17.24, "text": "Today is a good day" },
+    { "start": 21.08, "end": 25.43, "text": "Let us walk together" }
+  ]
+}
+```
+
+These are example sentences. Times are seconds from the beginning of the exact
+video file. Use fractional seconds, chronological non-overlapping phrases,
+and `end > start`. `end` controls the pause; `start` is used only for Repeat.
+An instrumental gap between phrases is never skipped. The title appears only
+in the lesson list.
+
+Add the new lesson to `listen.json`:
+
+```json
+{
+  "id": "my-lesson",
+  "title": "My lesson",
+  "file": "listen/my-lesson.json"
+}
+```
+
+## R2 video
+
+Use a stable public HTTPS object URL, not a dashboard link, S3 API endpoint or
+an expiring signed URL. MP4 with H.264 video and AAC audio is recommended for
+mobile compatibility. Set the object's Content-Type to `video/mp4`. Byte-range
+responses allow the browser to buffer and seek efficiently. Keep the original
+video timeline when converting the file.
+
+The player uses `<video src>` directly, without `crossorigin`, canvas, or
+JavaScript fetching of the media bytes. It does not need R2 credentials or a
+CORS configuration for ordinary video playback. For a long-lived deployment,
+Cloudflare recommends a custom domain; `r2.dev` is intended for development.
+See [R2 public buckets](https://developers.cloudflare.com/r2/buckets/public-buckets/).
+
+## Counting Stars timing
+
+The 69 phrases are aligned to the embedded English WebVTT track in the supplied
+283.051-second video. Millisecond timestamps replace the earlier rounded
+caption export. Split caption fragments are merged into complete phrases;
+music/effect captions are omitted. Contractions such as `I've` remain intact.
+These are the source caption boundaries, not a claim that every cut has been
+independently verified by ear.
+
+## Checks
 
 ```sh
 python3 -m http.server 8765 --bind 127.0.0.1
 node --test tests/listen.test.cjs
 ```
 
-Then open `http://127.0.0.1:8765/listen.html`. Test the published version inside
-Telegram as well: local browser playback does not guarantee Telegram playback.
+Open `http://127.0.0.1:8765/listen.html` and test the published site inside
+Telegram as well. Opening the page as `file://` does not support loading JSON.

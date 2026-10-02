@@ -2,30 +2,31 @@ const { test } = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
-const { words, videoId, validateLesson, shuffledTokens } = require('../listen-core.js');
+const vm = require('node:vm');
+const { words, normalize, validateLesson, shuffledTokens } = require('../listen-core.js');
 
-const sample = () => ({ title: 'Example', youtube: 'hT_nvWreIhg', segments: [
-  { start: 0, end: 4, text: 'We learn and we listen.' },
-  { start: 5.5, end: 10.2, text: 'Try another phrase.' }
+const sample = () => ({ title: 'Example', video: 'https://media.example.com/counting-stars.mp4', segments: [
+  { start: 0.131, end: 4.125, text: 'We learn and we listen.' },
+  { start: 6.5, end: 10.275, text: 'Try another phrase.' }
 ] });
 
-test('YouTube links support playlist parameters, short links and embed URLs', () => {
-  for (const url of [
-    'hT_nvWreIhg',
-    'https://www.youtube.com/watch?v=hT_nvWreIhg&list=RDhT_nvWreIhg&start_radio=1',
-    'https://youtu.be/hT_nvWreIhg?t=4',
-    'https://www.youtube.com/embed/hT_nvWreIhg',
-    'https://m.youtube.com/watch?v=hT_nvWreIhg'
-  ]) assert.equal(videoId(url), 'hT_nvWreIhg');
-  for (const bad of ['https://example.com/watch?v=hT_nvWreIhg', 'javascript:alert(1)', null, 'invalid']) {
-    assert.throws(() => videoId(bad));
+test('accepts a native video file path or direct URL without YouTube configuration', () => {
+  for (const video of ['media/counting-stars.mp4', 'https://media.example.com/song.mp4', '/media/song.webm']) {
+    assert.equal(validateLesson({ ...sample(), video }).video, video);
   }
+  for (const video of ['', null, 'javascript:alert(1)', 'data:video/mp4;base64,AA==']) {
+    assert.throws(() => validateLesson({ ...sample(), video }));
+  }
+  assert.throws(() => validateLesson({ ...sample(), title: '' }));
 });
 
-test('tokenization handles punctuation, contractions and repeated words', () => {
+test('tokenization preserves display case, contractions and repeated words', () => {
   assert.deepEqual(words('“We’re here,” she said. We’re here!'), ["We're", 'here', 'she', 'said', "We're", 'here']);
-  assert.deepEqual(validateLesson(sample()).segments[0].words, ['we', 'learn', 'and', 'we', 'listen']);
+  assert.deepEqual(validateLesson(sample()).segments[0].words, ['We', 'learn', 'and', 'we', 'listen']);
+  assert.deepEqual(words("I've been, I've been losing sleep"), ["I've", 'been', "I've", 'been', 'losing', 'sleep']);
   assert.deepEqual(words("I'm goin' and she's dreamin’"), ["I'm", "goin'", 'and', "she's", "dreamin'"]);
+  assert.equal(normalize('I’VE'), normalize("I've"));
+  assert.equal(normalize('We'), normalize('we'));
 });
 
 test('rejects missing, negative, overlapping, nonnumeric or backwards timings', () => {
@@ -39,156 +40,159 @@ test('rejects missing, negative, overlapping, nonnumeric or backwards timings', 
     null
   ]) assert.throws(() => validateLesson({ ...sample(), segments: [segment] }));
   const overlap = sample();
-  overlap.segments[1].start = 3;
+  overlap.segments[1].start = 4.124;
   assert.throws(() => validateLesson(overlap));
   assert.throws(() => validateLesson({ ...sample(), segments: [] }));
-  assert.equal(validateLesson(sample()).segments.length, 2);
+  const lesson = validateLesson(sample());
+  assert.equal(lesson.segments[0].start, 0.131);
+  assert.equal(lesson.segments[0].end, 4.125);
+  assert.equal(lesson.segments[1].start, 6.5);
 });
 
-test('shuffle keeps unique button identities and avoids revealing the answer', () => {
-  const original = ['we', 'learn', 'and', 'we', 'listen'];
+test('shuffle keeps duplicate button identities without revealing the answer', () => {
+  const original = ['We', 'learn', 'and', 'we', 'listen'];
   for (const random of [() => 0, () => 0.999, Math.random]) {
     const tokens = shuffledTokens(original, random);
     assert.equal(new Set(tokens.map(t => t.id)).size, original.length);
     assert.deepEqual(tokens.map(t => t.word).sort(), [...original].sort());
-    assert.notDeepEqual(tokens.map(t => t.word), original);
+    assert.notDeepEqual(tokens.map(t => normalize(t.word)), original.map(normalize));
   }
   assert.deepEqual(shuffledTokens(['go', 'go']).map(t => t.word), ['go', 'go']);
 });
 
-test('all catalog entries resolve to valid lessons with unique IDs', () => {
+test('catalog lessons preserve timed captions and corrected contractions', () => {
   const root = path.join(__dirname, '..');
   const catalog = JSON.parse(fs.readFileSync(path.join(root, 'listen.json')));
   assert.equal(new Set(catalog.map(item => item.id)).size, catalog.length);
   for (const entry of catalog) validateLesson(JSON.parse(fs.readFileSync(path.join(root, entry.file))));
+  const song = validateLesson(JSON.parse(fs.readFileSync(path.join(root, 'listen/counting-stars.json'))));
+  assert.equal(song.segments.length, 69);
+  assert.equal(song.segments[0].start, 0.131);
+  assert.equal(song.segments[0].end, 5.027);
+  assert.equal(song.segments.at(-1).end, 253.771);
+  assert.match(song.segments[0].text, /I've been/);
+  assert.ok(song.segments.every(segment => !/\bI been\b/.test(segment.text)));
 });
 
-// Exercise controller transitions with an in-memory player. This verifies app
-// logic, not actual YouTube/Telegram compatibility (checked separately).
+// The mock advances media time without invoking its public setter. Recorded
+// assignments therefore detect accidental seeks or src reloads between phrases.
+// Browser playback/codec support is verified separately with the real video.
 async function controller() {
-  const vm = require('node:vm');
-  const nodes = new Map(), intervals = new Map(), events = {};
+  const nodes = new Map();
+  const intervals = new Map();
+  const frames = new Map();
+  const timeouts = new Map();
+  const events = new Map();
   let timerId = 0;
   class Element {
     constructor() {
       this.children = []; this.hidden = false; this.disabled = false;
-      this.textContent = ''; this.style = {};
-      this.classList = { add() {}, remove() {} };
+      this.textContent = ''; this.style = {}; this.listeners = new Map();
+      this.classList = { add() {}, remove() {}, toggle() {} };
     }
     set innerHTML(html) {
-      for (const match of html.matchAll(/id="([^"]+)"/g)) nodes.set(match[1], new Element());
+      this.html = html;
+      for (const match of html.matchAll(/<(\w+)\b([^>]*\bid="([^"]+)"[^>]*)>/g)) {
+        const element = match[1] === 'video' ? new Video() : new Element();
+        element.hidden = /\bhidden\b/.test(match[2]);
+        element.disabled = /\bdisabled\b/.test(match[2]);
+        nodes.set(match[3], element);
+      }
     }
-    replaceChildren() { this.children = []; }
-    append(child) { this.children.push(child); }
+    get innerHTML() { return this.html || ''; }
+    replaceChildren(...children) { this.children = children; }
+    append(...children) { this.children.push(...children); }
+    setAttribute(name, value) { this[name] = value; }
+    addEventListener(name, callback) {
+      const callbacks = this.listeners.get(name) || [];
+      callbacks.push(callback); this.listeners.set(name, callbacks);
+    }
+    emit(name) {
+      this['on' + name]?.({ target: this });
+      for (const callback of this.listeners.get(name) || []) callback({ target: this });
+    }
+    insertAdjacentHTML() {}
+  }
+  class Video extends Element {
+    constructor() {
+      super(); this.time = 0; this.paused = true; this.ended = false;
+      this.duration = 13; this.readyState = 4; this.seeks = [];
+      this.sources = []; this.playCalls = 0; this.loadCalls = 0;
+      this.rejectNextPlay = false;
+    }
+    set src(value) { this.sources.push(value); this.source = value; }
+    get src() { return this.source; }
+    set currentTime(value) { this.seeks.push(value); this.time = value; this.ended = false; }
+    get currentTime() { return this.time; }
+    play() {
+      this.playCalls++;
+      if (this.rejectNextPlay) {
+        this.rejectNextPlay = false;
+        return Promise.reject(Object.assign(new Error('A tap is required'), { name: 'NotAllowedError' }));
+      }
+      this.paused = false;
+      this.emit('play'); this.emit('playing');
+      return Promise.resolve();
+    }
+    pause() {
+      const wasPlaying = !this.paused;
+      this.paused = true;
+      if (wasPlaying) this.emit('pause');
+    }
+    load() { this.loadCalls++; }
   }
   nodes.set('listenApp', new Element());
   const document = {
-    hidden: false, head: new Element(),
+    hidden: false,
     getElementById: id => nodes.get(id), createElement: () => new Element(),
-    addEventListener: (name, callback) => { events[name] = callback; }
+    addEventListener: (name, callback) => { events.set(name, callback); }
   };
-  let player;
-  class Player {
-    constructor(id, options) { this.events = options.events; this.time = 0; this.loads = []; player = this; }
-    cueVideoById() {}
-    pauseVideo() { this.paused = true; }
-    loadVideoById(clip) { this.loads.push(clip); this.time = clip.startSeconds; this.paused = false; }
-    getCurrentTime() { return this.time; }
-    state(data) { this.events.onStateChange({ data }); }
-  }
   const context = {
-    window: { addEventListener() {} }, document, URLSearchParams,
+    window: { addEventListener: (name, callback) => events.set(name, callback) },
+    document, URLSearchParams, URL, console,
     location: { search: '?lesson=example', origin: 'http://localhost', reload() {} },
-    ListenCore: require('../listen-core.js'), YT: { Player, PlayerState: { PLAYING: 1, ENDED: 0, PAUSED: 2, BUFFERING: 3 } },
+    ListenCore: require('../listen-core.js'),
     loadJSON: async file => file === 'listen.json' ? [{ id: 'example', file: 'example.json' }] : sample(),
     backTo() {}, esc: value => String(value), vibrate() {}, showError: (_, e) => { throw e; },
-    setTimeout: () => ++timerId, clearTimeout() {},
+    setTimeout: callback => { const id = ++timerId; timeouts.set(id, callback); return id; },
+    clearTimeout: id => timeouts.delete(id),
     setInterval: callback => { const id = ++timerId; intervals.set(id, callback); return id; },
-    clearInterval: id => intervals.delete(id)
+    clearInterval: id => intervals.delete(id),
+    requestAnimationFrame: callback => { const id = ++timerId; frames.set(id, callback); return id; },
+    cancelAnimationFrame: id => frames.delete(id)
   };
   vm.runInNewContext(fs.readFileSync(path.join(__dirname, '../listen.js'), 'utf8'), context);
   await new Promise(resolve => setImmediate(resolve));
-  context.window.onYouTubeIframeAPIReady();
-  player.events.onReady();
-  const node = id => nodes.get(id);
-  const click = id => { assert.equal(node(id).disabled, false); node(id).onclick(); };
-  const endClip = () => {
-    player.state(1);
-    player.time = player.loads.at(-1).endSeconds;
+  const video = [...nodes.values()].find(node => node instanceof Video);
+  assert.ok(video, 'Lesson uses a native video element');
+  video.emit('loadedmetadata'); video.emit('canplay');
+  const node = id => {
+    assert.ok(nodes.has(id), `Missing element ${id}`);
+    return nodes.get(id);
+  };
+  const click = id => {
+    const button = node(id);
+    assert.equal(button.disabled, false, `${id} is enabled`);
+    assert.equal(button.hidden, false, `${id} is visible`);
+    button.emit('click');
+  };
+  const tick = time => {
+    video.time = time;
+    video.emit('timeupdate');
     for (const callback of [...intervals.values()]) callback();
+    const pendingFrames = [...frames.values()]; frames.clear();
+    for (const callback of pendingFrames) callback();
   };
   const choose = word => {
-    const matches = node('wordBank').children.filter(button => button.textContent === word && !button.disabled);
+    const matches = node('wordBank').children.filter(button =>
+      normalize(button.textContent) === normalize(word) && !button.disabled);
     assert.ok(matches.length, `Missing word: ${word}`);
-    matches.at(-1).onclick(); // Deliberately choose the second identical word first.
+    // Pick the later duplicate first, including a differently capitalized one.
+    matches.at(-1).emit('click');
   };
-  return { node, click, endClip, choose, player, events, document, intervals };
+  const solveFirst = () => ['we', 'learn', 'and', 'we', 'listen'].forEach(choose);
+  const solveSecond = () => ['try', 'another', 'phrase'].forEach(choose);
+  const flush = () => new Promise(resolve => setImmediate(resolve));
+  return { node, nodes, click, tick, choose, solveFirst, solveSecond,
+    video, document, events, intervals, frames, timeouts, flush };
 }
-
-test('play → pause → wrong choice → duplicate words → repeat → next → complete → restart', async () => {
-  const app = await controller();
-  assert.equal(app.player.loads.length, 0, 'No autoplay on page load');
-  app.click('playPhrase');
-  app.endClip();
-  assert.equal(app.node('puzzle').hidden, false);
-  assert.equal(app.player.paused, true);
-  app.choose('listen');
-  assert.equal(app.node('answer').textContent, '');
-  app.choose('we');
-  app.choose('learn');
-  app.click('playPhrase');
-  assert.equal(app.node('puzzle').hidden, true);
-  app.endClip();
-  assert.equal(app.node('answer').textContent, '', 'Repeat clears the answer');
-  assert.equal(app.node('nextPhrase').hidden, true);
-  assert.ok(app.node('wordBank').children.every(button => !button.disabled));
-  app.choose('we'); app.choose('learn');
-  app.choose('and'); app.choose('we'); app.choose('listen');
-  assert.equal(app.node('nextPhrase').hidden, false);
-  assert.equal(app.player.loads.length, 2, 'Correct answer does not autoplay');
-  app.click('nextPhrase');
-  assert.equal(app.player.loads.at(-1).startSeconds, 5.5);
-  app.endClip();
-  app.choose('try'); app.choose('another'); app.choose('phrase');
-  app.click('nextPhrase');
-  assert.match(app.node('listenStatus').textContent, /Complete/);
-  app.click('playPhrase');
-  assert.equal(app.player.loads.at(-1).startSeconds, 0);
-  assert.equal(app.node('answer').textContent, '');
-});
-
-test('manual pause, backgrounding and native clip end stop playback safely', async () => {
-  const app = await controller();
-  app.click('playPhrase'); app.player.state(1);
-  app.click('pausePhrase'); app.player.state(2);
-  assert.equal(app.node('puzzle').hidden, true, 'Do not reveal words before finishing');
-  assert.equal(app.node('pausePhrase').hidden, true);
-  app.click('playPhrase'); app.player.state(1);
-  app.document.hidden = true; app.events.visibilitychange();
-  assert.equal(app.player.paused, true);
-  assert.equal(app.intervals.size, 0);
-  app.click('playPhrase'); app.player.state(1); app.player.state(0);
-  assert.equal(app.node('puzzle').hidden, false);
-});
-
-test('embedding failure disables playback and offers retry', async () => {
-  const app = await controller();
-  app.player.events.onError({ data: 150 });
-  assert.equal(app.node('playPhrase').disabled, true);
-  assert.equal(app.node('retryPlayer').hidden, false);
-  assert.match(app.node('listenStatus').textContent, /blocked embedded playback/);
-});
-
-test('replaying a solved phrase clears the solution and allows solving again', async () => {
-  const app = await controller();
-  app.click('playPhrase'); app.endClip();
-  for (const word of ['we', 'learn', 'and', 'we', 'listen']) app.choose(word);
-  assert.equal(app.node('answer').textContent, 'We learn and we listen.');
-  app.click('playPhrase');
-  assert.equal(app.node('answer').textContent, '');
-  assert.equal(app.node('nextPhrase').hidden, true);
-  app.endClip();
-  for (const word of ['we', 'learn', 'and', 'we', 'listen']) app.choose(word);
-  assert.equal(app.node('nextPhrase').hidden, false);
-  assert.equal(app.node('counter').textContent, '1 / 2');
-});
