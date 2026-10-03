@@ -85,3 +85,12 @@ node --test tests/listen.test.cjs
 
 Open `http://127.0.0.1:8765/listen.html` and test the published site inside
 Telegram as well. Opening the page as `file://` does not support loading JSON.
+
+## Updating the Telegram mini app
+
+Listen page links and assets currently use `v=5`. When publishing a new release,
+bump both together: an old cached HTML page can still request old scripts.
+If Telegram keeps the old entry page after deployment, update the bot's mini-app
+launch URL to `index.html?v=5` (or append `&v=5` if it already has a query).
+For a direct lesson launch, preserve `lesson=counting-stars` in the URL.
+The launch URL is configured outside this repository; local edits do not update it.

@@ -2,7 +2,9 @@
   "use strict";
   const host = document.getElementById("listenApp");
   const lessonId = new URLSearchParams(location.search).get("lesson");
-  backTo(lessonId ? "listen.html" : "index.html");
+  const lessonListUrl = "listen.html?v=5";
+  const menuUrl = "index.html?v=5";
+  backTo(lessonId ? lessonListUrl : menuUrl);
   let lesson, video, ui, index = 0, phase = "ready", chosen = [], frame = 0, playRequest = 0;
   const translationKey = "listen.translationUk";
 
@@ -141,7 +143,7 @@
   function renderLesson() {
     host.innerHTML = `
       <nav class="listen-nav" aria-label="Lesson navigation">
-        <a class="listen-back" href="listen.html" aria-label="All lessons">←</a>
+        <a class="listen-back" href="${lessonListUrl}" aria-label="All lessons">←</a>
         <span class="counter" id="counter"></span>
       </nav>
       <div class="listen-player"><video id="lessonVideo" playsinline preload="auto" tabindex="0" aria-label="Play video"></video></div>
@@ -232,8 +234,8 @@
       const catalog = await loadJSON("listen.json");
       if (!Array.isArray(catalog)) throw new Error("The lesson list must be an array.");
       if (!lessonId) {
-        host.innerHTML = `<a class="listen-back" href="index.html">← Menu</a><h1>Listen</h1>
-          <div class="menu">${catalog.map(item => `<a class="tile" href="listen.html?lesson=${encodeURIComponent(item.id)}">
+        host.innerHTML = `<a class="listen-back" href="${menuUrl}">← Menu</a><h1>Listen</h1>
+          <div class="menu">${catalog.map(item => `<a class="tile" href="${lessonListUrl}&lesson=${encodeURIComponent(item.id)}">
           <span class="ico">🎵</span><span><b>${esc(item.title)}</b></span></a>`).join("")}</div>`;
         return;
       }
@@ -243,7 +245,7 @@
       renderLesson();
     } catch (error) {
       showError(host, error, () => location.reload());
-      host.insertAdjacentHTML("afterbegin", '<a class="listen-back" href="listen.html">← All lessons</a>');
+      host.insertAdjacentHTML("afterbegin", `<a class="listen-back" href="${lessonListUrl}">← All lessons</a>`);
     }
   }
   init();
