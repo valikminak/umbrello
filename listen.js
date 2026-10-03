@@ -4,6 +4,14 @@
   const lessonId = new URLSearchParams(location.search).get("lesson");
   backTo(lessonId ? "listen.html" : "index.html");
   let lesson, video, ui, index = 0, phase = "ready", chosen = [], frame = 0, playRequest = 0;
+  const translationKey = "listen.translationUk";
+
+  function updateTranslation() {
+    const text = phase === "answer" && ui.translationToggle.checked
+      ? lesson.segments[index]?.translationUk : "";
+    ui.translation.textContent = text || "";
+    ui.translation.hidden = !text;
+  }
 
   function message(text = "") {
     ui.status.textContent = text;
@@ -28,6 +36,8 @@
     chosen = [];
     ui.answer.textContent = "";
     ui.bank.replaceChildren();
+    ui.translation.textContent = "";
+    ui.translation.hidden = true;
     ui.puzzle.hidden = true;
   }
 
@@ -74,6 +84,7 @@
       ui.bank.append(button);
     });
     ui.puzzle.hidden = false;
+    updateTranslation();
     controls();
     message();
   }
@@ -134,7 +145,12 @@
         <span class="counter" id="counter"></span>
       </nav>
       <div class="listen-player"><video id="lessonVideo" playsinline preload="auto" tabindex="0" aria-label="Play video"></video></div>
+      <label class="listen-translation-toggle" lang="uk">
+        <input type="checkbox" id="translationToggle" aria-controls="phraseTranslation">
+        Переклад українською
+      </label>
       <section id="puzzle" aria-label="Arrange the words" hidden>
+        <p class="listen-translation" id="phraseTranslation" lang="uk" aria-live="polite" hidden></p>
         <div class="listen-answer" id="answer" aria-live="polite"></div>
         <div class="listen-words" id="wordBank"></div>
       </section>
@@ -146,7 +162,13 @@
     const el = id => document.getElementById(id);
     video = el("lessonVideo");
     ui = { counter: el("counter"), play: el("playPhrase"), repeat: el("repeatPhrase"),
-      puzzle: el("puzzle"), answer: el("answer"), bank: el("wordBank"), status: el("listenStatus") };
+      puzzle: el("puzzle"), answer: el("answer"), bank: el("wordBank"), status: el("listenStatus"),
+      translationToggle: el("translationToggle"), translation: el("phraseTranslation") };
+    try { ui.translationToggle.checked = localStorage.getItem(translationKey) === "true"; } catch (_) {}
+    ui.translationToggle.onchange = () => {
+      updateTranslation();
+      try { localStorage.setItem(translationKey, String(ui.translationToggle.checked)); } catch (_) {}
+    };
     ui.play.onclick = toggle;
     video.onclick = toggle;
     video.onkeydown = event => {

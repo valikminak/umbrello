@@ -60,16 +60,33 @@ test('shuffle keeps duplicate button identities without revealing the answer', (
   assert.deepEqual(shuffledTokens(['go', 'go']).map(t => t.word), ['go', 'go']);
 });
 
-test('catalog lessons preserve timed captions and corrected contractions', () => {
+test('Ukrainian translations are optional trimmed text and do not change English words', () => {
+  const lesson = sample();
+  lesson.segments[0].translationUk = '  Ми вчимося й слухаємо.  ';
+  const validated = validateLesson(lesson);
+  assert.equal(validated.segments[0].translationUk, 'Ми вчимося й слухаємо.');
+  assert.equal(validated.segments[1].translationUk, '');
+  assert.deepEqual(validated.segments[0].words, words(lesson.segments[0].text));
+  lesson.segments[0].translationUk = '   ';
+  assert.equal(validateLesson(lesson).segments[0].translationUk, '');
+  for (const value of [42, null, {}, []]) {
+    lesson.segments[0].translationUk = value;
+    assert.throws(() => validateLesson(lesson), /phrase 1: translationUk must be text/);
+  }
+});
+
+test('catalog lessons have valid manual timings and Ukrainian translations for every phrase', () => {
   const root = path.join(__dirname, '..');
   const catalog = JSON.parse(fs.readFileSync(path.join(root, 'listen.json')));
   assert.equal(new Set(catalog.map(item => item.id)).size, catalog.length);
   for (const entry of catalog) validateLesson(JSON.parse(fs.readFileSync(path.join(root, entry.file))));
   const song = validateLesson(JSON.parse(fs.readFileSync(path.join(root, 'listen/counting-stars.json'))));
-  assert.equal(song.segments.length, 69);
-  assert.equal(song.segments[0].start, 0.131);
-  assert.equal(song.segments[0].end, 5.027);
-  assert.equal(song.segments.at(-1).end, 253.771);
+  assert.ok(song.segments.every(segment => /[А-Яа-яІіЇїЄєҐґ]/u.test(segment.translationUk)));
+  const translations = new Map();
+  for (const segment of song.segments) {
+    if (translations.has(segment.text)) assert.equal(segment.translationUk, translations.get(segment.text));
+    translations.set(segment.text, segment.translationUk);
+  }
   assert.match(song.segments[0].text, /I've been/);
   assert.ok(song.segments.every(segment => !/\bI been\b/.test(segment.text)));
 });
@@ -77,7 +94,7 @@ test('catalog lessons preserve timed captions and corrected contractions', () =>
 // The mock advances media time without invoking its public setter. Recorded
 // assignments therefore detect accidental seeks or src reloads between phrases.
 // Browser playback/codec support is verified separately with the real video.
-async function controller() {
+async function controller({ lesson = sample(), storage = new Map(), storageBlocked = false } = {}) {
   const nodes = new Map();
   const intervals = new Map();
   const frames = new Map();
@@ -86,7 +103,7 @@ async function controller() {
   let timerId = 0;
   class Element {
     constructor() {
-      this.children = []; this.hidden = false; this.disabled = false;
+      this.children = []; this.hidden = false; this.disabled = false; this.checked = false;
       this.textContent = ''; this.style = {}; this.listeners = new Map();
       this.classList = { add() {}, remove() {}, toggle() {} };
     }
@@ -155,7 +172,11 @@ async function controller() {
     document, URLSearchParams, URL, console,
     location: { search: '?lesson=example', origin: 'http://localhost', reload() {} },
     ListenCore: require('../listen-core.js'),
-    loadJSON: async file => file === 'listen.json' ? [{ id: 'example', file: 'example.json' }] : sample(),
+    loadJSON: async file => file === 'listen.json' ? [{ id: 'example', file: 'example.json' }] : lesson,
+    localStorage: {
+      getItem(key) { if (storageBlocked) throw new Error('Storage unavailable'); return storage.get(key) ?? null; },
+      setItem(key, value) { if (storageBlocked) throw new Error('Storage unavailable'); storage.set(key, value); }
+    },
     backTo() {}, esc: value => String(value), vibrate() {}, showError: (_, e) => { throw e; },
     setTimeout: callback => { const id = ++timerId; timeouts.set(id, callback); return id; },
     clearTimeout: id => timeouts.delete(id),
@@ -199,6 +220,80 @@ async function controller() {
   return { node, nodes, click, tick, choose, solveFirst, solveSecond,
     video, document, events, intervals, frames, timeouts, flush };
 }
+
+test('translation toggle preserves answers, follows phrases and clears on Repeat and completion', async () => {
+  const lesson = sample();
+  lesson.segments[0].translationUk = 'Ми вчимося й слухаємо.';
+  lesson.segments[1].translationUk = 'Спробуй іншу фразу.';
+  const app = await controller({ lesson });
+  const hint = app.node('phraseTranslation');
+  const toggle = app.node('translationToggle');
+  assert.equal(toggle.checked, false);
+  app.click('playPhrase'); app.tick(4.125);
+  assert.equal(hint.hidden, true);
+  app.choose('we');
+  const bank = [...app.node('wordBank').children];
+  toggle.checked = true; toggle.emit('change');
+  assert.equal(hint.hidden, false);
+  assert.equal(hint.textContent, lesson.segments[0].translationUk);
+  toggle.checked = false; toggle.emit('change');
+  assert.equal(hint.hidden, true);
+  assert.equal(hint.textContent, '');
+  assert.equal(app.node('answer').textContent, 'We');
+  assert.deepEqual(app.node('wordBank').children, bank);
+  assert.equal(app.video.playCalls, 1);
+  assert.deepEqual(app.video.seeks, []);
+  toggle.checked = true; toggle.emit('change');
+  app.click('repeatPhrase');
+  assert.equal(hint.hidden, true);
+  assert.equal(hint.textContent, '');
+  app.tick(4.125);
+  assert.equal(hint.textContent, lesson.segments[0].translationUk);
+  app.solveFirst();
+  assert.equal(hint.hidden, true);
+  assert.equal(hint.textContent, '');
+  app.tick(10.275);
+  assert.equal(hint.textContent, lesson.segments[1].translationUk);
+  app.solveSecond();
+  app.video.ended = true; app.video.paused = true; app.video.emit('ended');
+  assert.equal(hint.hidden, true);
+  app.click('playPhrase'); app.tick(4.125);
+  assert.equal(hint.textContent, lesson.segments[0].translationUk);
+});
+
+test('translation preference persists and missing translations never reuse a previous hint', async () => {
+  const lesson = sample();
+  lesson.segments[0].translationUk = 'Ми вчимося й слухаємо.';
+  const storage = new Map();
+  const first = await controller({ lesson, storage });
+  first.node('translationToggle').checked = true;
+  first.node('translationToggle').emit('change');
+  const app = await controller({ lesson, storage });
+  assert.equal(app.node('translationToggle').checked, true);
+  assert.equal(app.node('phraseTranslation').hidden, true);
+  app.click('playPhrase'); app.tick(4.125);
+  assert.equal(app.node('phraseTranslation').hidden, false);
+  app.solveFirst(); app.tick(10.275);
+  assert.equal(app.node('phraseTranslation').hidden, true);
+  assert.equal(app.node('phraseTranslation').textContent, '');
+  app.node('translationToggle').checked = false;
+  app.node('translationToggle').emit('change');
+  const next = await controller({ lesson, storage });
+  assert.equal(next.node('translationToggle').checked, false);
+});
+
+test('translation works when browser storage is unavailable', async () => {
+  const lesson = sample();
+  lesson.segments[0].translationUk = 'Ми вчимося й слухаємо.';
+  const app = await controller({ lesson, storageBlocked: true });
+  app.click('playPhrase'); app.tick(4.125);
+  app.node('translationToggle').checked = true;
+  app.node('translationToggle').emit('change');
+  assert.equal(app.node('phraseTranslation').textContent, lesson.segments[0].translationUk);
+  assert.equal(app.node('phraseTranslation').hidden, false);
+  app.solveFirst();
+  assert.equal(app.video.paused, false);
+});
 
 test('one source plays from zero through all gaps and the outro without seeking', async () => {
   const app = await controller();

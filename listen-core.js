@@ -23,8 +23,12 @@
           typeof segment.text !== "string" || !words(segment.text).length) {
         throw new Error(`Check phrase ${index + 1}: use text and non-overlapping start/end times in seconds.`);
       }
+      if (segment.translationUk !== undefined && typeof segment.translationUk !== "string") {
+        throw new Error(`Check phrase ${index + 1}: translationUk must be text.`);
+      }
       previousEnd = segment.end;
-      return { start: segment.start, end: segment.end, text: segment.text.trim(), words: words(segment.text) };
+      return { start: segment.start, end: segment.end, text: segment.text.trim(),
+        translationUk: (segment.translationUk || "").trim(), words: words(segment.text) };
     });
     return { title: data.title, video: data.video, segments };
   }

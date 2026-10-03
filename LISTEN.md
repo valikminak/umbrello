@@ -14,6 +14,11 @@ package installation or build step is needed.
 5. Instrumental passages and the outro play in full. The lesson finishes when
    the video itself ends.
 
+Enable **Переклад українською** to show a Ukrainian hint above the words while
+arranging a phrase. It is off by default; the browser remembers your choice
+when local storage is available. Switching it does not reset your answer.
+Phrases without a translation simply show no hint.
+
 Repeat is the only phrase-level action that rewinds: it clears the answer and
 returns to that phrase's `start`. Leaving the app pauses playback; returning
 shows a Play button. If a browser rejects playback, Play retries without losing
@@ -28,8 +33,8 @@ the current position. Progress is kept only in the current page.
   "title": "My lesson",
   "video": "https://media.example.com/my-video.mp4",
   "segments": [
-    { "start": 12.52, "end": 17.24, "text": "Today is a good day" },
-    { "start": 21.08, "end": 25.43, "text": "Let us walk together" }
+    { "start": 12.52, "end": 17.24, "text": "Today is a good day", "translationUk": "Сьогодні гарний день." },
+    { "start": 21.08, "end": 25.43, "text": "Let us walk together", "translationUk": "Ходімо разом." }
   ]
 }
 ```
@@ -39,6 +44,7 @@ video file. Use fractional seconds, chronological non-overlapping phrases,
 and `end > start`. `end` controls the pause; `start` is used only for Repeat.
 An instrumental gap between phrases is never skipped. The title appears only
 in the lesson list.
+`translationUk` is optional Ukrainian text, displayed as plain text.
 
 Add the new lesson to `listen.json`:
 
@@ -65,12 +71,10 @@ Another public file host, including R2, works with the same `video` field.
 
 ## Counting Stars timing
 
-The 69 phrases are aligned to the embedded English WebVTT track in the supplied
-283.051-second video. Millisecond timestamps replace the earlier rounded
-caption export. Split caption fragments are merged into complete phrases;
-music/effect captions are omitted. Contractions such as `I've` remain intact.
-These are the source caption boundaries, not a claim that every cut has been
-independently verified by ear.
+Phrase boundaries are edited manually in `listen/counting-stars.json` against
+the video. Keep those timings and phrase groupings when adding translations;
+do not replace them with automatic caption boundaries. Contractions such as
+`I've` remain intact. Every current phrase includes a Ukrainian translation.
 
 ## Checks
 
