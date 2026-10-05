@@ -1,158 +1,264 @@
 {
-  "title": "Pizza for a Monster",
+  "title": "Where Is Pip?",
   "sentences": [
     {
-      "en": "Sam usually delivers pizza to houses.",
-      "uk": "Зазвичай Сем доставляє піцу до будинків."
+      "en": "Mia and Ben have a clever bird called Pip.",
+      "uk": "У Мії та Бена є розумний птах на ім'я Піп."
     },
     {
-      "en": "Then he goes back to the cafe.",
-      "uk": "Потім він повертається до кафе."
+      "en": "He can say a few words and usually climbs onto Ben's chair.",
+      "uk": "Він уміє говорити кілька слів і зазвичай залазить на стілець Бена."
     },
     {
-      "en": "But today he is delivering pizza to a film studio.",
-      "uk": "Але сьогодні він доставляє піцу на кіностудію.",
+      "en": "Today, Mia and Ben are making a list for a picnic.",
+      "uk": "Сьогодні Мія та Бен складають список для пікніка.",
       "p": true
     },
     {
-      "en": "Now he is climbing the stairs.",
-      "uk": "Зараз він піднімається сходами."
+      "en": "\"Let's take the food to the garden,\" says Mia.",
+      "uk": "«Давай віднесемо їжу в сад», — каже Мія."
     },
     {
-      "en": "On the right, smoke is coming from a room.",
-      "uk": "Праворуч із кімнати йде дим."
+      "en": "Dad is cooking, and smoke is coming from his barbecue.",
+      "uk": "Тато готує, і від його мангала йде дим."
     },
     {
-      "en": "A green monster is standing in front of him with its mouth open.",
-      "uk": "Перед ним стоїть зелений монстр із відкритим ротом.",
+      "en": "But Pip is not on his chair.",
+      "uk": "Але Піпа немає на його стільці.",
       "p": true
     },
     {
-      "en": "Sam isn't moving.",
-      "uk": "Сем не рухається."
+      "en": "\"Can you help me find Pip?\" asks Ben.",
+      "uk": "«Можеш допомогти мені знайти Піпа?» — запитує Бен."
     },
     {
-      "en": "Suddenly, the monster is talking: \"Pizza?\"",
-      "uk": "Раптом монстр починає говорити: «Піца?»"
+      "en": "\"Of course! Close the door, and let's look in the garden.\"",
+      "uk": "«Звісно! Зачини двері, і давай пошукаємо в саду»."
     },
     {
-      "en": "\"Yes… Am I in the wrong room?\"",
-      "uk": "«Так… Я не в тій кімнаті?»"
-    },
-    {
-      "en": "\"No, this is the right room! Close the door and listen.\"",
-      "uk": "«Ні, це саме та кімната! Зачини двері й послухай».",
+      "en": "Ben looks at a tree on the right.",
+      "uk": "Бен дивиться на дерево праворуч.",
       "p": true
     },
     {
-      "en": "\"I'm an actor, and I'm hungry.\"",
-      "uk": "«Я актор, і я голодний»."
+      "en": "\"Is Pip in that tree? Can I climb it?\"",
+      "uk": "«Піп на тому дереві? Можна мені на нього залізти?»"
     },
     {
-      "en": "\"My mouth is big, but I can't eat pizza with this mask!\"",
-      "uk": "«Мій рот великий, але я не можу їсти піцу в цій масці!»"
+      "en": "\"No, that's the wrong tree: there is no bird there,\" says Mia.",
+      "uk": "«Ні, це не те дерево: там немає птаха», — каже Мія."
+    },
+    {
+      "en": "\"Listen! I can hear a noise.\"",
+      "uk": "«Послухай! Я чую шум».",
+      "p": true
+    },
+    {
+      "en": "\"Is it far away?\" asks Ben.",
+      "uk": "«Це далеко?» — запитує Бен."
+    },
+    {
+      "en": "\"No, it's below the kitchen window.\"",
+      "uk": "«Ні, це під кухонним вікном»."
+    },
+    {
+      "en": "They go back to the house and find Pip below the window.",
+      "uk": "Вони повертаються до будинку й знаходять Піпа під вікном."
+    },
+    {
+      "en": "He isn't moving, but he is eating an apple.",
+      "uk": "Він не рухається з місця, але їсть яблуко."
+    },
+    {
+      "en": "\"Pip wants a picnic too!\" says Ben.",
+      "uk": "«Піп теж хоче на пікнік!» — каже Бен.",
+      "p": true
+    },
+    {
+      "en": "\"That's right!\" says Mia.",
+      "uk": "«Правильно!» — каже Мія."
+    },
+    {
+      "en": "Ben reads the list again: \"Apples, bird and water?\"",
+      "uk": "Бен знову читає список: «Яблука, птах і вода?»"
+    },
+    {
+      "en": "\"Oh, that's a mistake! I mean bread!\" says Mia.",
+      "uk": "«Ой, це помилка! Я маю на увазі хліб!» — каже Мія."
+    },
+    {
+      "en": "Ben opens his mouth to speak, but Pip says, \"Of course!\"",
+      "uk": "Бен відкриває рот, щоб заговорити, але Піп каже: «Звісно!»"
     }
   ],
   "dict": {
+    "list": "список",
+    "below": "нижче, під",
+    "bird": "птах",
+    "find": "знайти, знаходити",
+    "mistake": "помилка",
+    "far away": "далеко",
+    "take": "брати; тут: віднести",
+    "let's": "давай, давайте (пропозиція зробити щось разом)",
+    "of course": "звісно, авжеж",
+    "clever": "розумний, кмітливий",
+    "hear": "чути (сприймати звук)",
+    "noise": "шум",
     "climb": "лізти, підніматися",
-    "is climbing": "піднімається зараз — is + climbing (Present Continuous)",
-    "right": "правильний; правий, праворуч",
+    "right": "правильний; правильно; правий, праворуч",
     "on the right": "праворуч, з правого боку",
-    "right room": "правильна кімната; саме та кімната, яка потрібна",
+    "that's right": "це правильно; саме так",
     "move": "рухатися; пересувати",
     "isn't moving": "не рухається зараз — isn't + moving (Present Continuous)",
     "mouth": "рот",
-    "wrong": "неправильний; неправильно",
-    "wrong room": "не та кімната",
+    "wrong": "неправильний; тут: не той",
     "back": "назад",
-    "goes back": "повертається (зазвичай — Present Simple)",
+    "go back": "повертатися, йти назад",
     "smoke": "тут: дим; як дієслово — курити",
-    "listen": "слухати; тут: послухай",
+    "listen": "слухати; тут: послухай (зверни увагу на звук)",
     "close": "зачиняти, закривати; тут: зачини",
-    "then": "потім",
-    "suddenly": "раптом",
-    "in front of": "перед (кимось або чимось)",
+    "mia": "Мія (ім'я)",
+    "ben": "Бен (ім'я)",
+    "pip": "Піп (ім'я птаха)",
+    "have": "мати",
+    "called": "на ім'я",
+    "can": "могти, уміти",
+    "say": "казати, говорити",
+    "says": "каже, говорить",
+    "a few": "кілька",
+    "word": "слово",
     "usually": "зазвичай — звичка (Present Simple)",
-    "now": "зараз, у цю мить",
+    "onto": "на (рух на поверхню)",
+    "ben's": "Бена (вказує, кому належить предмет)",
+    "chair": "стілець",
     "today": "сьогодні",
-    "delivers": "доставляє (зазвичай — Present Simple)",
-    "is delivering": "доставляє зараз — is + delivering (Present Continuous)",
+    "are making": "складають зараз — are + making (Present Continuous)",
+    "for": "для, на",
+    "picnic": "пікнік",
+    "apple": "яблуко",
+    "bread": "хліб",
+    "water": "вода",
+    "food": "їжа",
+    "garden": "сад",
+    "dad": "тато",
+    "is cooking": "готує зараз — is + cooking (Present Continuous)",
     "is coming": "йде, виходить зараз — is + coming (Present Continuous)",
-    "is standing": "стоїть зараз — is + standing (Present Continuous)",
-    "is talking": "говорить зараз — is + talking (Present Continuous)",
-    "sam": "Сем (ім'я)",
-    "pizza": "піца",
-    "houses": "будинки",
-    "film studio": "кіностудія",
-    "stairs": "сходи",
-    "room": "кімната",
-    "green": "зелений",
-    "monster": "монстр",
-    "open": "відкритий",
+    "barbecue": "мангал, барбекю",
+    "help": "допомагати",
+    "me": "мені, мене",
+    "ask": "запитувати",
     "door": "двері",
-    "actor": "актор",
-    "hungry": "голодний",
-    "big": "великий",
-    "eat": "їсти",
-    "mask": "маска",
-    "can't": "не можу, не може",
-    "i'm": "I am — я є; тут: я",
-    "am i": "чи я…? (початок запитання)",
-    "is": "є",
+    "look": "дивитися; шукати",
+    "look in": "шукати в, зазирнути в",
+    "looks at": "дивиться на",
+    "tree": "дерево",
+    "that": "той, та, те",
+    "there is": "є, знаходиться",
+    "there": "там",
+    "kitchen window": "кухонне вікно",
+    "window": "вікно",
+    "house": "будинок",
+    "is eating": "їсть зараз — is + eating (Present Continuous)",
+    "want": "хотіти",
+    "too": "теж, також",
+    "read": "читати",
+    "again": "знову",
+    "mean": "мати на увазі",
+    "open": "відкривати, відчиняти",
+    "speak": "говорити",
+    "oh": "ой, о",
     "he": "він",
-    "him": "його; ним (in front of him — перед ним)",
-    "its": "його, її (про істоту або предмет)",
+    "his": "його",
+    "they": "вони",
+    "you": "ти, ви",
     "i": "я",
-    "my": "мій",
-    "this": "цей; це",
-    "yes": "так",
-    "no": "ні",
-    "but": "але",
+    "it": "це; він, вона, воно (про предмет або тварину)",
+    "it's": "it is — це є; тут: це",
+    "that's": "that is — це є; тут: це",
+    "is": "є",
+    "not": "не",
+    "no": "ні; жодного (there is no bird — немає птаха)",
     "and": "і, й",
-    "to": "до, на",
-    "from": "з, із",
-    "in": "у, в",
-    "with": "з, із; тут також: у (with this mask — у цій масці)",
+    "but": "але",
+    "to": "до, на; перед дієсловом може означати мету: щоб",
+    "from": "з, від",
+    "on": "на",
+    "in": "у, в; на (in a tree — на дереві)",
     "a": "неозначений артикль: один, якийсь",
     "an": "неозначений артикль перед голосним звуком",
-    "the": "означений артикль: відомий предмет, місце або істота",
-    "cafe": "кафе"
+    "the": "означений артикль: відомий предмет, місце або істота"
   },
   "questions": [
     {
-      "q": "Where is Sam delivering pizza today?",
-      "right": "To a film studio.",
+      "q": "What are Mia and Ben making a list for?",
+      "right": "A picnic.",
       "wrong": [
-        "To a house.",
-        "To a cafe.",
-        "To a park."
+        "A film.",
+        "A lesson.",
+        "A party at school."
       ]
     },
     {
-      "q": "Who is the monster?",
-      "right": "An actor.",
+      "q": "What does Pip usually climb onto?",
+      "right": "Ben's chair.",
       "wrong": [
-        "A doctor.",
-        "A teacher.",
-        "A cook."
+        "The kitchen window.",
+        "Dad's barbecue.",
+        "A tree far away."
       ]
     },
     {
-      "q": "Does Sam usually deliver pizza to houses?",
-      "right": "Yes, he does.",
+      "q": "Where is the smoke coming from?",
+      "right": "Dad's barbecue.",
       "wrong": [
-        "No, he doesn't.",
-        "Yes, he is.",
-        "No, he isn't."
+        "The kitchen window.",
+        "The tree on the right.",
+        "Ben's chair."
       ]
     },
     {
-      "q": "Is Sam moving in front of the monster?",
-      "right": "No, he isn't.",
+      "q": "Mia can hear a noise. Is it far away?",
+      "right": "No, it's below the kitchen window.",
       "wrong": [
-        "Yes, he is.",
-        "No, he doesn't.",
-        "Yes, he does."
+        "Yes, it's far away in a tree.",
+        "Yes, it's far away in a house.",
+        "No, it's at the garden gate."
+      ]
+    },
+    {
+      "q": "Where do they find Pip?",
+      "right": "Below the kitchen window.",
+      "wrong": [
+        "In the tree on the right.",
+        "On Ben's chair.",
+        "Behind the kitchen door."
+      ]
+    },
+    {
+      "q": "What is Pip eating?",
+      "right": "An apple.",
+      "wrong": [
+        "Some bread.",
+        "The list.",
+        "A flower."
+      ]
+    },
+    {
+      "q": "What is the mistake on Mia's list?",
+      "right": "It says bird, but she means bread.",
+      "wrong": [
+        "It says water, but she means apples.",
+        "It says bread, but she means water.",
+        "It says apples, but she means a chair."
+      ]
+    },
+    {
+      "q": "What does the clever bird say at the end?",
+      "right": "Of course!",
+      "wrong": [
+        "Let's take the food!",
+        "Close the door!",
+        "That's wrong!"
       ]
     }
   ]

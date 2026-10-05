@@ -98,5 +98,85 @@
     "q": "We are meeting tomorrow. (Що тут означає Present Continuous?)",
     "right": "Майбутню зустріч, про яку вже домовилися.",
     "wrong": ["Зустріч, що триває просто зараз.", "Звичку зустрічатися щодня.", "Зустріч, яка була вчора."]
+  },
+  {
+    "q": "Read the list and close the book. (Що означає list?)",
+    "right": "список",
+    "wrong": ["помилка", "шум", "рот"]
+  },
+  {
+    "q": "The bird is below the window. (Що означає below?)",
+    "right": "нижче, під",
+    "wrong": ["над, вище", "далеко", "праворуч"]
+  },
+  {
+    "q": "The bird is moving. (Що означає bird?)",
+    "right": "птах",
+    "wrong": ["кіт", "дерево", "дим"]
+  },
+  {
+    "q": "Let's find the bird. (Що означає find?)",
+    "right": "знайти",
+    "wrong": ["взяти", "почути", "зачинити"]
+  },
+  {
+    "q": "This answer is wrong. There is a mistake. (Що означає mistake?)",
+    "right": "помилка",
+    "wrong": ["список", "шум", "відповідь"]
+  },
+  {
+    "q": "I can see smoke far away. (Що означає far away?)",
+    "right": "далеко",
+    "wrong": ["поруч", "внизу", "позаду"]
+  },
+  {
+    "q": "Take the list and come back. (Що означає take?)",
+    "right": "візьми",
+    "wrong": ["знайди", "послухай", "зачини"]
+  },
+  {
+    "q": "Let's listen to the bird.",
+    "right": "Давай послухаємо птаха.",
+    "wrong": ["Ми завжди слухаємо птаха.", "Ми зараз не чуємо птаха.", "Давай знайдемо птаха."]
+  },
+  {
+    "q": "Can you help me? — Of course! (Що означає of course?)",
+    "right": "звісно, авжеж",
+    "wrong": ["ніколи", "можливо", "неправильно"]
+  },
+  {
+    "q": "This clever bird can open the door. (Що означає clever?)",
+    "right": "розумний, кмітливий",
+    "wrong": ["голодний", "великий", "зелений"]
+  },
+  {
+    "q": "I can hear a bird. (Що означає hear?)",
+    "right": "чути",
+    "wrong": ["шукати", "бачити", "говорити"]
+  },
+  {
+    "q": "Close the door, please. I can hear a noise. (Що означає noise?)",
+    "right": "шум",
+    "wrong": ["дим", "список", "помилка"]
+  },
+  {
+    "q": "Я чую шум: I can ___ a noise.",
+    "right": "hear",
+    "wrong": ["listen", "climb", "close"]
+  },
+  {
+    "q": "Давай послухаємо птаха: Let's ___ to the bird.",
+    "right": "listen",
+    "wrong": ["hear", "take", "move"]
+  },
+  {
+    "q": "Щодня вона бере список із собою: She ___ the list with her every day.",
+    "right": "takes",
+    "wrong": ["is taking", "take", "is take"]
+  },
+  {
+    "q": "Дивись! Птах зараз рухається: Look! The bird ___ now.",
+    "right": "is moving",
+    "wrong": ["moves", "move", "is move"]
   }
 ]
