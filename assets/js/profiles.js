@@ -13,7 +13,7 @@
   }
 
   function url(page, profile = current) {
-    const params = new URLSearchParams({ v: "6" });
+    const params = new URLSearchParams({ v: "7" });
     if (profile) params.set("user", profile.id);
     return `${page}?${params}`;
   }
@@ -36,7 +36,7 @@
       document.body.prepend(nav);
     }
     nav.innerHTML = `<a href="${url("index.html")}">← Menu</a>
-      <strong>${esc(current.name)}</strong><a href="index.html?v=6">Switch profile</a>`;
+      <strong>${esc(current.name)}</strong><a href="index.html?v=7">Switch profile</a>`;
   }
 
   async function requireProfile(host) {
@@ -44,7 +44,7 @@
       const profiles = await list();
       const id = new URLSearchParams(location.search).get("user");
       current = profiles.find(p => p.id === id) || null;
-      if (!current) { location.replace("index.html?v=6"); return null; }
+      if (!current) { location.replace("index.html?v=7"); return null; }
       header();
       return current;
     } catch (error) {

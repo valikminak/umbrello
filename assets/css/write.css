@@ -1,0 +1,23 @@
+[hidden]{display:none!important}
+.write-modes{border:0;padding:0;margin:0 0 18px;display:flex;gap:12px}
+.write-modes legend{font-weight:600;margin-bottom:10px}
+.write-modes label{flex:1;padding:12px;background:var(--card);border:1px solid var(--line);border-radius:12px;cursor:pointer}
+.write-modes input{accent-color:var(--accent);margin-right:6px}
+.write-label{display:block;font-weight:600;margin-bottom:8px}
+textarea{display:block;resize:vertical;width:100%;padding:14px;border:1px solid var(--line);border-radius:14px;
+  font:inherit;line-height:1.5;color:var(--text);background:var(--card);margin-bottom:14px}
+textarea::placeholder{color:var(--hint)}
+textarea:disabled,.write-modes:disabled{opacity:.65}
+.write-note{font-size:14px;margin:12px 0 20px}
+#exercise,#feedback{margin-top:24px}
+.write-focus{font-size:14px;margin-top:8px;white-space:pre-wrap;overflow-wrap:anywhere}
+.write-source{margin-top:12px}
+.write-text,.write-source{white-space:pre-wrap;overflow-wrap:anywhere}
+.write-status{margin-top:12px;white-space:pre-wrap}
+.write-errors{display:grid;gap:12px}
+.write-error,.write-sample{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px}
+.write-error p{margin:8px 0 0}
+.write-original{color:var(--bad)}
+.write-correction{color:var(--ok)}
+h3{font-size:18px;margin:20px 0 8px}
+.write-sample summary{cursor:pointer;font-weight:600;color:var(--accent)}

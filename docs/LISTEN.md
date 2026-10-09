@@ -92,9 +92,9 @@ Telegram as well. Opening the page as `file://` does not support loading JSON.
 
 ## Updating the Telegram mini app
 
-Listen page links and assets currently use `v=6`. When publishing a new release,
+Listen page links and assets currently use `v=7`. When publishing a new release,
 bump both together: an old cached HTML page can still request old scripts.
 If Telegram keeps the old entry page after deployment, update the bot's mini-app
-launch URL to `index.html?v=6` (or append `&v=6` if it already has a query).
+launch URL to `index.html?v=7` (or append `&v=7` if it already has a query).
 For a direct lesson launch, include `user=me` and preserve `lesson=counting-stars` in the URL.
 The launch URL is configured outside this repository; local edits do not update it.

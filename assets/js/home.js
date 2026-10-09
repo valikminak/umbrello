@@ -16,12 +16,13 @@
     }
     const profile = await Profiles.require(host);
     if (!profile) return;
-    backTo("index.html?v=6");
+    backTo("index.html?v=7");
     host.innerHTML = `<h1>Hi, ${esc(profile.name)}!</h1><p class="sub">What would you like to practise today?</p>
       <div class="menu">${[
         ["listen", "🎧", "Listen", "Listen and put the words in order"],
         ["test", "✅", "Test", "Words and grammar, four options"],
-        ["read", "📖", "Read", "Tap any word to see the translation"]
+        ["read", "📖", "Read", "Tap any word to see the translation"],
+        ["write", "✍️", "Write", "Translate a short text and get feedback"]
       ].map(([page, icon, title, description]) => `<a class="tile" href="${Profiles.url(page + ".html")}">
         <span class="ico" aria-hidden="true">${icon}</span><span><b>${title}</b><span>${description}</span></span>
       </a>`).join("")}</div>`;

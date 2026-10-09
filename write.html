@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Write</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<link rel="stylesheet" href="assets/css/style.css?v=7">
+<link rel="stylesheet" href="assets/css/write.css?v=7">
+</head>
+<body>
+<main class="app" id="app">
+  <h1>Write</h1>
+  <p class="sub">Choose a focus. Translate a short text. Get feedback.</p>
+  <div id="writeContent" hidden>
+    <form id="generateForm" autocomplete="off">
+      <fieldset id="modeFields" class="write-modes">
+        <legend>What would you like to practise?</legend>
+        <label><input type="radio" name="mode" value="words" checked> Words</label>
+        <label><input type="radio" name="mode" value="grammar"> Grammar</label>
+      </fieldset>
+      <label class="write-label" for="focus">Your focus</label>
+      <textarea id="focus" rows="3" maxlength="1200" required placeholder="borrow / lend, or Present Perfect vs Past Simple. Add a level or situation if you like."></textarea>
+      <button class="btn" id="generate" type="submit">Generate</button>
+    </form>
+    <p class="sub write-note">This exercise is temporary. Refreshing or leaving this page may clear your work.</p>
+    <section id="exercise" hidden aria-labelledby="exerciseTitle">
+      <h2 id="exerciseTitle">Translate into English</h2>
+      <p class="sub write-focus" id="exerciseFocus"></p>
+      <div class="story write-source" id="sourceText" lang="uk"></div>
+      <form id="checkForm" autocomplete="off">
+        <label class="write-label" for="translation">Your translation</label>
+        <textarea id="translation" rows="7" maxlength="6000" required spellcheck="false" autocorrect="off" autocapitalize="off" lang="en"></textarea>
+        <button class="btn" id="check" type="submit">Check</button>
+      </form>
+    </section>
+    <p class="status write-status" id="writeStatus" role="status" aria-live="polite"></p>
+    <section id="feedback" hidden aria-labelledby="feedbackTitle"></section>
+  </div>
+</main>
+<script src="assets/js/config.js"></script>
+<script src="assets/js/app.js?v=7"></script>
+<script src="assets/js/profiles.js?v=7"></script>
+<script src="assets/js/write.js?v=7"></script>
+</body>
+</html>

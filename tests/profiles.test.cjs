@@ -53,8 +53,8 @@ test('menus and return links keep the chosen profile', async () => {
   for (const id of ['sophia', 'me']) {
     const app = await page('home', `?user=${id}`);
     assert.deepEqual(app.errors, []);
-    for (const section of ['test', 'read', 'listen']) {
-      assert.ok(app.node('app').innerHTML.includes(`${section}.html?v=6&user=${id}`));
+    for (const section of ['test', 'read', 'listen', 'write']) {
+      assert.ok(app.node('app').innerHTML.includes(`${section}.html?v=7&user=${id}`));
     }
     assert.match(app.node('profileNav').innerHTML, /Switch profile/);
     assert.equal(app.context.Profiles.current.id, id);
@@ -81,7 +81,7 @@ test('me has both Listen lessons and empty Test and Read', async () => {
     const app = await page(section, '?user=me');
     assert.deepEqual(app.errors, []);
     assert.match(app.node('app').innerHTML, new RegExp(message));
-    assert.ok(app.node('app').innerHTML.includes('index.html?v=6&user=me'));
+    assert.ok(app.node('app').innerHTML.includes('index.html?v=7&user=me'));
     assert.deepEqual(app.requested, ['users/index.json', `users/me/${section}.json`]);
     assert.equal(app.quizzes.length, 0);
   }
@@ -94,10 +94,10 @@ test('me has both Listen lessons and empty Test and Read', async () => {
 });
 
 test('missing or unknown profiles redirect before any lesson content is requested', async () => {
-  for (const script of ['test', 'read', 'listen']) {
+  for (const script of ['test', 'read', 'listen', 'write']) {
     for (const search of ['', '?user=unknown', '?user=../me', '?lesson=counting-stars']) {
       const app = await page(script, search);
-      assert.equal(app.context.location.redirect, 'index.html?v=6');
+      assert.equal(app.context.location.redirect, 'index.html?v=7');
       assert.deepEqual(app.requested, ['users/index.json']);
     }
   }
