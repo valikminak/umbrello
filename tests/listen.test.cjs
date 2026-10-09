@@ -3,7 +3,7 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
 const vm = require('node:vm');
-const { words, normalize, validateLesson, shuffledTokens } = require('../listen-core.js');
+const { words, normalize, validateLesson, shuffledTokens } = require('../assets/js/listen-core.js');
 
 const sample = () => ({ title: 'Example', video: 'https://media.example.com/counting-stars.mp4', segments: [
   { start: 0.131, end: 4.125, text: 'We learn and we listen.' },
@@ -77,10 +77,10 @@ test('Ukrainian translations are optional trimmed text and do not change English
 
 test('catalog lessons have valid manual timings and Ukrainian translations for every phrase', () => {
   const root = path.join(__dirname, '..');
-  const catalog = JSON.parse(fs.readFileSync(path.join(root, 'listen.json')));
+  const catalog = JSON.parse(fs.readFileSync(path.join(root, 'users/me/listen.json')));
   assert.equal(new Set(catalog.map(item => item.id)).size, catalog.length);
-  for (const entry of catalog) validateLesson(JSON.parse(fs.readFileSync(path.join(root, entry.file))));
-  const song = validateLesson(JSON.parse(fs.readFileSync(path.join(root, 'listen/counting-stars.json'))));
+  for (const entry of catalog) validateLesson(JSON.parse(fs.readFileSync(path.join(root, 'users/me', entry.file))));
+  const song = validateLesson(JSON.parse(fs.readFileSync(path.join(root, 'users/me/listen/counting-stars.json'))));
   assert.ok(song.segments.every(segment => /[А-Яа-яІіЇїЄєҐґ]/u.test(segment.translationUk)));
   const translations = new Map();
   for (const segment of song.segments) {
@@ -171,7 +171,8 @@ async function controller({ lesson = sample(), storage = new Map(), storageBlock
     window: { addEventListener: (name, callback) => events.set(name, callback) },
     document, URLSearchParams, URL, console,
     location: { search: '?lesson=example', origin: 'http://localhost', reload() {} },
-    ListenCore: require('../listen-core.js'),
+    Profiles: { require: async () => ({ id: "me", name: "me" }), url: page => page + "?user=me", content: file => file },
+    ListenCore: require('../assets/js/listen-core.js'),
     loadJSON: async file => file === 'listen.json' ? [{ id: 'example', file: 'example.json' }] : lesson,
     localStorage: {
       getItem(key) { if (storageBlocked) throw new Error('Storage unavailable'); return storage.get(key) ?? null; },
@@ -185,7 +186,7 @@ async function controller({ lesson = sample(), storage = new Map(), storageBlock
     requestAnimationFrame: callback => { const id = ++timerId; frames.set(id, callback); return id; },
     cancelAnimationFrame: id => frames.delete(id)
   };
-  vm.runInNewContext(fs.readFileSync(path.join(__dirname, '../listen.js'), 'utf8'), context);
+  vm.runInNewContext(fs.readFileSync(path.join(__dirname, '../assets/js/listen.js'), 'utf8'), context);
   await new Promise(resolve => setImmediate(resolve));
   const video = [...nodes.values()].find(node => node instanceof Video);
   assert.ok(video, 'Lesson uses a native video element');

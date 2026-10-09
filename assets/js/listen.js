@@ -1,12 +1,14 @@
-(function () {
+(async function () {
   "use strict";
   const host = document.getElementById("listenApp");
+  const profile = await Profiles.require(host);
+  if (!profile) return;
   const lessonId = new URLSearchParams(location.search).get("lesson");
-  const lessonListUrl = "listen.html?v=5";
-  const menuUrl = "index.html?v=5";
+  const lessonListUrl = Profiles.url("listen.html");
+  const menuUrl = Profiles.url("index.html");
   backTo(lessonId ? lessonListUrl : menuUrl);
   let lesson, video, ui, index = 0, phase = "ready", chosen = [], frame = 0, playRequest = 0;
-  const translationKey = "listen.translationUk";
+  const translationKey = `listen.${profile.id}.translationUk`;
 
   function updateTranslation() {
     const text = phase === "answer" && ui.translationToggle.checked
@@ -231,8 +233,9 @@
 
   async function init() {
     try {
-      const catalog = await loadJSON("listen.json");
+      const catalog = await loadJSON(Profiles.content("listen.json"));
       if (!Array.isArray(catalog)) throw new Error("The lesson list must be an array.");
+      if (!catalog.length) { Profiles.empty(host, "Listen", "No listening lessons yet."); return; }
       if (!lessonId) {
         host.innerHTML = `<a class="listen-back" href="${menuUrl}">← Menu</a><h1>Listen</h1>
           <div class="menu">${catalog.map(item => `<a class="tile" href="${lessonListUrl}&lesson=${encodeURIComponent(item.id)}">
@@ -241,7 +244,7 @@
       }
       const entry = catalog.find(item => item.id === lessonId);
       if (!entry) throw new Error("Lesson not found.");
-      lesson = ListenCore.validateLesson(await loadJSON(entry.file));
+      lesson = ListenCore.validateLesson(await loadJSON(Profiles.content(entry.file)));
       renderLesson();
     } catch (error) {
       showError(host, error, () => location.reload());

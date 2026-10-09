@@ -31,7 +31,8 @@ async function sendReport(title, text, statusEl, retryEl) {
     const res = await fetch(WORKER_URL, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ initData: tg ? tg.initData : "", title, text })
+      body: JSON.stringify({ initData: tg ? tg.initData : "", title,
+        text: (window.Profiles?.current ? `Учень: ${Profiles.current.name}\n\n` : "") + text })
     });
     if (!res.ok) throw new Error(res.status);
     if (statusEl) { statusEl.className = "status ok"; statusEl.textContent = "Result sent to teacher ✓"; }

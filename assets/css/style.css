@@ -43,6 +43,19 @@ h2{margin:0 0 4px;font-size:24px}
 .tile .ico{font-size:32px;line-height:1}
 .tile b{display:block;font-size:19px;margin-bottom:2px}
 .tile span{color:var(--hint);font-size:15px}
+.tile b{color:var(--text)}
+.welcome{margin:44px 0 16px}
+.welcome-icon{display:block;font-size:42px;margin-bottom:18px}
+.profile-tile .avatar{display:grid;place-items:center;width:52px;height:52px;flex-shrink:0;
+  border-radius:16px;background:var(--seen);color:var(--accent);font-size:23px;font-weight:700}
+.tile-arrow{margin-left:auto}
+.profile-nav{max-width:600px;margin:0 auto;padding:16px;display:flex;align-items:center;gap:14px;
+  border-bottom:1px solid var(--line);font-size:14px}
+.profile-nav strong{margin-right:auto}
+.profile-nav a{color:var(--accent);text-decoration:none}
+.profile-nav + .app{min-height:calc(100vh - 56px)}
+a.btn{text-decoration:none;text-align:center}
+:focus-visible{outline:3px solid var(--accent);outline-offset:4px}
 
 .top{display:flex;align-items:center;gap:12px;margin-bottom:16px}
 .counter{font-size:14px;font-weight:600;color:var(--hint);white-space:nowrap}

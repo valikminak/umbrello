@@ -1,35 +1,17 @@
 <!DOCTYPE html>
-<html lang="uk">
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>English</title>
+<title>English · Choose your profile</title>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
-<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="assets/css/style.css?v=6">
 </head>
 <body>
-<div class="app">
-  <h1>English</h1>
-  <p class="sub">Choose what you want to practise today.</p>
-  <div class="menu">
-    <a class="tile" href="listen.html?v=5">
-      <span class="ico">🎧</span>
-      <span><b>Listen</b><span>Listen to a song and put the words in order</span></span>
-    </a>
-    <a class="tile" href="test.html">
-      <span class="ico">✅</span>
-      <span><b>Test</b><span>Words and grammar, four options</span></span>
-    </a>
-    <a class="tile" href="read.html">
-      <span class="ico">📖</span>
-      <span><b>Read</b><span>Tap any word to see the translation</span></span>
-    </a>
-  </div>
-</div>
-<script src="config.js"></script>
-<script src="app.js"></script>
-<script>
-  if (tg && tg.BackButton) tg.BackButton.hide();
-</script>
+<main class="app" id="app"><p class="sub">Loading profiles…</p></main>
+<script src="assets/js/config.js"></script>
+<script src="assets/js/app.js?v=6"></script>
+<script src="assets/js/profiles.js?v=6"></script>
+<script src="assets/js/home.js?v=6"></script>
 </body>
 </html>
