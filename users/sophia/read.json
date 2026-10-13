@@ -1,264 +1,212 @@
 {
-  "title": "Where Is Pip?",
+  "title": "A Dragon for School",
   "sentences": [
     {
-      "en": "Mia and Ben have a clever bird called Pip.",
-      "uk": "У Мії та Бена є розумний птах на ім'я Піп."
+      "en": "Sophia and Emma are making a picture for school.",
+      "uk": "Софія та Емма створюють малюнок для школи."
     },
     {
-      "en": "He can say a few words and usually climbs onto Ben's chair.",
-      "uk": "Він уміє говорити кілька слів і зазвичай залазить на стілець Бена."
+      "en": "They draw a dragon with a big mouth.",
+      "uk": "Вони малюють дракона з великим ротом."
     },
     {
-      "en": "Today, Mia and Ben are making a list for a picnic.",
-      "uk": "Сьогодні Мія та Бен складають список для пікніка.",
+      "en": "In the picture, smoke is coming out of its nose.",
+      "uk": "На малюнку з його носа йде дим."
+    },
+    {
+      "en": "Emma draws a small tree on the right.",
+      "uk": "Емма малює маленьке дерево праворуч.",
       "p": true
     },
     {
-      "en": "\"Let's take the food to the garden,\" says Mia.",
-      "uk": "«Давай віднесемо їжу в сад», — каже Мія."
+      "en": "\"Our dragon wants to climb this tree!\" says Sophia.",
+      "uk": "«Наш дракон хоче залізти на це дерево!» — каже Софія."
     },
     {
-      "en": "Dad is cooking, and smoke is coming from his barbecue.",
-      "uk": "Тато готує, і від його мангала йде дим."
+      "en": "\"But the tree is too small. It looks wrong,\" says Emma.",
+      "uk": "«Але дерево занадто маленьке. Це виглядає неправильно», — каже Емма."
     },
     {
-      "en": "But Pip is not on his chair.",
-      "uk": "Але Піпа немає на його стільці.",
+      "en": "\"I have a solution. Let's try a bigger tree!\" says Sophia.",
+      "uk": "«У мене є рішення. Давай спробуємо намалювати більше дерево!» — каже Софія.",
       "p": true
     },
     {
-      "en": "\"Can you help me find Pip?\" asks Ben.",
-      "uk": "«Можеш допомогти мені знайти Піпа?» — запитує Бен."
+      "en": "\"I agree,\" says Emma.",
+      "uk": "«Я згодна», — каже Емма."
     },
     {
-      "en": "\"Of course! Close the door, and let's look in the garden.\"",
-      "uk": "«Звісно! Зачини двері, і давай пошукаємо в саду»."
+      "en": "\"Can we move the sun to the left too?\"",
+      "uk": "«Можемо ще й перемістити сонце ліворуч?»"
     },
     {
-      "en": "Ben looks at a tree on the right.",
-      "uk": "Бен дивиться на дерево праворуч.",
+      "en": "\"Yes, you're right. There is more space there.\"",
+      "uk": "«Так, ти маєш рацію. Там більше місця»."
+    },
+    {
+      "en": "Their teacher comes back to the classroom.",
+      "uk": "Їхня вчителька повертається до класу.",
       "p": true
     },
     {
-      "en": "\"Is Pip in that tree? Can I climb it?\"",
-      "uk": "«Піп на тому дереві? Можна мені на нього залізти?»"
+      "en": "\"Listen to my advice: try different colours,\" she says.",
+      "uk": "«Послухайте мою пораду: спробуйте різні кольори», — каже вона."
     },
     {
-      "en": "\"No, that's the wrong tree: there is no bird there,\" says Mia.",
-      "uk": "«Ні, це не те дерево: там немає птаха», — каже Мія."
+      "en": "\"It is important to enjoy your work!\"",
+      "uk": "«Важливо отримувати задоволення від своєї роботи!»"
     },
     {
-      "en": "\"Listen! I can hear a noise.\"",
-      "uk": "«Послухай! Я чую шум».",
+      "en": "The girls give the dragon pink feet and a blue tail.",
+      "uk": "Дівчата малюють дракону рожеві лапи та синій хвіст.",
       "p": true
     },
     {
-      "en": "\"Is it far away?\" asks Ben.",
-      "uk": "«Це далеко?» — запитує Бен."
+      "en": "Then they close the paint box and smile.",
+      "uk": "Потім вони закривають коробку з фарбами й усміхаються."
     },
     {
-      "en": "\"No, it's below the kitchen window.\"",
-      "uk": "«Ні, це під кухонним вікном»."
-    },
-    {
-      "en": "They go back to the house and find Pip below the window.",
-      "uk": "Вони повертаються до будинку й знаходять Піпа під вікном."
-    },
-    {
-      "en": "He isn't moving, but he is eating an apple.",
-      "uk": "Він не рухається з місця, але їсть яблуко."
-    },
-    {
-      "en": "\"Pip wants a picnic too!\" says Ben.",
-      "uk": "«Піп теж хоче на пікнік!» — каже Бен.",
-      "p": true
-    },
-    {
-      "en": "\"That's right!\" says Mia.",
-      "uk": "«Правильно!» — каже Мія."
-    },
-    {
-      "en": "Ben reads the list again: \"Apples, bird and water?\"",
-      "uk": "Бен знову читає список: «Яблука, птах і вода?»"
-    },
-    {
-      "en": "\"Oh, that's a mistake! I mean bread!\" says Mia.",
-      "uk": "«Ой, це помилка! Я маю на увазі хліб!» — каже Мія."
-    },
-    {
-      "en": "Ben opens his mouth to speak, but Pip says, \"Of course!\"",
-      "uk": "Бен відкриває рот, щоб заговорити, але Піп каже: «Звісно!»"
+      "en": "Their dragon looks funny!",
+      "uk": "Їхній дракон виглядає кумедно!"
     }
   ],
   "dict": {
-    "list": "список",
-    "below": "нижче, під",
-    "bird": "птах",
-    "find": "знайти, знаходити",
-    "mistake": "помилка",
-    "far away": "далеко",
-    "take": "брати; тут: віднести",
-    "let's": "давай, давайте (пропозиція зробити щось разом)",
-    "of course": "звісно, авжеж",
-    "clever": "розумний, кмітливий",
-    "hear": "чути (сприймати звук)",
-    "noise": "шум",
+    "important": "важливий; тут: важливо",
+    "advice": "порада, поради",
+    "agree": "погоджуватися",
+    "try": "пробувати, намагатися",
+    "solution": "рішення, розв’язання проблеми",
+    "enjoy": "отримувати задоволення від; насолоджуватися",
     "climb": "лізти, підніматися",
-    "right": "правильний; правильно; правий, праворуч",
-    "on the right": "праворуч, з правого боку",
-    "that's right": "це правильно; саме так",
-    "move": "рухатися; пересувати",
-    "isn't moving": "не рухається зараз — isn't + moving (Present Continuous)",
+    "right": "правильний; правий, праворуч",
+    "on the right": "праворуч",
+    "you're right": "ти маєш рацію; ти правильно кажеш",
+    "move": "рухатися; тут: перемістити",
     "mouth": "рот",
-    "wrong": "неправильний; тут: не той",
+    "wrong": "неправильний; тут: неправильно",
     "back": "назад",
-    "go back": "повертатися, йти назад",
-    "smoke": "тут: дим; як дієслово — курити",
-    "listen": "слухати; тут: послухай (зверни увагу на звук)",
-    "close": "зачиняти, закривати; тут: зачини",
-    "mia": "Мія (ім'я)",
-    "ben": "Бен (ім'я)",
-    "pip": "Піп (ім'я птаха)",
-    "have": "мати",
-    "called": "на ім'я",
-    "can": "могти, уміти",
-    "say": "казати, говорити",
-    "says": "каже, говорить",
-    "a few": "кілька",
-    "word": "слово",
-    "usually": "зазвичай — звичка (Present Simple)",
-    "onto": "на (рух на поверхню)",
-    "ben's": "Бена (вказує, кому належить предмет)",
-    "chair": "стілець",
-    "today": "сьогодні",
-    "are making": "складають зараз — are + making (Present Continuous)",
-    "for": "для, на",
-    "picnic": "пікнік",
-    "apple": "яблуко",
-    "bread": "хліб",
-    "water": "вода",
-    "food": "їжа",
-    "garden": "сад",
-    "dad": "тато",
-    "is cooking": "готує зараз — is + cooking (Present Continuous)",
-    "is coming": "йде, виходить зараз — is + coming (Present Continuous)",
-    "barbecue": "мангал, барбекю",
-    "help": "допомагати",
-    "me": "мені, мене",
-    "ask": "запитувати",
-    "door": "двері",
-    "look": "дивитися; шукати",
-    "look in": "шукати в, зазирнути в",
-    "looks at": "дивиться на",
-    "tree": "дерево",
-    "that": "той, та, те",
-    "there is": "є, знаходиться",
-    "there": "там",
-    "kitchen window": "кухонне вікно",
-    "window": "вікно",
-    "house": "будинок",
-    "is eating": "їсть зараз — is + eating (Present Continuous)",
-    "want": "хотіти",
-    "too": "теж, також",
-    "read": "читати",
-    "again": "знову",
-    "mean": "мати на увазі",
-    "open": "відкривати, відчиняти",
-    "speak": "говорити",
-    "oh": "ой, о",
-    "he": "він",
-    "his": "його",
-    "they": "вони",
-    "you": "ти, ви",
-    "i": "я",
-    "it": "це; він, вона, воно (про предмет або тварину)",
-    "it's": "it is — це є; тут: це",
-    "that's": "that is — це є; тут: це",
-    "is": "є",
-    "not": "не",
-    "no": "ні; жодного (there is no bird — немає птаха)",
+    "comes back": "повертається",
+    "smoke": "дим",
+    "listen": "слухати; тут: послухайте",
+    "close": "зачиняти, закривати",
+    "sophia": "Софія (ім'я)",
+    "emma": "Емма (ім'я)",
     "and": "і, й",
-    "but": "але",
-    "to": "до, на; перед дієсловом може означати мету: щоб",
-    "from": "з, від",
-    "on": "на",
-    "in": "у, в; на (in a tree — на дереві)",
+    "are making": "створюють зараз",
     "a": "неозначений артикль: один, якийсь",
-    "an": "неозначений артикль перед голосним звуком",
-    "the": "означений артикль: відомий предмет, місце або істота"
+    "picture": "малюнок",
+    "for": "для",
+    "school": "школа",
+    "they": "вони",
+    "draw": "малювати",
+    "dragon": "дракон",
+    "with": "з, із",
+    "big": "великий",
+    "in": "у, в; тут: на (in the picture — на малюнку)",
+    "the": "означений артикль: відомий предмет або істота",
+    "is coming": "йде, виходить зараз",
+    "out of": "з, із (рух зсередини назовні)",
+    "its": "його, її (про тварину або предмет)",
+    "nose": "ніс",
+    "small": "маленький",
+    "tree": "дерево",
+    "our": "наш",
+    "want": "хотіти",
+    "to": "до; перед дієсловом — частка інфінітива",
+    "this": "цей, ця, це",
+    "says": "каже",
+    "but": "але",
+    "is": "є",
+    "too small": "занадто маленький",
+    "look": "виглядати; дивитися",
+    "i": "я",
+    "have": "мати",
+    "let's": "давай, давайте",
+    "bigger": "більший",
+    "can": "могти, уміти",
+    "we": "ми",
+    "sun": "сонце",
+    "to the left": "ліворуч",
+    "too": "теж, також",
+    "yes": "так",
+    "there is": "є",
+    "more": "більше",
+    "space": "місце, простір",
+    "there": "там",
+    "their": "їхній, їхня",
+    "teacher": "вчитель, вчителька",
+    "classroom": "клас, класна кімната",
+    "my": "мій, моя",
+    "different": "різний",
+    "colour": "колір",
+    "she": "вона",
+    "it": "це; він, вона, воно (про предмет або тварину)",
+    "your": "твій, ваш",
+    "work": "робота",
+    "girl": "дівчина",
+    "give": "давати; тут: домальовувати дракону деталі",
+    "pink": "рожевий",
+    "feet": "ступні; тут: лапи",
+    "blue": "синій",
+    "tail": "хвіст",
+    "then": "потім",
+    "paint box": "коробка з фарбами",
+    "smile": "усміхатися",
+    "funny": "кумедний"
   },
   "questions": [
     {
-      "q": "What are Mia and Ben making a list for?",
-      "right": "A picnic.",
+      "q": "What are Sophia and Emma drawing?",
+      "right": "A dragon.",
       "wrong": [
-        "A film.",
-        "A lesson.",
-        "A party at school."
+        "A cat.",
+        "A bird.",
+        "A dog."
       ]
     },
     {
-      "q": "What does Pip usually climb onto?",
-      "right": "Ben's chair.",
+      "q": "Where is the tree?",
+      "right": "On the right.",
       "wrong": [
-        "The kitchen window.",
-        "Dad's barbecue.",
-        "A tree far away."
+        "On the left.",
+        "In the classroom.",
+        "On the sun."
       ]
     },
     {
-      "q": "Where is the smoke coming from?",
-      "right": "Dad's barbecue.",
+      "q": "What is wrong with the first tree?",
+      "right": "It is too small.",
       "wrong": [
-        "The kitchen window.",
-        "The tree on the right.",
-        "Ben's chair."
+        "It is too big.",
+        "It is pink.",
+        "It has no leaves."
       ]
     },
     {
-      "q": "Mia can hear a noise. Is it far away?",
-      "right": "No, it's below the kitchen window.",
+      "q": "What is Sophia's solution?",
+      "right": "Try a bigger tree.",
       "wrong": [
-        "Yes, it's far away in a tree.",
-        "Yes, it's far away in a house.",
-        "No, it's at the garden gate."
+        "Close the paint box.",
+        "Draw a smaller dragon.",
+        "Move the tree to the left."
       ]
     },
     {
-      "q": "Where do they find Pip?",
-      "right": "Below the kitchen window.",
+      "q": "What is the teacher's advice?",
+      "right": "Try different colours.",
       "wrong": [
-        "In the tree on the right.",
-        "On Ben's chair.",
-        "Behind the kitchen door."
+        "Use only blue.",
+        "Draw a new picture.",
+        "Make the tree smaller."
       ]
     },
     {
-      "q": "What is Pip eating?",
-      "right": "An apple.",
+      "q": "What colour is the dragon's tail?",
+      "right": "Blue.",
       "wrong": [
-        "Some bread.",
-        "The list.",
-        "A flower."
-      ]
-    },
-    {
-      "q": "What is the mistake on Mia's list?",
-      "right": "It says bird, but she means bread.",
-      "wrong": [
-        "It says water, but she means apples.",
-        "It says bread, but she means water.",
-        "It says apples, but she means a chair."
-      ]
-    },
-    {
-      "q": "What does the clever bird say at the end?",
-      "right": "Of course!",
-      "wrong": [
-        "Let's take the food!",
-        "Close the door!",
-        "That's wrong!"
+        "Pink.",
+        "Green.",
+        "Yellow."
       ]
     }
   ]
