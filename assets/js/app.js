@@ -19,8 +19,8 @@ async function loadJSON(file) {
 }
 
 function showError(host, e, retry) {
-  host.innerHTML = `<div class="center"><h2>Не вдалося завантажити</h2>
-    <p class="sub">${esc(e.message)}</p><button class="btn" id="rt">Спробувати ще раз</button></div>`;
+  host.innerHTML = `<div class="center"><h2>Could not load</h2>
+    <p class="sub">${esc(e.message)}</p><button class="btn" id="rt">Try again</button></div>`;
   host.querySelector("#rt").onclick = retry;
 }
 
