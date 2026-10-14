@@ -3,7 +3,7 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const vm = require('node:vm');
 const source = fs.readFileSync(require('node:path').join(__dirname, '../assets/js/write.js'), 'utf8');
-const passage = { sentences: ['Учора я позичив книжку.', 'Я вже прочитав її.', 'Завтра поверну її другу.'] };
+const passage = { sentences: ['Учора я позичив книжку.', 'Я вже прочитав її.', 'Завтра поверну її другу.', 'Він буде радий.'] };
 const feedback = { summary: 'Good translation.', errors: [], targetFeedback: 'You used the requested construction.', modelTranslation: 'I borrowed a book yesterday. I have already read it. I will return it to my friend tomorrow.' };
 async function page({ authenticated = true } = {}) {
   const nodes = new Map(), calls = [], responses = [];

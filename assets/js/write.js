@@ -101,7 +101,7 @@
     status("Generating…");
     try {
       const result = await request("generate", { mode, focus });
-      if (!result || !Array.isArray(result.sentences) || result.sentences.length < 3 || result.sentences.length > 5 ||
+      if (!result || !Array.isArray(result.sentences) || result.sentences.length < 4 || result.sentences.length > 8 ||
           !result.sentences.every(s => typeof s === "string" && s.trim())) throw new Error("Could not get an exercise. Please try again.");
       // Replace the old exercise only after a successful response.
       exercise = { mode, focus, sourceText: result.sentences.join(" ") };

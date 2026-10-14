@@ -1,6 +1,6 @@
 # Write — минимальный тренажёр без памяти
 
-Words / Grammar → запрос → 3–5 украинских предложений → свой английский перевод → разбор.
+Words / Grammar → запрос → украинский мини-рассказ из 4–8 предложений → свой английский перевод → разбор.
 Разбор содержит комментарий, реальные ошибки с категориями и пояснениями, отдельное
 замечание о практике выбранной темы и один возможный перевод под раскрывающейся кнопкой.
 Интерфейс, сообщения об ошибках и объяснения — на английском. Исходный текст задания
@@ -10,24 +10,24 @@ Words / Grammar → запрос → 3–5 украинских предложе
 
 ## Подключение
 
-1. Создай API-ключ в [Google AI Studio](https://aistudio.google.com/apikey).
+1. Создай API-ключ в [OpenAI Platform](https://platform.openai.com/api-keys) и проверь,
+   что на балансе есть деньги (бесплатного тарифа у OpenAI API нет).
 2. В Cloudflare открой существующий Worker `umbrello` → Settings → Variables and Secrets.
-   Сохрани существующие `BOT_TOKEN` и `CHAT_ID`. Добавь **секрет** `GEMINI_API_KEY`.
-3. Добавь переменную `GEMINI_MODEL`: точный ID текстовой Gemini-модели с поддержкой
-   structured output и доступным бесплатным тарифом в твоём проекте.
-   Текущая настройка проекта — `gemini-3.8-flash`.
-   Проверь [тариф](https://ai.google.dev/gemini-api/docs/pricing), доступность модели
-   и квоту своего API-проекта. Сам Worker не включает платный тариф и не переключает модель.
+   Сохрани существующие `BOT_TOKEN` и `CHAT_ID`. Добавь **секрет** `OPENAI_API_KEY`.
+   Старые `GEMINI_API_KEY` и `GEMINI_MODEL` больше не используются, их можно удалить.
+3. Добавь переменную `OPENAI_MODEL`: ID текстовой модели с поддержкой structured outputs.
+   Рекомендуемая — `gpt-6-luna` (дешёвая, около $0.10 / $0.50 за 1M токенов на октябрь 2026).
+   Цены — на [странице тарифов](https://developers.openai.com/api/docs/pricing).
 4. Замени код Worker содержимым `worker/cf_worker.js` и опубликуй Worker.
    Файл самостоятельный: импортов, npm-пакетов и сборки нет.
 5. Опубликуй сайт вместе с `write.html`, обновлёнными HTML и `assets/`.
    Если адрес Worker прежний, менять `assets/js/config.js` не нужно.
 6. Открой мини-приложение **через Telegram**, выбери профиль и Write.
-   При старом кэше обнови стартовую ссылку бота на `index.html?v=8`.
+   При старом кэше обнови стартовую ссылку бота на `index.html?v=9`.
 
 Обновление GitHub Pages не обновляет Cloudflare Worker. Для этого исправления нужны
 обе части: новый `worker/cf_worker.js` в Cloudflare и файлы `write.html`,
-`assets/js/write.js`, `assets/js/app.js` на GitHub Pages. В `write.html` обновлённые скрипты имеют версию `v=8`.
+`assets/js/write.js`, `assets/js/app.js` на GitHub Pages. В `write.html` обновлённые скрипты имеют версию `v=9`.
 После публикации полностью закрой мини-приложение и открой его заново.
 
 Значения секретов в репозиторий не добавляются. В `.gitignore` исключены `.env*`,
@@ -47,7 +47,7 @@ Telegram `initData`. Обхода авторизации для разработ
   `targetFeedback`, `modelTranslation`.
 
 Проверка не требует предшествующей генерации на сервере: весь контекст приходит в запросе.
-В Gemini передаются только поля упражнения, без Telegram ID, имени профиля или `initData`.
+В OpenAI передаются только поля упражнения, без Telegram ID, имени профиля или `initData`.
 Write не отправляет результаты в Telegram.
 
 ## Ограничения и ошибки
@@ -55,9 +55,10 @@ Write не отправляет результаты в Telegram.
 - Тема: до 1200 символов; исходный текст: до 4000; перевод: до 6000.
 - Тело запроса: до 64 КиБ; превышение отклоняется до обращения к модели.
 - Worker ждёт модель до 45 секунд; страница ждёт Worker до 55 секунд.
-- JSON-формат задаётся через `generationConfig.responseFormat.text`.
-  Для `gemini-3.8-flash` генерация использует thinking level LOW, проверка — MEDIUM.
-  Для других моделей Worker не задаёт thinking level.
+- Запрос идёт в [Responses API](https://developers.openai.com/api/docs/guides/structured-outputs)
+  (`POST /v1/responses`), JSON-формат задаётся через `text.format` (`json_schema`, `strict: true`).
+- Для моделей с рассуждением (`gpt-5*`, `gpt-6*` и новее, `o*`) генерация и проверка
+  используют `reasoning.effort: medium`. Для старых моделей (`gpt-4.1*`, `gpt-4o*`) параметр не передаётся.
 - Нет автоматических повторов и перехода на другую модель.
 - Подпись, срок действия `initData` и форма входных/выходных данных проверяются на сервере.
 - При ошибке генерации прежнее упражнение сохраняется. При ошибке проверки сохраняется перевод.
@@ -68,31 +69,31 @@ Write не отправляет результаты в Telegram.
 Нет базы, cookies, localStorage, sessionStorage, KV или кэша ответов.
 Обновление страницы сбрасывает упражнение. Состояние между двумя запросами живёт
 только в открытой странице. Тексты запросов и ответы не пишутся в логи нашего кода.
-Условия обработки на стороне Google независимы от этого: бесплатный API может
-использовать данные для улучшения продуктов; подробности в тарифах Google.
+Worker передаёт `store: false`, чтобы OpenAI не сохранял ответы для повторного использования.
+Данные API по умолчанию не используются OpenAI для обучения; подробности — в политике OpenAI.
 
 ## Если Write не работает
 
 Раньше любой HTTP 502 отображался как «Модель не вернула корректный ответ».
 Это скрывало различия между отказом API и невалидным ответом модели.
 Теперь сообщение на английском содержит безопасный код, например:
-`The configured model is unavailable. Check GEMINI_MODEL. [model_not_found; HTTP 404]`.
-`HTTP` внутри скобок — статус ответа Google, а не статус Worker.
+`The configured model is unavailable. Check OPENAI_MODEL and model access. [model_not_found; HTTP 404]`.
+`HTTP` внутри скобок — статус ответа OpenAI, а не статус Worker.
 
 | Код | Что проверить |
 | --- | --- |
-| `not_configured` | В Worker заданы секрет GEMINI_API_KEY и переменная GEMINI_MODEL. |
-| `provider_auth` | Ключ действителен, API разрешён, ограничения ключа допускают запрос из Worker. |
-| `model_not_found` | Имя модели и доступ к ней для этого API-проекта. |
+| `not_configured` | В Worker заданы секрет OPENAI_API_KEY и переменная OPENAI_MODEL. |
+| `provider_auth` | Ключ действителен и не отозван; у ключа/проекта есть доступ к модели; регион поддерживается. |
+| `model_not_found` | Имя модели в OPENAI_MODEL и доступ к ней для этого проекта. |
 | `provider_request` | Настройки модели/API-проекта и актуальность опубликованного кода Worker. |
-| `provider_billing` | Google требует настроить оплату или пополнить баланс; код не включает оплату автоматически. |
-| `rate_limit` | Квота API-проекта; повторять запрос сразу много раз не нужно. |
+| `provider_billing` | На балансе OpenAI закончились деньги или достигнут лимит расходов (`insufficient_quota`). |
+| `rate_limit` | Лимит запросов в минуту; повторять запрос сразу много раз не нужно. |
 | `provider_unavailable`, `provider_connection`, `timeout` | Временная недоступность или слишком долгий ответ; попробуй позже. |
-| `blocked_response` | Модель заблокировала ответ; попробуй другую тему или формулировку. |
+| `blocked_response` | Модель отказалась отвечать или сработал фильтр; попробуй другую тему или формулировку. |
 | `incomplete_response` | Модель исчерпала лимит ответа, включая токены рассуждения. |
 | `empty_response`, `invalid_json`, `invalid_response` | Полученный ответ пустой или не соответствует формату упражнения/разбора. |
 
-Ключи, тексты ученика, внутренние рассуждения и исходные сообщения об ошибках Google
+Ключи, тексты ученика, внутренние рассуждения и исходные сообщения об ошибках OpenAI
 не включаются в диагностику. Интерфейс распознаёт только известные коды и числовой HTTP-статус;
 для старого Worker или ответа не в JSON показывает общее сообщение на английском.
 
@@ -118,7 +119,6 @@ node --test tests/*.test.cjs
 7. Обновление страницы → пустое упражнение.
 8. Обычный отчёт Test / Read → по-прежнему приходит в Telegram.
 
-API: [Gemini generateContent](https://ai.google.dev/api/generate-content),
-[Structured output for generateContent](https://ai.google.dev/gemini-api/docs/generate-content/structured-output),
-[Thinking](https://ai.google.dev/gemini-api/docs/thinking),
+API: [OpenAI Structured Outputs](https://developers.openai.com/api/docs/guides/structured-outputs),
+[OpenAI pricing](https://developers.openai.com/api/docs/pricing),
 [Telegram validation](https://core.telegram.org/bots/webapps#validating-data-received-via-the-mini-app).

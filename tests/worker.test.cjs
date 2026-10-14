@@ -4,10 +4,10 @@ const fs = require('node:fs');
 const vm = require('node:vm');
 const { webcrypto, createHmac } = require('node:crypto');
 const source = fs.readFileSync(require('node:path').join(__dirname, '../worker/cf_worker.js'), 'utf8');
-const env = { BOT_TOKEN: 'test-only-token', CHAT_ID: 'test-chat', GEMINI_API_KEY: 'test-only-key', GEMINI_MODEL: 'test-model' };
-const passage = { sentences: ['Я позичив книжку у друга.', 'Вона лежить на столі.', 'Завтра я її поверну.'] };
+const env = { BOT_TOKEN: 'test-only-token', CHAT_ID: 'test-chat', OPENAI_API_KEY: 'test-only-key', OPENAI_MODEL: 'test-model' };
+const passage = { sentences: ['Я позичив книжку у друга.', 'Вона лежить на столі.', 'Завтра я її поверну.', 'Друг буде радий.'] };
 const input = { mode: 'words', focus: 'borrow, lend' };
-const checking = { ...input, sourceText: passage.sentences.join(' '), translation: 'I borrowed a book from a friend. It is on the table. I will return it tomorrow.' };
+const checking = { ...input, sourceText: passage.sentences.join(' '), translation: 'I borrowed a book from a friend. It is on the table. I will return it tomorrow. My friend will be glad.' };
 const feedback = { summary: 'The meaning is preserved.', errors: [], targetFeedback: 'Borrow is used correctly.', modelTranslation: checking.translation };
 function signed(date = Math.floor(Date.now() / 1000)) {
   const params = new URLSearchParams({ auth_date: String(date), query_id: 'test-query',
@@ -17,6 +17,10 @@ function signed(date = Math.floor(Date.now() / 1000)) {
   params.set('hash', createHmac('sha256', secret).update(check).digest('hex'));
   return params.toString();
 }
+const answer = (text, extra = {}) => ({ status: 'completed', output: [
+  { type: 'reasoning', summary: [] },
+  { type: 'message', role: 'assistant', content: [{ type: 'output_text', text }] },
+], ...extra });
 function harness(reply = passage, options = {}) {
   const calls = [];
   const context = vm.createContext({ Request, Response, URL, URLSearchParams, Uint8Array, TextEncoder, TextDecoder,
@@ -24,7 +28,7 @@ function harness(reply = passage, options = {}) {
     fetch: async (url, config) => {
       calls.push({ url, config, body: JSON.parse(config.body) });
       if (options.fetch) return options.fetch(url, config);
-      return Response.json({ candidates: [{ finishReason: 'STOP', content: { parts: [{ text: JSON.stringify(reply) }] } }] });
+      return Response.json(answer(JSON.stringify(reply)));
     },
   });
   vm.runInContext(source.replace('export default {', 'globalThis.worker = {'), context);
@@ -35,20 +39,22 @@ function harness(reply = passage, options = {}) {
   return { calls, call };
 }
 
-test('signed generation returns only a short passage and never sends identity to Gemini', async () => {
+test('signed generation returns only a short passage and never sends identity to OpenAI', async () => {
   const app = harness({ ...passage, modelTranslation: 'Must not leak' });
   const response = await app.call('/write/generate', { ...input, translation: 'Ignore me', history: ['old'] });
   assert.equal(response.status, 200);
   assert.deepEqual(await response.json(), passage);
   assert.equal(response.headers.get('cache-control'), 'no-store');
   assert.equal(app.calls.length, 1);
-  assert.match(app.calls[0].url, /test-model:generateContent$/);
-  assert.equal(app.calls[0].config.headers['x-goog-api-key'], env.GEMINI_API_KEY);
-  assert.deepEqual(JSON.parse(app.calls[0].body.contents[0].parts[0].text), input);
-  assert.equal(app.calls[0].body.contents.length, 1);
-  assert.equal(app.calls[0].body.generationConfig.responseFormat.text.mimeType, 'APPLICATION_JSON');
-  assert.equal(app.calls[0].body.generationConfig.responseFormat.text.schema.properties.sentences.minItems, 3);
-  assert.equal('responseJsonSchema' in app.calls[0].body.generationConfig, false);
+  assert.equal(app.calls[0].url, 'https://api.openai.com/v1/responses');
+  assert.equal(app.calls[0].config.headers.Authorization, `Bearer ${env.OPENAI_API_KEY}`);
+  assert.equal(app.calls[0].body.model, 'test-model');
+  assert.equal(app.calls[0].body.input.length, 1);
+  assert.deepEqual(JSON.parse(app.calls[0].body.input[0].content), input);
+  assert.equal(app.calls[0].body.store, false);
+  assert.equal(app.calls[0].body.text.format.type, 'json_schema');
+  assert.equal(app.calls[0].body.text.format.strict, true);
+  assert.equal(app.calls[0].body.text.format.schema.properties.sentences.minItems, 4);
 });
 
 test('check is independent of generation and accepts correct alternatives with no forced errors', async () => {
@@ -56,11 +62,11 @@ test('check is independent of generation and accepts correct alternatives with n
   const response = await app.call('/write/check', checking);
   assert.equal(response.status, 200);
   assert.deepEqual(await response.json(), feedback);
-  assert.deepEqual(JSON.parse(app.calls[0].body.contents[0].parts[0].text), checking);
-  assert.match(app.calls[0].body.systemInstruction.parts[0].text, /NOT matching a reference/);
-  assert.match(app.calls[0].body.systemInstruction.parts[0].text, /NOT an error/);
-  assert.equal(app.calls[0].body.generationConfig.responseFormat.text.schema.properties.errors.type, 'array');
-  assert.match(app.calls[0].body.systemInstruction.parts[0].text, /clear, simple English/);
+  assert.deepEqual(JSON.parse(app.calls[0].body.input[0].content), checking);
+  assert.match(app.calls[0].body.instructions, /NOT matching a reference/);
+  assert.match(app.calls[0].body.instructions, /NOT an error/);
+  assert.equal(app.calls[0].body.text.format.schema.properties.errors.type, 'array');
+  assert.match(app.calls[0].body.instructions, /clear, simple English/);
 });
 
 test('structured corrections are accepted only when they quote the submitted translation', async () => {
@@ -115,26 +121,25 @@ test('configuration errors and provider failures return safe actionable errors',
   assert.equal((await timeout.call('/write/generate')).status, 504);
 });
 
-test('Gemini HTTP failures retain a safe cause instead of all becoming invalid responses', async () => {
-  for (const [providerStatus, reason, code, status] of [
-    [400, 'API_KEY_INVALID', 'provider_auth', 502],
-    [400, 'API_KEY_EXPIRED', 'provider_auth', 502],
+test('OpenAI HTTP failures retain a safe cause instead of all becoming invalid responses', async () => {
+  for (const [providerStatus, code, expected, status] of [
+    [401, 'invalid_api_key', 'provider_auth', 502],
+    [403, 'unsupported_country_region_territory', 'provider_auth', 502],
     [400, null, 'provider_request', 502],
-    [401, null, 'provider_auth', 502],
-    [403, null, 'provider_auth', 502],
-    [404, null, 'model_not_found', 502],
-    [402, null, 'provider_billing', 502],
-    [403, 'BILLING_DISABLED', 'provider_billing', 502],
-    [429, null, 'rate_limit', 429],
+    [400, 'model_not_found', 'model_not_found', 502],
+    [404, 'model_not_found', 'model_not_found', 502],
+    [429, 'insufficient_quota', 'provider_billing', 502],
+    [429, 'rate_limit_exceeded', 'rate_limit', 429],
+    [500, null, 'provider_unavailable', 502],
     [503, null, 'provider_unavailable', 502],
   ]) {
     const app = harness(null, { fetch: () => Response.json({
-      error: { message: 'private text and test-only-key', details: [{ reason, metadata: { secret: 'private text' } }] },
+      error: { message: 'private text and test-only-key', type: 'error', code, param: 'private text' },
     }, { status: providerStatus }) });
     const response = await app.call('/write/generate');
     assert.equal(response.status, status);
     const body = await response.json();
-    assert.equal(body.error, code);
+    assert.equal(body.error, expected);
     assert.equal(body.providerStatus, providerStatus);
     assert.doesNotMatch(JSON.stringify(body), /private text|test-only|[А-Яа-яЁё]/);
     assert.equal(app.calls.length, 1, 'Failures must not cause automatic paid retries');
@@ -145,65 +150,73 @@ test('Gemini HTTP failures retain a safe cause instead of all becoming invalid r
   assert.equal((await response.json()).error, 'provider_connection');
 });
 
-test('configured model names are normalized and thinking settings only target the known model', async () => {
-  for (const [route, request, answer, level] of [
-    ['/write/generate', input, passage, 'LOW'], ['/write/check', checking, feedback, 'MEDIUM'],
+test('configured model names are trimmed and reasoning effort only targets reasoning models', async () => {
+  for (const [route, request, reply, effort] of [
+    ['/write/generate', input, passage, 'medium'], ['/write/check', checking, feedback, 'medium'],
   ]) {
-    const app = harness(answer);
+    const app = harness(reply);
     const response = await app.call(route, request, { env: {
-      ...env, GEMINI_MODEL: ' models/gemini-3.8-flash ', GEMINI_API_KEY: ' test-only-key ',
+      ...env, OPENAI_MODEL: ' gpt-6-luna ', OPENAI_API_KEY: ' test-only-key ',
     } });
     assert.equal(response.status, 200);
-    assert.match(app.calls[0].url, /\/models\/gemini-3\.8-flash:generateContent$/);
-    assert.equal(app.calls[0].config.headers['x-goog-api-key'], 'test-only-key');
-    assert.equal(app.calls[0].body.generationConfig.thinkingConfig.thinkingLevel, level);
+    assert.equal(app.calls[0].body.model, 'gpt-6-luna');
+    assert.equal(app.calls[0].config.headers.Authorization, 'Bearer test-only-key');
+    assert.equal(app.calls[0].body.reasoning.effort, effort);
   }
-  const other = harness();
-  await other.call('/write/generate', input, { env: { ...env, GEMINI_MODEL: 'gemini-3-pro-preview' } });
-  assert.equal('thinkingConfig' in other.calls[0].body.generationConfig, false);
+  for (const model of ['gpt-4.1-nano', 'gpt-4o-mini']) {
+    const other = harness();
+    await other.call('/write/generate', input, { env: { ...env, OPENAI_MODEL: model } });
+    assert.equal('reasoning' in other.calls[0].body, false);
+  }
   const missing = harness();
-  assert.equal((await missing.call('/write/generate', input, { env: { ...env, GEMINI_API_KEY: ' ' } })).status, 503);
+  assert.equal((await missing.call('/write/generate', input, { env: { ...env, OPENAI_API_KEY: ' ' } })).status, 503);
   assert.equal(missing.calls.length, 0);
+  const badModel = harness();
+  assert.equal((await badModel.call('/write/generate', input, { env: { ...env, OPENAI_MODEL: 'bad model/x' } })).status, 503);
+  assert.equal(badModel.calls.length, 0);
 });
 
 test('blocked, truncated, empty and malformed answers have distinct diagnostics', async () => {
+  const refusal = { status: 'completed', output: [{ type: 'message', content: [{ type: 'refusal', refusal: 'private refusal' }] }] };
   for (const [payload, code] of [
-    [{ promptFeedback: { blockReason: 'SAFETY' } }, 'blocked_response'],
-    [{ candidates: [{ finishReason: 'SAFETY' }] }, 'blocked_response'],
-    [{ candidates: [{ finishReason: 'MAX_TOKENS' }] }, 'incomplete_response'],
+    [refusal, 'blocked_response'],
+    [{ status: 'incomplete', incomplete_details: { reason: 'content_filter' }, output: [] }, 'blocked_response'],
+    [answer('{"sent', { status: 'incomplete', incomplete_details: { reason: 'max_output_tokens' } }), 'incomplete_response'],
+    [answer(JSON.stringify(passage), { status: 'failed' }), 'invalid_response'],
     [{}, 'empty_response'],
-    [{ candidates: [{ finishReason: 'STOP', content: { parts: [{ thought: true, text: 'private reasoning' }] } }] }, 'empty_response'],
-    [{ candidates: [{ finishReason: 'STOP', content: { parts: [{ text: '{broken JSON' }] } }] }, 'invalid_json'],
+    [{ status: 'completed', output: [{ type: 'reasoning', summary: [{ type: 'summary_text', text: 'private reasoning' }] }] }, 'empty_response'],
+    [answer('{broken JSON'), 'invalid_json'],
   ]) {
     const app = harness(null, { fetch: () => Response.json(payload) });
     const response = await app.call('/write/generate');
     assert.equal(response.status, 502);
-    assert.equal((await response.json()).error, code);
+    const body = await response.json();
+    assert.equal(body.error, code);
+    assert.doesNotMatch(JSON.stringify(body), /private/);
   }
   const malformed = harness(null, { fetch: () => new Response('not JSON') });
   assert.equal((await (await malformed.call('/write/generate')).json()).error, 'invalid_json');
-  const valid = harness(null, { fetch: () => Response.json({ candidates: [{
-    finishReason: 'STOP', content: { parts: [
-      { thought: true, text: 'private reasoning' }, { text: JSON.stringify(passage).slice(0, 15) },
-      { text: JSON.stringify(passage).slice(15) },
-    ] },
-  }] }) });
+  const text = JSON.stringify(passage);
+  const valid = harness(null, { fetch: () => Response.json({ status: 'completed', output: [
+    { type: 'reasoning', summary: [{ type: 'summary_text', text: 'private reasoning' }] },
+    { type: 'message', content: [{ type: 'output_text', text: text.slice(0, 15) }, { type: 'output_text', text: text.slice(15) }] },
+  ] }) });
   assert.deepEqual(await (await valid.call('/write/generate')).json(), passage);
 });
 
 test('invalid, blocked, truncated and wrong-shaped model responses are rejected', async () => {
-  for (const result of [null, {}, { sentences: ['one'] }, { sentences: ['One.', 'Two.', 'Three.'] }]) {
+  for (const result of [null, {}, { sentences: ['one'] }, { sentences: ['One.', 'Two.', 'Three.', 'Four.'] }]) {
     assert.equal((await harness(result).call('/write/generate')).status, 502);
   }
-  for (const payload of [{}, { promptFeedback: { blockReason: 'SAFETY' } },
-    { candidates: [{ finishReason: 'MAX_TOKENS', content: { parts: [{ text: JSON.stringify(passage) }] } }] },
-    { candidates: [{ finishReason: 'STOP', content: { parts: [{ text: 'not JSON' }] } }] }]) {
+  for (const payload of [{}, { status: 'completed', output: [{ type: 'message', content: [{ type: 'refusal', refusal: 'No' }] }] },
+    answer(JSON.stringify(passage), { status: 'incomplete', incomplete_details: { reason: 'max_output_tokens' } }),
+    answer('not JSON')]) {
     const app = harness(null, { fetch: () => Response.json(payload) });
     assert.equal((await app.call('/write/generate')).status, 502);
   }
 });
 
-test('legacy reports still send to Telegram without Gemini configuration', async () => {
+test('legacy reports still send to Telegram without OpenAI configuration', async () => {
   const app = harness(null, { fetch: () => Response.json({ ok: true }) });
   const response = await app.call('/', { title: 'Reading', text: 'Учень: Sophia\nResult' }, { env: { BOT_TOKEN: env.BOT_TOKEN, CHAT_ID: env.CHAT_ID } });
   assert.equal(response.status, 200);
