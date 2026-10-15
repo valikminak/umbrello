@@ -15,47 +15,7 @@
   const session = { learn: false, practice: {}, listen: {}, review: {}, indexes: { practice: 0, listen: 0, review: 0 },
     writing: "", feedback: null, writingStatus: "", checking: false };
   let unit = null, step = "learn", disposed = false, playbackRequest = 0;
-  const messages = {
-    unauthorized: "Please close the app and open it again through Telegram.",
-    forbidden: "Grammar is not enabled for this Telegram account.",
-    grammar_not_configured: "Grammar is not connected yet. Its private storage and Telegram access need to be configured.",
-    grammar_forbidden: "Grammar is not enabled for this Telegram account.",
-    grammar_not_found: "The requested lesson or recording is not available. Please check the uploaded unit files.",
-    grammar_storage_auth: "The server could not access the private lesson files. Please check the storage settings.",
-    grammar_storage_error: "The lesson could not be loaded from private storage. Please try again.",
-    grammar_storage_network: "The Worker could not connect to Supabase. Check the project URL and project availability.",
-    grammar_runtime_cache: "Enable cache_option_enabled in the Worker's compatibility flags, then deploy again.",
-    grammar_storage_read: "The storage response could not be read. Please try again.",
-    grammar_storage_empty: "The uploaded file is empty. Upload the generated unit files again.",
-    grammar_storage_size: "The uploaded file is too large. Use the generated unit JSON and original MP3s.",
-    grammar_audio_type: "The recording has an unsupported file type. Upload the original MP3.",
-    grammar_storage_timeout: "Private storage took too long to respond. Please try again.",
-    grammar_content_invalid: "The lesson file could not be read. Please check the uploaded unit.",
-    storage_not_configured: "Grammar's private storage is not connected yet.",
-    storage_error: "The lesson could not be loaded from private storage. Please try again.",
-    storage_unavailable: "Private storage is temporarily unavailable. Please try again.",
-    storage_auth: "The server could not access the private lesson files. Please check the storage settings.",
-    unit_not_found: "This unit has not been uploaded yet.",
-    audio_not_found: "This recording has not been uploaded yet.",
-    invalid_unit: "The lesson file could not be read. Please check the uploaded unit.",
-    invalid_input: "Please check your text and try again.",
-    not_found: "Grammar is not available on the server yet. The Worker needs an update.",
-    not_configured: "Writing feedback is not configured on the server yet.",
-    rate_limit: "The request limit has been reached. Please try again later.",
-    provider_auth: "The AI provider rejected access. Please check the server settings.",
-    provider_billing: "Writing feedback is unavailable. Please check the AI account's credit and access.",
-    provider_request: "The AI provider could not accept this request. Please check the server settings.",
-    model_not_found: "The configured AI model is unavailable.",
-    provider_unavailable: "Writing feedback is temporarily unavailable. Please try again.",
-    provider_connection: "The server could not connect to the AI provider. Please try again.",
-    timeout: "The request took too long. Please try again.",
-    blocked_response: "The model could not review this text. Try rephrasing it.",
-    incomplete_response: "The model's feedback was cut short. Please try again.",
-    invalid_response: "The server returned an unexpected response. Please try again.",
-    invalid_json: "The server returned an unreadable response. Please try again.",
-    empty_response: "The model returned no feedback. Please try again.",
-    too_large: "The text is too long. Please shorten it and try again.",
-  };
+  const TIMEOUT = "The request took too long. Please try again.";
 
   function stopAudio(invalidate = true) {
     if (invalidate) playbackRequest++;
@@ -85,9 +45,12 @@
       if (!response.ok) {
         let details;
         try { details = await response.json(); } catch (_) {}
-        const code = typeof details?.error === "string" && Object.hasOwn(messages, details.error) ? details.error : null;
-        const upstream = Number.isInteger(details?.providerStatus) && details.providerStatus >= 100 && details.providerStatus <= 599 ? `; HTTP ${details.providerStatus}` : "";
-        throw new Error(code ? `${messages[code]} [${code}${upstream}]` : `The request failed. Please try again. [HTTP ${response.status}]`);
+        const code = typeof details?.error === "string" ? details.error : "";
+        const reason = typeof details?.message === "string" && details.message.trim() ? details.message.trim() : "";
+        const upstream = Number.isInteger(details?.providerStatus) ? `; HTTP ${details.providerStatus}` : "";
+        if (code) throw new Error(`${reason || "The request failed. Please try again."} [${code}${upstream}]`);
+        // No JSON error from the Worker: the response came from Cloudflare itself or a different Worker version.
+        throw new Error(`The Worker did not return a readable answer. Check its deployment and logs in Cloudflare. [HTTP ${response.status}]`);
       }
       if (audio) {
         const blob = await response.blob();
@@ -97,7 +60,7 @@
       try { return await response.json(); }
       catch (_) { throw new Error("The server returned an unreadable lesson or feedback."); }
     } catch (error) {
-      if (controller.signal.aborted) throw new Error(messages.timeout);
+      if (controller.signal.aborted) throw new Error(TIMEOUT);
       if (error instanceof TypeError) throw new Error("Could not connect. Check your internet connection and try again.");
       throw error;
     } finally { clearTimeout(timer); controllers.delete(controller); }
