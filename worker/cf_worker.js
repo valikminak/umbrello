@@ -213,13 +213,19 @@ async function grammarObject(env, path, maxBytes, audio = false) {
   try {
     const response = await Promise.resolve().then(() => fetch(`${config.url}/storage/v1/object/authenticated/${config.bucket}/${path}`, {
       method: "GET", headers: { ...config.headers, Accept: audio ? "audio/mpeg" : "application/json" },
-      signal: controller.signal, redirect: "error", cache: "no-store",
+      // Workers only support "follow" and "manual"; redirects are rejected below instead of followed.
+      signal: controller.signal, redirect: "manual", cache: "no-store",
     })).catch(error => {
       if (/cache/i.test(error?.message || "") && /RequestInitializerDict|Unsupported cache mode|not implemented/i.test(error.message)) {
         throw new HttpError(502, "grammar_runtime_cache", "Enable the cache_option_enabled compatibility flag in the Worker settings.");
       }
+      // Visible only in the Worker's Cloudflare logs; the client receives just the code.
+      console.warn("Grammar storage fetch failed:", error?.name, error?.message);
       throw new HttpError(502, "grammar_storage_network", "The Worker could not connect to Supabase. Check the project URL and project availability.");
     });
+    if (response.status >= 300 && response.status < 400) {
+      throw new HttpError(502, "grammar_storage_error", "Grammar storage redirected the request. Check that SUPABASE_URL is the project's API URL.", response.status);
+    }
     if (response.status === 401 || response.status === 403) {
       throw new HttpError(502, "grammar_storage_auth", "Grammar storage rejected access. Check the Worker secret and bucket permissions.", response.status);
     }

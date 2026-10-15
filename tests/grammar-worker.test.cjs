@@ -103,7 +103,7 @@ test('allowed users receive a validated unit through private Storage without cre
     assert.equal(call.config.method, 'GET');
     assert.equal(call.config.headers.apikey, env.SUPABASE_SERVICE_ROLE_KEY);
     assert.equal('Authorization' in call.config.headers, false, 'opaque keys must not be used as JWTs');
-    assert.equal(call.config.redirect, 'error');
+    assert.equal(call.config.redirect, 'manual', 'Workers reject redirect: "error" before sending the request');
     assert.equal(call.config.cache, 'no-store');
     assert.equal(call.body, undefined);
     assert.doesNotMatch(call.url, /initData|hash|secret|token|\?/);
@@ -304,6 +304,11 @@ test('storage failures distinguish runtime, network, HTTP, size and audio metada
     if (code !== 'grammar_not_found') assert.equal(body.providerStatus, 400);
     assert.doesNotMatch(JSON.stringify(body), /private provider/);
   }
+  const redirected = harness({ fetch: () => new Response(null, { status: 302, headers: { Location: 'https://elsewhere.example/unit-001.json' } }) });
+  const redirectBody = await (await redirected.call('/grammar/unit')).json();
+  assert.equal(redirectBody.error, 'grammar_storage_error');
+  assert.equal(redirectBody.providerStatus, 302);
+  assert.equal(redirected.calls.length, 1, 'redirects are never followed');
   const oversized = harness({ fetch: () => new Response('x'.repeat(256 * 1024 + 1)) });
   assert.equal((await (await oversized.call('/grammar/unit')).json()).error, 'grammar_storage_size');
   const audio = harness({ fetch: url => url.endsWith('.json') ? Response.json(unit()) : new Response('bad recording', { headers: { 'Content-Type': 'text/html' } }) });

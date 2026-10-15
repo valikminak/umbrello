@@ -192,7 +192,7 @@ not returned to the client.
 | `grammar_storage_auth` | Server secret key and private bucket access. |
 | `grammar_storage_error` | Storage availability, file type/size, and uploaded files. |
 | `grammar_runtime_cache` | Enable `cache_option_enabled` under Worker compatibility flags and deploy. Older runtime settings can reject `cache: no-store` before making a network request. |
-| `grammar_storage_network` | Supabase project URL, availability and network connection; no HTTP response was received. |
+| `grammar_storage_network` | Supabase project URL, availability and network connection; no HTTP response was received. The Worker logs the underlying fetch error (visible only in Cloudflare → Observability → Logs). |
 | `grammar_storage_read` / `grammar_storage_empty` | Storage returned unreadable or empty data. |
 | `grammar_storage_size` | Use the generated JSON (at most 256 KiB) and original MP3 (at most 2 MiB each). |
 | `grammar_audio_type` | Upload the original MP3 with an audio MIME type. |
