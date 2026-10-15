@@ -263,3 +263,49 @@ test('Grammar routes are POST-only and preflight never accesses providers', asyn
   }
   assert.equal(app.calls.length, 0);
 });
+
+test('unit content is validated independently of its upload MIME metadata', async () => {
+  for (const mime of ['text/plain; charset=utf-8', 'application/octet-stream', 'application/json', 'text/json']) {
+    const app = harness({ fetch: () => new Response(JSON.stringify(unit()), { headers: { 'Content-Type': mime } }) });
+    const response = await app.call('/grammar/unit');
+    assert.equal(response.status, 200);
+    assert.deepEqual(await response.json(), unit());
+  }
+  for (const content of ['<html>login</html>', '{}', 'not JSON']) {
+    const app = harness({ fetch: () => new Response(content, { headers: { 'Content-Type': 'text/plain' } }) });
+    assert.equal((await (await app.call('/grammar/unit')).json()).error, 'grammar_content_invalid');
+  }
+});
+
+test('storage failures distinguish runtime, network, HTTP, size and audio metadata without raw details', async () => {
+  for (const [message, code] of [
+    ["The 'cache' field on 'RequestInitializerDict' is not implemented.", 'grammar_runtime_cache'],
+    ['Unsupported cache mode: no-store', 'grammar_runtime_cache'],
+    ['private DNS detail with sb_secret_test-key', 'grammar_storage_network'],
+  ]) {
+    const app = harness({ fetch: () => { throw new TypeError(message); } });
+    const response = await app.call('/grammar/unit');
+    const body = await response.json();
+    assert.equal(body.error, code);
+    assert.doesNotMatch(JSON.stringify(body), /private DNS|sb_secret_test/);
+    assert.equal(app.calls.length, 1);
+  }
+  for (const [diagnostic, code] of [
+    [{ code: 'InvalidJWT' }, 'grammar_storage_auth'],
+    [{ error: 'unauthorized' }, 'grammar_storage_auth'],
+    [{ statusCode: '403' }, 'grammar_storage_auth'],
+    [{ code: 'NoSuchBucket' }, 'grammar_not_found'],
+    [{ code: 'NoSuchKey' }, 'grammar_not_found'],
+    [{ message: 'private provider diagnostic' }, 'grammar_storage_error'],
+  ]) {
+    const app = harness({ fetch: () => Response.json(diagnostic, { status: 400 }) });
+    const body = await (await app.call('/grammar/unit')).json();
+    assert.equal(body.error, code);
+    if (code !== 'grammar_not_found') assert.equal(body.providerStatus, 400);
+    assert.doesNotMatch(JSON.stringify(body), /private provider/);
+  }
+  const oversized = harness({ fetch: () => new Response('x'.repeat(256 * 1024 + 1)) });
+  assert.equal((await (await oversized.call('/grammar/unit')).json()).error, 'grammar_storage_size');
+  const audio = harness({ fetch: url => url.endsWith('.json') ? Response.json(unit()) : new Response('bad recording', { headers: { 'Content-Type': 'text/html' } }) });
+  assert.equal((await (await audio.call('/grammar/audio', { path: 'unit-001/audio/111.mp3' })).json()).error, 'grammar_audio_type');
+});

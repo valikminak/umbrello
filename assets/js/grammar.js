@@ -23,6 +23,12 @@
     grammar_not_found: "The requested lesson or recording is not available. Please check the uploaded unit files.",
     grammar_storage_auth: "The server could not access the private lesson files. Please check the storage settings.",
     grammar_storage_error: "The lesson could not be loaded from private storage. Please try again.",
+    grammar_storage_network: "The Worker could not connect to Supabase. Check the project URL and project availability.",
+    grammar_runtime_cache: "Enable cache_option_enabled in the Worker's compatibility flags, then deploy again.",
+    grammar_storage_read: "The storage response could not be read. Please try again.",
+    grammar_storage_empty: "The uploaded file is empty. Upload the generated unit files again.",
+    grammar_storage_size: "The uploaded file is too large. Use the generated unit JSON and original MP3s.",
+    grammar_audio_type: "The recording has an unsupported file type. Upload the original MP3.",
     grammar_storage_timeout: "Private storage took too long to respond. Please try again.",
     grammar_content_invalid: "The lesson file could not be read. Please check the uploaded unit.",
     storage_not_configured: "Grammar's private storage is not connected yet.",
@@ -80,7 +86,8 @@
         let details;
         try { details = await response.json(); } catch (_) {}
         const code = typeof details?.error === "string" && Object.hasOwn(messages, details.error) ? details.error : null;
-        throw new Error(code ? `${messages[code]} [${code}]` : `The request failed. Please try again. [HTTP ${response.status}]`);
+        const upstream = Number.isInteger(details?.providerStatus) && details.providerStatus >= 100 && details.providerStatus <= 599 ? `; HTTP ${details.providerStatus}` : "";
+        throw new Error(code ? `${messages[code]} [${code}${upstream}]` : `The request failed. Please try again. [HTTP ${response.status}]`);
       }
       if (audio) {
         const blob = await response.blob();

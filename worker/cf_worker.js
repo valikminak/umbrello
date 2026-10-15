@@ -211,12 +211,17 @@ async function grammarObject(env, path, maxBytes, audio = false) {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), 15000);
   try {
-    const response = await fetch(`${config.url}/storage/v1/object/authenticated/${config.bucket}/${path}`, {
+    const response = await Promise.resolve().then(() => fetch(`${config.url}/storage/v1/object/authenticated/${config.bucket}/${path}`, {
       method: "GET", headers: { ...config.headers, Accept: audio ? "audio/mpeg" : "application/json" },
       signal: controller.signal, redirect: "error", cache: "no-store",
+    })).catch(error => {
+      if (/cache/i.test(error?.message || "") && /RequestInitializerDict|Unsupported cache mode|not implemented/i.test(error.message)) {
+        throw new HttpError(502, "grammar_runtime_cache", "Enable the cache_option_enabled compatibility flag in the Worker settings.");
+      }
+      throw new HttpError(502, "grammar_storage_network", "The Worker could not connect to Supabase. Check the project URL and project availability.");
     });
     if (response.status === 401 || response.status === 403) {
-      throw new HttpError(502, "grammar_storage_auth", "Grammar storage rejected access. Check the Worker secret and bucket permissions.");
+      throw new HttpError(502, "grammar_storage_auth", "Grammar storage rejected access. Check the Worker secret and bucket permissions.", response.status);
     }
     if (response.status === 404) throw new HttpError(404, "grammar_not_found", "The unit material is not uploaded yet.");
     if (!response.ok) {
@@ -225,32 +230,39 @@ async function grammarObject(env, path, maxBytes, audio = false) {
         const payload = await limitedBytes(response, 8192);
         let diagnostic;
         try { diagnostic = JSON.parse(new TextDecoder().decode(payload)); } catch (_) {}
-        if (String(diagnostic?.statusCode) === "404" || diagnostic?.error === "not_found") {
+        const code = diagnostic?.code || diagnostic?.error;
+        if (["401", "403"].includes(String(diagnostic?.statusCode)) || ["InvalidJWT", "AccessDenied", "InvalidSignature", "unauthorized"].includes(code)) {
+          throw new HttpError(502, "grammar_storage_auth", "Grammar storage rejected access. Check that the secret key belongs to this Supabase project.", response.status);
+        }
+        if (String(diagnostic?.statusCode) === "404" || ["not_found", "NoSuchBucket", "NoSuchKey"].includes(code)) {
           throw new HttpError(404, "grammar_not_found", "The unit material is not uploaded yet.");
         }
       }
-      throw new HttpError(502, "grammar_storage_error", "Grammar storage could not serve the material. Please try again later.");
+      throw new HttpError(502, "grammar_storage_error", "Grammar storage could not serve the material. Please try again later.", response.status);
     }
     const mime = (response.headers.get("content-type") || "").split(";")[0].trim().toLowerCase();
-    const accepted = audio ? ["audio/mpeg", "audio/mp3", "application/octet-stream"] : ["application/json", "application/octet-stream"];
-    if (!accepted.includes(mime)) throw new Error("Unexpected storage type");
+    // Uploaded JSON can carry text/plain or other metadata. Its bounded contents
+    // are always parsed and schema-validated by loadGrammarUnit, never rendered as HTML.
+    if (audio && !["audio/mpeg", "audio/mp3", "application/octet-stream"].includes(mime)) {
+      throw new HttpError(502, "grammar_audio_type", "The recording has an unsupported content type. Upload the original MP3 file.");
+    }
     return await limitedBytes(response, maxBytes);
   } catch (error) {
     if (controller.signal.aborted) throw new HttpError(504, "grammar_storage_timeout", "Grammar storage took too long to respond. Please try again.");
     if (error instanceof HttpError) throw error;
-    throw new HttpError(502, "grammar_storage_error", "Grammar storage returned an unavailable or invalid file. Check the uploaded materials.");
+    throw new HttpError(502, "grammar_storage_read", "The Worker could not read the storage response. Please try again.");
   } finally { clearTimeout(timer); }
 }
 
 async function limitedBytes(response, maxBytes) {
-  if (!response.body) throw new Error("Empty storage response");
+  if (!response.body) throw new HttpError(502, "grammar_storage_empty", "Storage returned an empty file. Upload the generated unit files again.");
   const reader = response.body.getReader();
   const chunks = [];
   let size = 0;
   try {
     if (Number(response.headers.get("content-length")) > maxBytes) {
       await reader.cancel();
-      throw new Error("Storage file too large");
+      throw new HttpError(502, "grammar_storage_size", "The uploaded file exceeds the unit or recording size limit.");
     }
     while (true) {
       const { done, value } = await reader.read();
@@ -258,7 +270,7 @@ async function limitedBytes(response, maxBytes) {
       size += value.byteLength;
       if (size > maxBytes) {
         await reader.cancel();
-        throw new Error("Storage file too large");
+        throw new HttpError(502, "grammar_storage_size", "The uploaded file exceeds the unit or recording size limit.");
       }
       chunks.push(value);
     }

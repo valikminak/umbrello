@@ -191,9 +191,20 @@ not returned to the client.
 | `grammar_not_found` | Upload the exact storage path; requested audio must be listed in the unit. |
 | `grammar_storage_auth` | Server secret key and private bucket access. |
 | `grammar_storage_error` | Storage availability, file type/size, and uploaded files. |
+| `grammar_runtime_cache` | Enable `cache_option_enabled` under Worker compatibility flags and deploy. Older runtime settings can reject `cache: no-store` before making a network request. |
+| `grammar_storage_network` | Supabase project URL, availability and network connection; no HTTP response was received. |
+| `grammar_storage_read` / `grammar_storage_empty` | Storage returned unreadable or empty data. |
+| `grammar_storage_size` | Use the generated JSON (at most 256 KiB) and original MP3 (at most 2 MiB each). |
+| `grammar_audio_type` | Upload the original MP3 with an audio MIME type. |
 | `grammar_storage_timeout` | Try again after checking storage availability. |
 | `grammar_content_invalid` | Rebuild and upload the complete generated `unit-001.json`. |
 | `not_configured` / `provider_*` / `rate_limit` | Existing OpenAI configuration or account; see `WRITE.md`. |
+
+Unit JSON is parsed and schema-validated regardless of its upload MIME metadata
+(for example, `text/plain` is accepted when the contents are valid unit JSON).
+Raw storage error bodies are never returned. HTTP failures include only the
+numeric upstream status alongside a safe error code. The runtime cache flag is
+documented in [Cloudflare's compatibility notes](https://developers.cloudflare.com/workers/configuration/compatibility-flags/#enable-cache-no-store-http-standard-api).
 
 ## Stateless boundaries
 
