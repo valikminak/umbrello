@@ -61,6 +61,13 @@ test('menus and return links keep the chosen profile', async () => {
   }
 });
 
+test('Grammar is offered only in the me menu', async () => {
+  const me = await page('home', '?user=me');
+  const sophia = await page('home', '?user=sophia');
+  assert.match(me.node('app').innerHTML, /grammar\.html\?v=7&user=me/);
+  assert.doesNotMatch(sophia.node('app').innerHTML, /grammar\.html/);
+});
+
 test('Sophia has her existing tests and reading, with empty Listen even for a direct lesson link', async () => {
   const quiz = await page('test', '?user=sophia');
   assert.deepEqual(quiz.errors, []);

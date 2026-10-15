@@ -22,7 +22,8 @@
         ["listen", "🎧", "Listen", "Listen and put the words in order"],
         ["test", "✅", "Test", "Words and grammar, four options"],
         ["read", "📖", "Read", "Tap any word to see the translation"],
-        ["write", "✍️", "Write", "Translate a short text and get feedback"]
+        ["write", "✍️", "Write", "Translate a short text and get feedback"],
+        ...(profile.id === "me" ? [["grammar", "🧩", "Grammar", "Understand, practise and use each grammar point"]] : [])
       ].map(([page, icon, title, description]) => `<a class="tile" href="${Profiles.url(page + ".html")}">
         <span class="ico" aria-hidden="true">${icon}</span><span><b>${title}</b><span>${description}</span></span>
       </a>`).join("")}</div>`;

@@ -4,3 +4,6 @@
 .dev.vars
 .dev.vars.*
 .wrangler/
+
+# Licensed learning materials prepared locally for private storage uploads.
+/private/grammar-upload/
