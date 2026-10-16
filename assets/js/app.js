@@ -71,7 +71,7 @@ function runQuiz(host, list, onDone) {
       btn.classList.add("right");
       host.querySelectorAll(".opt").forEach(b => b.disabled = true);
       vibrate("success");
-      if (tries > 0) log.push({ q: item.q, right: item.right, tries });
+      if (tries > 0) log.push({ q: item.q, right: item.right, tries, item });
       setTimeout(() => {
         index++;
         if (index < questions.length) show();

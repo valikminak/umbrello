@@ -83,8 +83,12 @@ test('Sophia has her existing tests and reading, with empty Listen even for a di
   assert.deepEqual(listen.requested, ['users/index.json', 'users/sophia/listen.json']);
 });
 
-test('me has both Listen lessons and empty Test and Read', async () => {
-  for (const [section, message] of [['test', 'No tests yet'], ['read', 'No reading yet']]) {
+test('me has vocabulary tests, both Listen lessons and empty Read', async () => {
+  const quiz = await page('test', '?user=me');
+  assert.deepEqual(quiz.errors, []);
+  assert.equal(quiz.quizzes[0].length, 2);
+  assert.deepEqual(quiz.requested, ['users/index.json', 'users/me/test.json']);
+  for (const [section, message] of [['read', 'No reading yet']]) {
     const app = await page(section, '?user=me');
     assert.deepEqual(app.errors, []);
     assert.match(app.node('app').innerHTML, new RegExp(message));

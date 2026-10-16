@@ -24,11 +24,16 @@ function start() {
 }
 
 function finish(r) {
+  if (r.log.length) {
+    sendReport("📝 Тест", quizReportText(r));
+    runQuiz(app, r.log.map(m => m.item), finish);
+    return;
+  }
   app.innerHTML = quizSummaryHTML(r);
   const status = app.querySelector("#status"), retry = app.querySelector("#retry");
   app.querySelector("#again").onclick = start;
   app.querySelector("#menu").onclick = () => { location.href = menuUrl; };
-  const send = () => sendReport("📝 Тест", quizReportText(r), status, retry);
+  const send = () => sendReport("📝 Тест", "Тест завершено успішно!\n\n" + quizReportText(r), status, retry);
   retry.onclick = send;
   send();
 }

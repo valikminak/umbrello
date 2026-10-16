@@ -22,7 +22,7 @@ users/
     listen.json          — пока []
     listen/              — будущие уроки Listen для Sophia
   me/
-    test.json            — пока []
+    test.json            — задания на лексику C1–C2
     read.json            — пока null
     listen.json          — список существующих уроков Listen
     listen/              — файлы этих уроков
