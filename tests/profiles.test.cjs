@@ -86,7 +86,7 @@ test('Sophia has her existing tests and reading, with empty Listen even for a di
 test('me has vocabulary tests, both Listen lessons and empty Read', async () => {
   const quiz = await page('test', '?user=me');
   assert.deepEqual(quiz.errors, []);
-  assert.equal(quiz.quizzes[0].length, 2);
+  assert.equal(quiz.quizzes[0].length, 10);
   assert.deepEqual(quiz.requested, ['users/index.json', 'users/me/test.json']);
   for (const [section, message] of [['read', 'No reading yet']]) {
     const app = await page(section, '?user=me');
