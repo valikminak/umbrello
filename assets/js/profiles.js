@@ -1,7 +1,7 @@
 (function () {
   "use strict";
   let current = null;
-  let accessPromise = null, accessGranted = false;
+  let accessPromise = null, accessGranted = false, accessUserId = null;
 
   // A restored page must not reuse an old access decision from the back/forward cache.
   window.addEventListener("pageshow", event => { if (event.persisted) location.reload(); });
@@ -20,9 +20,11 @@
       });
       let data;
       try { data = await response.json(); } catch (_) {}
-      return response.ok && data?.allowed === true;
+      if (!(response.ok && data?.allowed === true)) return null;
+      // The Worker's signed account ID: local reading data is kept per account, never per profile name.
+      return { userId: Number.isSafeInteger(data.userId) && data.userId > 0 ? data.userId : null };
     } catch (_) {
-      return false;
+      return null;
     } finally { clearTimeout(timer); }
   }
 
@@ -44,8 +46,10 @@
     const screen = lockScreen(host);
     screen.innerHTML = `<div class="center"><p class="sub" role="status">Checking access…</p></div>`;
     accessPromise ||= checkAccess();
-    if (await accessPromise) {
+    const access = await accessPromise;
+    if (access) {
       accessGranted = true;
+      accessUserId = access.userId;
       screen.remove();
       document.body.classList.remove("access-locked");
       return true;
@@ -167,5 +171,5 @@
   }
 
   window.Profiles = { list, url, content, require: requireProfile, shared: requireShared, ensureAccess, refuse, empty,
-    get current() { return current; } };
+    get current() { return current; }, get userId() { return accessUserId; } };
 })();

@@ -4,10 +4,13 @@
   "use strict";
 
   class BookReader {
-    constructor({ host, book, telegram, onBack }) {
+    constructor({ host, book, telegram, onBack, onWord, onPosition, position, definedKeys }) {
       this.host = host;
       this.book = book;
       this.telegram = telegram;
+      this.onWord = onWord;
+      this.onPosition = onPosition;
+      this.definedKeys = definedKeys || new Set();
       this.chapterIndex = 0;
       this.page = 0;
       this.pageCount = 1;
@@ -59,7 +62,8 @@
       this.restoreVerticalSwipes = Boolean(telegram?.isVersionAtLeast("7.7") && telegram.isVerticalSwipesEnabled);
       if (this.restoreVerticalSwipes) telegram.disableVerticalSwipes();
 
-      this.renderChapter(0);
+      const start = this.locate(position);
+      this.renderChapter(start.index, false, start.anchor);
       // System serif fonts need no download, but respect font swaps before reflow.
       document.fonts?.ready.then(this.scheduleLayout);
     }
@@ -69,10 +73,22 @@
       this.listeners.push(() => target.removeEventListener(event, handler, options));
     }
 
-    renderChapter(index, lastPage = false) {
+    // A saved place is a chapter plus a character offset inside a sentence. Page numbers
+    // are never stored: they change with the screen size, the anchor does not.
+    locate(position) {
+      if (!position || typeof position !== "object") return { index: 0, anchor: null };
+      const index = this.book.chapterOrder.findIndex(chapter => chapter.id === position.chapterId);
+      if (index < 0) return { index: 0, anchor: null };
+      const sentence = this.book.sentences.get(position.sentenceId);
+      if (!sentence || sentence.chapter.id !== position.chapterId) return { index, anchor: null };
+      const offset = Number.isInteger(position.offset) ? Math.max(0, Math.min(position.offset, sentence.text.length - 1)) : 0;
+      return { index, anchor: { sentenceId: sentence.id, offset } };
+    }
+
+    renderChapter(index, lastPage = false, anchor = null) {
       this.chapterIndex = index;
-      this.anchor = null;
-      this.pendingPage = lastPage ? Infinity : 0;
+      this.anchor = anchor;
+      this.pendingPage = anchor ? null : lastPage ? Infinity : 0;
       this.runs = [];
       this.runsBySentence = new Map();
       this.flow.style.transform = "none";
@@ -108,6 +124,7 @@
             token.className = "book-word";
             token.dataset.wordId = word.id;
             token.dataset.wordKey = word.key;
+            if (this.definedKeys.has(word.key)) token.classList.add("defined");
             appendText(token, word.start, word.end, word.id);
             span.append(token);
             cursor = word.end;
@@ -121,8 +138,29 @@
       // Chapter titles are metadata. The source heading is already in paragraphs.
       this.flow.replaceChildren(fragment);
       this.flow.dataset.chapterId = chapter.id;
-      this.chapterLabel.textContent = chapter.title || `Section ${index + 1}`;
+      this.chapterTitle = chapter.title || `Section ${index + 1}`;
+      this.chapterLabel.textContent = this.chapterTitle;
       this.layout();
+    }
+
+    // Underlines follow the saved definitions; they never change the text layout.
+    refreshWord(key) {
+      const defined = this.definedKeys.has(key);
+      this.flow.querySelectorAll(".book-word").forEach(token => {
+        if (token.dataset.wordKey === key) token.classList.toggle("defined", defined);
+      });
+    }
+
+    setBlocked(blocked) {
+      this.blocked = blocked;
+      this.gesture = null;
+    }
+
+    // A short footer message, for example when the device refused to save.
+    note(text) {
+      clearTimeout(this.noteTimer);
+      this.chapterLabel.textContent = text;
+      this.noteTimer = setTimeout(() => { if (!this.destroyed) this.chapterLabel.textContent = this.chapterTitle; }, 4000);
     }
 
     layout() {
@@ -195,6 +233,7 @@
       this.anchor = this.firstVisiblePosition();
       this.pageLabel.textContent = `${this.page + 1} / ${this.pageCount}`;
       this.pageLabel.setAttribute("aria-label", `Page ${this.page + 1} of ${this.pageCount} in this section`);
+      if (this.anchor) this.onPosition?.(this.anchor);
     }
 
     turn(direction) {
@@ -240,12 +279,19 @@
           event.stopImmediatePropagation();
         }
       }, true);
+      // A tap on a word (never a swipe: those are stopped above) asks the page for its definition.
+      this.listen(this.flow, "click", event => {
+        const token = event.target.closest?.(".book-word");
+        if (!token || this.blocked || !this.onWord) return;
+        this.onWord({ wordId: token.dataset.wordId, key: token.dataset.wordKey, sentenceId: token.closest(".sentence")?.dataset.sentenceId });
+      });
     }
 
     destroy() {
       if (this.destroyed) return;
       this.destroyed = true;
       cancelAnimationFrame(this.frame);
+      clearTimeout(this.noteTimer);
       this.resizeObserver.disconnect();
       this.listeners.forEach(remove => remove());
       this.telegram?.offEvent("viewportChanged", this.viewportChanged);
