@@ -1,8 +1,7 @@
 (async function () {
   "use strict";
   const host = document.getElementById("app");
-  const profile = await Profiles.require(host);
-  if (!profile) return;
+  if (!await Profiles.shared(host)) return;
 
   const core = BooksCore;
   const menuUrl = Profiles.url("index.html");

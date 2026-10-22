@@ -1,14 +1,18 @@
 (async function () {
   "use strict";
   const host = document.getElementById("listenApp");
-  const profile = await Profiles.require(host);
-  if (!profile) return;
-  const lessonId = new URLSearchParams(location.search).get("lesson");
-  const lessonListUrl = Profiles.url("listen.html");
+  if (!await Profiles.shared(host)) return;
+  const params = new URLSearchParams(location.search);
+  const lessonId = params.get("lesson");
+  // CEFR level from the catalog; the filter lives in the URL so the list needs no state.
+  const LEVEL = /^[ABC][12]$/;
+  const level = LEVEL.test(params.get("level") || "") ? params.get("level") : "";
+  const listUrl = chosen => `${Profiles.url("listen.html")}${chosen ? `&level=${chosen}` : ""}`;
+  const lessonListUrl = listUrl(level);
   const menuUrl = Profiles.url("index.html");
   backTo(lessonId ? lessonListUrl : menuUrl);
   let lesson, video, ui, index = 0, phase = "ready", shown = null, placed = 0, solvedTimer = 0, frame = 0, playRequest = 0;
-  const translationKey = `listen.${profile.id}.translationUk`;
+  const translationKey = "listen.translationUk";
   const reduceMotion = window.matchMedia?.("(prefers-reduced-motion: reduce)");
 
   function updateTranslation() {
@@ -263,18 +267,26 @@
 
   async function init() {
     try {
-      const catalog = await loadJSON(Profiles.content("listen.json"));
-      if (!Array.isArray(catalog)) throw new Error("The lesson list must be an array.");
+      const catalog = await loadJSON("listen/index.json");
+      const valid = item => item && /^[a-z0-9-]+$/.test(item.id) && typeof item.title === "string" && item.title.trim() &&
+        /^[a-z0-9-]+\.json$/.test(item.file) && LEVEL.test(item.level);
+      if (!Array.isArray(catalog) || !catalog.every(valid) || new Set(catalog.map(item => item.id)).size !== catalog.length) {
+        throw new Error("Check the lesson list in listen/index.json.");
+      }
       if (!catalog.length) { Profiles.empty(host, "Listen", "No listening lessons yet."); return; }
       if (!lessonId) {
-        host.innerHTML = `<a class="listen-back" href="${menuUrl}">← Menu</a><h1>Listen</h1>
-          <div class="menu">${catalog.map(item => `<a class="tile" href="${lessonListUrl}&lesson=${encodeURIComponent(item.id)}">
-          <span class="ico">🎵</span><span><b>${esc(item.title)}</b></span></a>`).join("")}</div>`;
+        const levels = [...new Set(catalog.map(item => item.level))].sort();
+        const shown = level ? catalog.filter(item => item.level === level) : catalog;
+        host.innerHTML = `<h1>Listen</h1>
+          ${levels.length > 1 ? `<nav class="listen-levels" aria-label="Difficulty">${["", ...levels].map(value =>
+            `<a href="${listUrl(value)}"${value === level ? ' aria-current="page"' : ""}>${value || "All"}</a>`).join("")}</nav>` : ""}
+          <div class="menu">${shown.map(item => `<a class="tile" href="${lessonListUrl}&lesson=${encodeURIComponent(item.id)}">
+          <span class="ico">🎵</span><span><b>${esc(item.title)}</b><span>${esc(item.level)}</span></span></a>`).join("")}</div>`;
         return;
       }
       const entry = catalog.find(item => item.id === lessonId);
       if (!entry) throw new Error("Lesson not found.");
-      lesson = ListenCore.validateLesson(await loadJSON(Profiles.content(entry.file)));
+      lesson = ListenCore.validateLesson(await loadJSON(`listen/${entry.file}`));
       renderLesson();
     } catch (error) {
       showError(host, error, () => location.reload());

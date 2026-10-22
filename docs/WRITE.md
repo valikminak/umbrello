@@ -121,7 +121,7 @@ node --test tests/*.test.cjs
 5. Корректный обход нужной конструкции → замечание о теме, не ошибка перевода.
 6. Редактирование и повторная проверка → текущий ответ, без прошлых попыток.
 7. Обновление страницы → пустое упражнение.
-8. Обычный отчёт Test / Read → по-прежнему приходит в Telegram.
+8. Обычный отчёт Test → по-прежнему приходит в Telegram.
 
 API: [OpenAI Structured Outputs](https://developers.openai.com/api/docs/guides/structured-outputs),
 [OpenAI pricing](https://developers.openai.com/api/docs/pricing),

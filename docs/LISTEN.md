@@ -34,7 +34,7 @@ the current position. Progress is kept only in the current page.
 
 ## Lesson files
 
-`users/<user-id>/listen.json` lists the available lessons. Each lesson has its own JSON file inside that user’s `listen/` folder:
+`listen/index.json` lists the lessons shared by every allowed account. Each lesson has its own JSON file in the same `listen/` folder:
 
 ```json
 {
@@ -54,19 +54,21 @@ An instrumental gap between phrases is never skipped. The title appears only
 in the lesson list.
 `translationUk` is optional Ukrainian text, displayed as plain text.
 
-Add the new lesson to `users/<user-id>/listen.json`:
+Add the new lesson to `listen/index.json`:
 
 ```json
 {
   "id": "my-lesson",
   "title": "My lesson",
-  "file": "listen/my-lesson.json"
+  "file": "my-lesson.json",
+  "level": "B1"
 }
 ```
 
-The `file` path is relative to the user’s folder. For example, the entry above
-loads `users/me/listen/my-lesson.json` for **me**. Use
-`tools/listen-time-getter.html` to prepare phrase timings.
+`file` is a file name inside `listen/`, so the entry above loads
+`listen/my-lesson.json`. `level` is the CEFR difficulty (`A1`–`C2`); the lesson
+list shows every lesson by default and offers a filter for each level present.
+Use `tools/listen-time-getter.html` to prepare phrase timings.
 
 ## Supabase video
 
@@ -78,12 +80,12 @@ video timeline when converting the file.
 
 The player uses `<video src>` directly, without `crossorigin`, canvas, or
 JavaScript fetching of the media bytes. It does not need Supabase API keys or
-SDKs. The current public URL is already in `users/me/listen/counting-stars.json`.
+SDKs. The current public URL is already in `listen/counting-stars.json`.
 Another public file host, including R2, works with the same `video` field.
 
 ## Counting Stars timing
 
-Phrase boundaries are edited manually in `users/me/listen/counting-stars.json` against
+Phrase boundaries are edited manually in `listen/counting-stars.json` against
 the video. Keep those timings and phrase groupings when adding translations;
 do not replace them with automatic caption boundaries. Contractions such as
 `I've` remain intact. Every current phrase includes a Ukrainian translation.
@@ -95,14 +97,14 @@ python3 -m http.server 8765 --bind 127.0.0.1
 node --test tests/listen.test.cjs
 ```
 
-Open `http://127.0.0.1:8765/listen.html?user=me` and test the published site inside
+Open `http://127.0.0.1:8765/listen.html` and test the published site inside
 Telegram as well. Opening the page as `file://` does not support loading JSON.
 
 ## Updating the Telegram mini app
 
-Listen page links and shared assets currently use `v=7`; the Listen controller and styles use `v=10`. When publishing a new release,
-bump both together: an old cached HTML page can still request old scripts.
+The Listen controller and styles currently use `v=11`. When publishing a new release,
+bump them together with the page: an old cached HTML page can still request old scripts.
 If Telegram keeps the old entry page after deployment, update the bot's mini-app
-launch URL to `index.html?v=7` (or append `&v=7` if it already has a query).
-For a direct lesson launch, include `user=me` and preserve `lesson=counting-stars` in the URL.
+launch URL to `index.html?v=10` (or append `&v=10` if it already has a query).
+For a direct lesson launch, keep `lesson=counting-stars` in the URL; no profile is needed.
 The launch URL is configured outside this repository; local edits do not update it.

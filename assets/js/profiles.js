@@ -129,8 +129,21 @@
       nav.setAttribute("aria-label", "Profile navigation");
       document.body.prepend(nav);
     }
-    nav.innerHTML = `<a href="${url("index.html")}">← Menu</a>
-      <strong>${esc(current.name)}</strong><a href="index.html?v=10">Switch profile</a>`;
+    nav.innerHTML = current
+      ? `<a href="${url("index.html")}">← Menu</a><strong>${esc(current.name)}</strong><a href="index.html?v=10">Switch profile</a>`
+      : `<a href="index.html?v=10">← Menu</a>`;
+  }
+
+  // Listen, Books and Grammar are open to every allowed account; a ?user= in the link is ignored.
+  async function requireShared(host) {
+    try {
+      if (!await ensureAccess(host)) return false;
+      header();
+      return true;
+    } catch (error) {
+      showError(host, error, () => location.reload());
+      return false;
+    }
   }
 
   async function requireProfile(host) {
@@ -153,6 +166,6 @@
       <p class="sub">${esc(message)}</p><a class="btn" href="${url("index.html")}">Back to menu</a></div>`;
   }
 
-  window.Profiles = { list, url, content, require: requireProfile, ensureAccess, refuse, empty,
+  window.Profiles = { list, url, content, require: requireProfile, shared: requireShared, ensureAccess, refuse, empty,
     get current() { return current; } };
 })();

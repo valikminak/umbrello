@@ -113,72 +113,68 @@ test('an allowed account passes the access screen and loads its profile as befor
   assert.equal(app.fetches.length, 1);
 });
 
-test('entry page always offers both names without choosing a default', async () => {
+test('entry page offers both names and the shared sections without choosing a default', async () => {
   const app = await page('home');
-  assert.match(app.node('app').innerHTML, /Sophia/);
-  assert.match(app.node('app').innerHTML, /user=sophia/);
-  assert.match(app.node('app').innerHTML, /user=me/);
+  const html = app.node('app').innerHTML;
+  assert.match(html, /Sophia/);
+  assert.match(html, /user=sophia/);
+  assert.match(html, /user=me/);
+  for (const section of ['listen', 'books', 'grammar']) assert.ok(html.includes(`href="${section}.html?v=10"`), section);
+  assert.doesNotMatch(html, /test\.html|write\.html|read\.html/);
   assert.equal(app.context.Profiles.current, null);
   assert.deepEqual(app.requested, ['users/index.json']);
 });
 
-test('menus and return links keep the chosen profile', async () => {
+test('profile menus offer only Test and Write and keep the chosen profile', async () => {
   for (const id of ['sophia', 'me']) {
     const app = await page('home', `?user=${id}`);
     assert.deepEqual(app.errors, []);
-    for (const section of ['test', 'read', 'listen', 'write']) {
-      assert.ok(app.node('app').innerHTML.includes(`${section}.html?v=10&user=${id}`));
-    }
+    const html = app.node('app').innerHTML;
+    for (const section of ['test', 'write']) assert.ok(html.includes(`${section}.html?v=10&user=${id}`), section);
+    assert.doesNotMatch(html, /listen\.html|books\.html|grammar\.html|read\.html/);
     assert.match(app.node('profileNav').innerHTML, /Switch profile/);
     assert.equal(app.context.Profiles.current.id, id);
   }
 });
 
-test('Grammar is offered only in the me menu', async () => {
-  const me = await page('home', '?user=me');
-  const sophia = await page('home', '?user=sophia');
-  assert.match(me.node('app').innerHTML, /grammar\.html\?v=10&user=me/);
-  assert.doesNotMatch(sophia.node('app').innerHTML, /grammar\.html/);
-});
-
-test('Sophia has her existing tests and reading, with empty Listen even for a direct lesson link', async () => {
-  const quiz = await page('test', '?user=sophia');
-  assert.deepEqual(quiz.errors, []);
-  assert.ok(quiz.quizzes[0].length > 0);
-  assert.deepEqual(quiz.requested, ['users/index.json', 'users/sophia/test.json']);
-  const read = await page('read', '?user=sophia');
-  assert.deepEqual(read.errors, []);
-  assert.match(read.node('app').innerHTML, /class="story"/);
-  assert.deepEqual(read.requested, ['users/index.json', 'users/sophia/read.json']);
-  const listen = await page('listen', '?user=sophia&lesson=counting-stars');
-  assert.deepEqual(listen.errors, []);
-  assert.match(listen.node('listenApp').innerHTML, /No listening lessons yet/);
-  assert.deepEqual(listen.requested, ['users/index.json', 'users/sophia/listen.json']);
-});
-
-test('me has vocabulary tests, both Listen lessons and empty Read', async () => {
-  const quiz = await page('test', '?user=me');
-  assert.deepEqual(quiz.errors, []);
-  assert.equal(quiz.quizzes[0].length, 10);
-  assert.deepEqual(quiz.requested, ['users/index.json', 'users/me/test.json']);
-  for (const [section, message] of [['read', 'No reading yet']]) {
-    const app = await page(section, '?user=me');
-    assert.deepEqual(app.errors, []);
-    assert.match(app.node('app').innerHTML, new RegExp(message));
-    assert.ok(app.node('app').innerHTML.includes('index.html?v=10&user=me'));
-    assert.deepEqual(app.requested, ['users/index.json', `users/me/${section}.json`]);
-    assert.equal(app.quizzes.length, 0);
+test('Listen is shared: opens without a profile, ignores ?user and filters the catalog by level', async () => {
+  for (const search of ['', '?user=sophia', '?user=unknown']) {
+    const app = await page('listen', search);
+    assert.deepEqual(app.errors, [], search);
+    assert.equal(app.context.location.redirect, undefined, search);
+    assert.deepEqual(app.requested, ['listen/index.json'], search);
+    const html = app.node('listenApp').innerHTML;
+    for (const title of ['Count on Me', 'Counting Stars', 'Row Your Boat']) assert.match(html, new RegExp(title), search);
+    assert.match(html, /href="listen\.html\?v=10&lesson=counting-stars"/, search);
+    assert.doesNotMatch(html, /user=/, search);
+    assert.match(html, /href="listen\.html\?v=10" aria-current="page">All</, search);
+    for (const level of ['A2', 'B1', 'B2']) assert.match(html, new RegExp(`href="listen\\.html\\?v=10&level=${level}">${level}<`), search);
+    assert.match(app.node('profileNav').innerHTML, /← Menu/);
+    assert.doesNotMatch(app.node('profileNav').innerHTML, /Switch profile|user=/);
   }
-  const listen = await page('listen', '?user=me');
-  assert.deepEqual(listen.errors, []);
-  assert.match(listen.node('listenApp').innerHTML, /Counting Stars/);
-  assert.match(listen.node('listenApp').innerHTML, /Row Your Boat/);
-  assert.match(listen.node('listenApp').innerHTML, /user=me&lesson=counting-stars/);
-  assert.deepEqual(listen.requested, ['users/index.json', 'users/me/listen.json']);
+  const filtered = await page('listen', '?level=B1');
+  const html = filtered.node('listenApp').innerHTML;
+  assert.match(html, /Counting Stars/);
+  assert.doesNotMatch(html, /Count on Me|Row Your Boat/);
+  assert.match(html, /href="listen\.html\?v=10&level=B1" aria-current="page">B1</);
+  assert.match(html, /href="listen\.html\?v=10&level=B1&lesson=counting-stars"/);
+  const bogus = await page('listen', '?level=Z9');
+  assert.match(bogus.node('listenApp').innerHTML, /Count on Me[\s\S]*Counting Stars[\s\S]*Row Your Boat/);
+});
+
+test('Sophia and me have their own tests and nothing else is requested from their folders', async () => {
+  const sophia = await page('test', '?user=sophia');
+  assert.deepEqual(sophia.errors, []);
+  assert.ok(sophia.quizzes[0].length > 0);
+  assert.deepEqual(sophia.requested, ['users/index.json', 'users/sophia/test.json']);
+  const me = await page('test', '?user=me');
+  assert.deepEqual(me.errors, []);
+  assert.equal(me.quizzes[0].length, 10);
+  assert.deepEqual(me.requested, ['users/index.json', 'users/me/test.json']);
 });
 
 test('missing or unknown profiles redirect before any lesson content is requested', async () => {
-  for (const script of ['test', 'read', 'listen', 'write', 'books']) {
+  for (const script of ['test', 'write']) {
     for (const search of ['', '?user=unknown', '?user=../me', '?lesson=counting-stars']) {
       const app = await page(script, search);
       assert.equal(app.context.location.redirect, 'index.html?v=10');
@@ -194,7 +190,7 @@ test('loading errors never fall back to another profile and paths stay inside th
   for (const file of ['../sophia/test.json', '/users/sophia/test.json', 'https://example.com/test.json']) {
     assert.throws(() => app.context.Profiles.content(file));
   }
-  assert.equal(app.context.Profiles.content('listen/new-song.json'), 'users/me/listen/new-song.json');
+  assert.equal(app.context.Profiles.content('test.json'), 'users/me/test.json');
 });
 
 test('Profiles.refuse locks an already open page behind the umbrella when the Worker refuses later', async () => {

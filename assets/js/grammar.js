@@ -1,13 +1,8 @@
 (async function () {
   "use strict";
   const host = document.getElementById("app");
-  const profile = await Profiles.require(host);
-  if (!profile) return;
+  if (!await Profiles.shared(host)) return;
   backTo(Profiles.url("index.html"));
-  if (profile.id !== "me") {
-    Profiles.empty(host, "Grammar", "Grammar is currently available in the me profile.");
-    return;
-  }
 
   const core = GrammarCore;
   const steps = [["learn", "Learn"], ["practice", "Practice"], ["listen", "Listen"], ["write", "Write"], ["review", "Review"]];

@@ -78,10 +78,13 @@ test('Ukrainian translations are optional trimmed text and do not change English
 
 test('catalog lessons have valid manual timings and Ukrainian translations for every phrase', () => {
   const root = path.join(__dirname, '..');
-  const catalog = JSON.parse(fs.readFileSync(path.join(root, 'users/me/listen.json')));
+  const catalog = JSON.parse(fs.readFileSync(path.join(root, 'listen/index.json')));
   assert.equal(new Set(catalog.map(item => item.id)).size, catalog.length);
   for (const entry of catalog) {
-    const song = validateLesson(JSON.parse(fs.readFileSync(path.join(root, 'users/me', entry.file))));
+    assert.match(entry.id, /^[a-z0-9-]+$/);
+    assert.match(entry.file, /^[a-z0-9-]+\.json$/, entry.id);
+    assert.match(entry.level, /^[ABC][12]$/, entry.id);
+    const song = validateLesson(JSON.parse(fs.readFileSync(path.join(root, 'listen', entry.file))));
     assert.ok(song.segments.every(segment => /[А-Яа-яІіЇїЄєҐґ]/u.test(segment.translationUk)), entry.id);
     const translations = new Map();
     for (const segment of song.segments) {
@@ -89,7 +92,7 @@ test('catalog lessons have valid manual timings and Ukrainian translations for e
       translations.set(segment.text, segment.translationUk);
     }
   }
-  const song = validateLesson(JSON.parse(fs.readFileSync(path.join(root, 'users/me/listen/counting-stars.json'))));
+  const song = validateLesson(JSON.parse(fs.readFileSync(path.join(root, 'listen/counting-stars.json'))));
   assert.match(song.segments[0].text, /I've been/);
   assert.ok(song.segments.every(segment => !/\bI been\b/.test(segment.text)));
 });
@@ -202,9 +205,9 @@ async function controller({ lesson = sample(), storage = new Map(), storageBlock
       matchMedia: query => ({ matches: reducedMotion && query === '(prefers-reduced-motion: reduce)' }) },
     document, URLSearchParams, URL, console,
     location: { search: '?lesson=example', origin: 'http://localhost', reload() {} },
-    Profiles: { require: async () => ({ id: "me", name: "me" }), url: page => page + "?user=me", content: file => file },
+    Profiles: { shared: async () => true, url: page => page + "?v=10" },
     ListenCore: { ...core, shuffledTokens: items => core.shuffledTokens(items, random) },
-    loadJSON: async file => file === 'listen.json' ? [{ id: 'example', file: 'example.json' }] : lesson,
+    loadJSON: async file => file === 'listen/index.json' ? [{ id: 'example', title: 'Example', file: 'example.json', level: 'B1' }] : lesson,
     localStorage: {
       getItem(key) { if (storageBlocked) throw new Error('Storage unavailable'); return storage.get(key) ?? null; },
       setItem(key, value) { if (storageBlocked) throw new Error('Storage unavailable'); storage.set(key, value); }
@@ -417,7 +420,7 @@ test('case-different duplicate tokens are interchangeable and each is consumed o
 test('Play immediately shows words and translation; repeated replay and pause preserve progress', async () => {
   const lesson = sample();
   lesson.segments[0].translationUk = 'Ми вчимося й слухаємо.';
-  const storage = new Map([['listen.me.translationUk', 'true']]);
+  const storage = new Map([['listen.translationUk', 'true']]);
   const app = await controller({ lesson, storage });
   assert.equal(app.node('puzzle').hidden, true);
   app.click('playPhrase');
@@ -657,7 +660,7 @@ test('a solved phrase stays assembled for a moment while playback continues', as
   const lesson = sample();
   lesson.segments[0].translationUk = 'Ми вчимося й слухаємо.';
   lesson.segments[1].translationUk = 'Спробуй іншу фразу.';
-  const app = await controller({ lesson, storage: new Map([['listen.me.translationUk', 'true']]) });
+  const app = await controller({ lesson, storage: new Map([['listen.translationUk', 'true']]) });
   app.click('playPhrase'); app.tick(4.125);
   app.solveFirst();
   assert.equal(app.video.paused, false, 'Playback resumes within the last tap');
