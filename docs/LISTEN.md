@@ -6,21 +6,24 @@ package installation or build step is needed.
 
 ## Playback
 
-1. Press Play once. The video starts at the beginning.
-2. At each phrase's `end`, playback pauses and shuffled words appear below it.
-3. Click the words in the order heard. A wrong word does not advance the answer.
+1. Press Play once. The video starts at the beginning and shuffled words appear immediately.
+2. At each unfinished phrase's `end`, playback pauses. Words and any partial answer stay visible.
+3. Click the words in the order heard, during playback or while paused. A wrong word does not advance the answer.
 4. The last correct word immediately resumes the same video at its current
    position. There is no Next button and no automatic seeking.
 5. Instrumental passages and the outro play in full. The lesson finishes when
    the video itself ends.
 
-Enable **Переклад українською** to show a Ukrainian hint above the words while
-arranging a phrase. It is off by default; the browser remembers your choice
+Enable the **показати переклад** switch to show a Ukrainian hint above the words while
+arranging a phrase. The switch stays visible in every playback state and sticks
+to the top when scrolling. It is off by default; the browser remembers your choice
 when local storage is available. Switching it does not reset your answer.
 Phrases without a translation simply show no hint.
 
-Repeat is the only phrase-level action that rewinds: it clears the answer and
-returns to that phrase's `start`. Leaving the app pauses playback; returning
+Repeat is the only phrase-level action that rewinds: it returns to that phrase's
+`start`, preserving the partial answer, word order, used buttons and translation.
+The next phrase gets a fresh word bank as soon as the current answer is complete.
+Leaving the app pauses playback; returning
 shows a Play button. If a browser rejects playback, Play retries without losing
 the current position. Progress is kept only in the current page.
 
@@ -92,7 +95,7 @@ Telegram as well. Opening the page as `file://` does not support loading JSON.
 
 ## Updating the Telegram mini app
 
-Listen page links and assets currently use `v=7`. When publishing a new release,
+Listen page links and shared assets currently use `v=7`; the Listen controller and styles use `v=9`. When publishing a new release,
 bump both together: an old cached HTML page can still request old scripts.
 If Telegram keeps the old entry page after deployment, update the bot's mini-app
 launch URL to `index.html?v=7` (or append `&v=7` if it already has a query).

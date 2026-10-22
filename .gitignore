@@ -7,3 +7,9 @@
 
 # Licensed learning materials prepared locally for private storage uploads.
 /private/grammar-upload/
+
+# Local Python environment, source and prepared books (may contain licensed text).
+.venv/
+/output/
+*.epub
+__pycache__/

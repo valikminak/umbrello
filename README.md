@@ -10,7 +10,7 @@
 ## Папки
 
 ```text
-index.html, test.html, read.html, listen.html, write.html, grammar.html — страницы приложения
+index.html, test.html, read.html, books.html, listen.html, write.html, grammar.html — страницы приложения
 assets/
   js/                    — логика страниц, профилей и настройки
   css/                   — оформление
@@ -28,12 +28,15 @@ users/
     listen/              — файлы этих уроков
 tools/
   listen-time-getter.html — инструмент разметки видео
+  prepare-book.py        — локальная подготовка EPUB к чтению (book.json + preview.html)
+  pyproject.toml, uv.lock — зависимости конвертера (uv)
 worker/
-  cf_worker.js           — Cloudflare Worker: отчёты, Write и приватный Grammar API
+  cf_worker.js           — Cloudflare Worker: отчёты, Write, приватные Grammar и Books
 docs/
   WRITE.md               — подключение и устройство Write
   LISTEN.md              — инструкция по Listen
   GRAMMAR.md             — настройка приватного Grammar через Supabase
+  BOOKS.md               — Books: подготовка, Storage, Worker и загрузка книг
 tests/                   — автоматические проверки
 ```
 
@@ -84,6 +87,22 @@ tests/                   — автоматические проверки
 Подготовленный пакет `private/grammar-upload/` исключён из Git и не публикуется
 на Pages. Исходники раздела и авторские дополнения можно публиковать вместе
 с остальным интерфейсом. Настройка и порядок загрузки — [docs/GRAMMAR.md](docs/GRAMMAR.md).
+
+## Read: Learn words и Books
+
+Read делится на две вкладки. **Learn words** — прежнее чтение из `read.json`
+со словарём. **Books** — библиотека и простая читалка готовых книг.
+Книги и каталог лежат в приватном Supabase Storage и приходят через Worker
+только аккаунтам из `BOOKS_ALLOWED_USER_IDS`; выбор профиля доступа не даёт.
+
+Книги готовит локальный конвертер (EPUB → `book.json` и `preview.html`):
+
+```sh
+uv run --project tools tools/prepare-book.py input.epub --output output/my-book
+```
+
+Папка `output/` и файлы `*.epub` исключены из Git. Формат каталога, загрузка
+и настройка Worker — [docs/BOOKS.md](docs/BOOKS.md).
 
 ## Локальный запуск и проверка
 

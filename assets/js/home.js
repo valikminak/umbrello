@@ -21,7 +21,7 @@
       <div class="menu">${[
         ["listen", "🎧", "Listen", "Listen and put the words in order"],
         ["test", "✅", "Test", "Words and grammar, four options"],
-        ["read", "📖", "Read", "Tap any word to see the translation"],
+        ["read", "📖", "Read", "Learn words in a text or read a book"],
         ["write", "✍️", "Write", "Translate a short text and get feedback"],
         ...(profile.id === "me" ? [["grammar", "🧩", "Grammar", "Understand, practise and use each grammar point"]] : [])
       ].map(([page, icon, title, description]) => `<a class="tile" href="${Profiles.url(page + ".html")}">

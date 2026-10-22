@@ -105,7 +105,7 @@ test('me has vocabulary tests, both Listen lessons and empty Read', async () => 
 });
 
 test('missing or unknown profiles redirect before any lesson content is requested', async () => {
-  for (const script of ['test', 'read', 'listen', 'write']) {
+  for (const script of ['test', 'read', 'listen', 'write', 'books']) {
     for (const search of ['', '?user=unknown', '?user=../me', '?lesson=counting-stars']) {
       const app = await page(script, search);
       assert.equal(app.context.location.redirect, 'index.html?v=7');

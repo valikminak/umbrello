@@ -11,7 +11,7 @@
   const translationKey = `listen.${profile.id}.translationUk`;
 
   function updateTranslation() {
-    const text = phase === "answer" && ui.translationToggle.checked
+    const text = !ui.puzzle.hidden && ui.translationToggle.checked
       ? lesson.segments[index]?.translationUk : "";
     ui.translation.textContent = text || "";
     ui.translation.hidden = !text;
@@ -54,10 +54,7 @@
   }
 
   function showWords() {
-    phase = "answer";
-    stopFrames();
-    video.pause();
-    clearAnswer();
+    if (!ui.puzzle.hidden || index >= lesson.segments.length) return;
     const segment = lesson.segments[index];
     ListenCore.shuffledTokens(segment.words).forEach(token => {
       const button = document.createElement("button");
@@ -65,7 +62,7 @@
       button.className = "listen-word";
       button.textContent = token.word;
       button.onclick = () => {
-        if (phase !== "answer" || button.disabled) return;
+        if (!["playing", "paused", "answer"].includes(phase) || button.disabled) return;
         if (ListenCore.normalize(token.word) !== ListenCore.normalize(segment.words[chosen.length])) {
           button.classList.remove("wrong");
           void button.offsetWidth;
@@ -89,13 +86,20 @@
     });
     ui.puzzle.hidden = false;
     updateTranslation();
+  }
+
+  function waitForAnswer() {
+    phase = "answer";
+    stopFrames();
+    video.pause();
+    showWords();
     controls();
     message();
   }
 
   function checkTime() {
     if (phase !== "playing" || video.seeking) return;
-    if (index < lesson.segments.length && video.currentTime >= lesson.segments[index].end) showWords();
+    if (index < lesson.segments.length && video.currentTime >= lesson.segments[index].end) waitForAnswer();
   }
 
   function watch() {
@@ -107,6 +111,7 @@
   function resume() {
     const request = ++playRequest;
     phase = "playing";
+    showWords();
     controls();
     message();
     // Keep the current position, including instrumental breaks and the outro.
@@ -150,8 +155,8 @@
       </nav>
       <div class="listen-player"><video id="lessonVideo" playsinline preload="auto" tabindex="0" aria-label="Play video"></video></div>
       <label class="listen-translation-toggle" lang="uk">
-        <input type="checkbox" id="translationToggle" aria-controls="phraseTranslation">
-        Переклад українською
+        <span>показати переклад</span>
+        <input type="checkbox" role="switch" id="translationToggle" aria-controls="phraseTranslation">
       </label>
       <section id="puzzle" aria-label="Arrange the words" hidden>
         <p class="listen-translation" id="phraseTranslation" lang="uk" aria-live="polite" hidden></p>
@@ -184,7 +189,6 @@
       phase = "paused";
       stopFrames();
       video.pause();
-      clearAnswer();
       // Rewinding is only performed when explicitly requested with Repeat.
       video.currentTime = lesson.segments[index].start;
       resume();
@@ -212,7 +216,7 @@
     video.addEventListener("waiting", () => { if (phase === "playing") message("Loading…"); });
     video.addEventListener("ended", () => {
       if (phase === "answer") return;
-      if (index < lesson.segments.length) showWords();
+      if (index < lesson.segments.length) waitForAnswer();
       else finish();
     });
     video.addEventListener("error", () => {

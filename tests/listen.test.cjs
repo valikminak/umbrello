@@ -79,14 +79,16 @@ test('catalog lessons have valid manual timings and Ukrainian translations for e
   const root = path.join(__dirname, '..');
   const catalog = JSON.parse(fs.readFileSync(path.join(root, 'users/me/listen.json')));
   assert.equal(new Set(catalog.map(item => item.id)).size, catalog.length);
-  for (const entry of catalog) validateLesson(JSON.parse(fs.readFileSync(path.join(root, 'users/me', entry.file))));
-  const song = validateLesson(JSON.parse(fs.readFileSync(path.join(root, 'users/me/listen/counting-stars.json'))));
-  assert.ok(song.segments.every(segment => /[А-Яа-яІіЇїЄєҐґ]/u.test(segment.translationUk)));
-  const translations = new Map();
-  for (const segment of song.segments) {
-    if (translations.has(segment.text)) assert.equal(segment.translationUk, translations.get(segment.text));
-    translations.set(segment.text, segment.translationUk);
+  for (const entry of catalog) {
+    const song = validateLesson(JSON.parse(fs.readFileSync(path.join(root, 'users/me', entry.file))));
+    assert.ok(song.segments.every(segment => /[А-Яа-яІіЇїЄєҐґ]/u.test(segment.translationUk)), entry.id);
+    const translations = new Map();
+    for (const segment of song.segments) {
+      if (translations.has(segment.text)) assert.equal(segment.translationUk, translations.get(segment.text));
+      translations.set(segment.text, segment.translationUk);
+    }
   }
+  const song = validateLesson(JSON.parse(fs.readFileSync(path.join(root, 'users/me/listen/counting-stars.json'))));
   assert.match(song.segments[0].text, /I've been/);
   assert.ok(song.segments.every(segment => !/\bI been\b/.test(segment.text)));
 });
@@ -222,7 +224,7 @@ async function controller({ lesson = sample(), storage = new Map(), storageBlock
     video, document, events, intervals, frames, timeouts, flush };
 }
 
-test('translation toggle preserves answers, follows phrases and clears on Repeat and completion', async () => {
+test('translation toggle preserves answers, stays visible during Repeat and follows phrases', async () => {
   const lesson = sample();
   lesson.segments[0].translationUk = 'Ми вчимося й слухаємо.';
   lesson.segments[1].translationUk = 'Спробуй іншу фразу.';
@@ -246,13 +248,13 @@ test('translation toggle preserves answers, follows phrases and clears on Repeat
   assert.deepEqual(app.video.seeks, []);
   toggle.checked = true; toggle.emit('change');
   app.click('repeatPhrase');
-  assert.equal(hint.hidden, true);
-  assert.equal(hint.textContent, '');
+  assert.equal(hint.hidden, false);
+  assert.equal(hint.textContent, lesson.segments[0].translationUk);
   app.tick(4.125);
   assert.equal(hint.textContent, lesson.segments[0].translationUk);
-  app.solveFirst();
-  assert.equal(hint.hidden, true);
-  assert.equal(hint.textContent, '');
+  ['learn', 'and', 'we', 'listen'].forEach(app.choose);
+  assert.equal(hint.hidden, false);
+  assert.equal(hint.textContent, lesson.segments[1].translationUk);
   app.tick(10.275);
   assert.equal(hint.textContent, lesson.segments[1].translationUk);
   app.solveSecond();
@@ -318,7 +320,7 @@ test('one source plays from zero through all gaps and the outro without seeking'
   assert.equal(app.video.playCalls, 2, 'The final correct word immediately resumes playback');
   assert.equal(app.video.paused, false);
   assert.equal(app.video.currentTime, 4.125, 'Continue where playback paused');
-  assert.equal(app.node('puzzle').hidden, true);
+  assert.equal(app.node('puzzle').hidden, false, 'The next phrase appears immediately');
   assert.equal(app.node('counter').textContent, '2 / 2');
   assert.equal(app.nodes.has('nextPhrase'), false, 'No extra Next button');
   app.tick(5);
@@ -362,26 +364,102 @@ test('case-different duplicate tokens are interchangeable and each is consumed o
   assert.equal(app.video.paused, false);
 });
 
-test('Repeat explicitly rewinds the current phrase and clears every selected word', async () => {
+test('Play immediately shows words and translation; repeated replay and pause preserve progress', async () => {
+  const lesson = sample();
+  lesson.segments[0].translationUk = 'Ми вчимося й слухаємо.';
+  const storage = new Map([['listen.me.translationUk', 'true']]);
+  const app = await controller({ lesson, storage });
+  assert.equal(app.node('puzzle').hidden, true);
+  app.click('playPhrase');
+  assert.equal(app.node('puzzle').hidden, false);
+  assert.equal(app.node('phraseTranslation').textContent, lesson.segments[0].translationUk);
+  const bank = [...app.node('wordBank').children];
+  app.click('repeatPhrase');
+  assert.deepEqual(app.node('wordBank').children, bank, 'Repeat before any answer keeps the word order');
+  app.choose('we'); app.choose('learn');
+  for (let repeat = 0; repeat < 2; repeat++) {
+    app.tick(2);
+    app.click('repeatPhrase');
+    assert.equal(app.node('answer').textContent, 'We learn');
+    assert.equal(app.node('puzzle').hidden, false);
+    assert.equal(app.node('phraseTranslation').hidden, false);
+    assert.deepEqual(app.node('wordBank').children, bank);
+    assert.equal(bank.filter(button => button.disabled).length, 2);
+  }
+  app.click('playPhrase'); // Pause during replay.
+  app.choose('and');
+  app.click('playPhrase');
+  app.tick(4.125);
+  assert.equal(app.node('answer').textContent, 'We learn and');
+  assert.deepEqual(app.node('wordBank').children, bank);
+  app.choose('we'); app.choose('listen');
+  assert.equal(app.node('counter').textContent, '2 / 2');
+  assert.equal(app.node('answer').textContent, '');
+  assert.equal(app.node('puzzle').hidden, false);
+});
+
+test('completing words during playback advances without seeking or cutting the audio', async () => {
+  const app = await controller();
+  app.click('playPhrase'); app.tick(2);
+  app.solveFirst();
+  assert.equal(app.node('counter').textContent, '2 / 2');
+  assert.equal(app.video.currentTime, 2);
+  assert.equal(app.video.paused, false);
+  assert.equal(app.node('answer').textContent, '');
+  assert.deepEqual(app.node('wordBank').children.map(button => button.textContent).sort(), ['Try', 'another', 'phrase']);
+  app.tick(4.125);
+  assert.equal(app.video.paused, false, 'An already completed phrase does not pause playback');
+  app.tick(10.275);
+  assert.equal(app.video.paused, true);
+  assert.deepEqual(app.video.seeks, []);
+});
+
+test('rejected Repeat playback keeps the partial answer for the next Play attempt', async () => {
+  const app = await controller();
+  app.click('playPhrase'); app.tick(4.125);
+  app.choose('we'); app.choose('learn');
+  const bank = [...app.node('wordBank').children];
+  app.video.rejectNextPlay = true;
+  app.click('repeatPhrase');
+  await app.flush();
+  assert.equal(app.node('puzzle').hidden, false);
+  assert.equal(app.node('answer').textContent, 'We learn');
+  app.click('playPhrase'); app.tick(4.125);
+  assert.equal(app.node('answer').textContent, 'We learn');
+  assert.deepEqual(app.node('wordBank').children, bank);
+  ['and', 'we', 'listen'].forEach(app.choose);
+  assert.equal(app.node('counter').textContent, '2 / 2');
+});
+
+test('Repeat rewinds without clearing selected words or rebuilding the word bank', async () => {
   const app = await controller();
   app.click('playPhrase'); app.tick(4.125);
   app.choose('we'); app.choose('learn');
   assert.equal(words(app.node('answer').textContent).length, 2);
+  const bank = [...app.node('wordBank').children];
+  const disabled = bank.map(button => button.disabled);
   app.click('repeatPhrase');
   assert.deepEqual(app.video.seeks, [0.131]);
-  assert.equal(app.node('answer').textContent, '');
-  assert.equal(app.node('puzzle').hidden, true);
+  assert.equal(app.node('answer').textContent, 'We learn');
+  assert.equal(app.node('puzzle').hidden, false);
+  assert.deepEqual(app.node('wordBank').children, bank);
+  assert.deepEqual(bank.map(button => button.disabled), disabled);
   app.video.emit('seeked');
   assert.equal(app.video.paused, false);
   app.tick(4.125);
+  assert.equal(app.node('answer').textContent, 'We learn');
+  assert.deepEqual(app.node('wordBank').children, bank);
+  assert.deepEqual(bank.map(button => button.disabled), disabled);
+  ['and', 'we', 'listen'].forEach(app.choose);
+  assert.equal(app.node('answer').textContent, '');
   assert.ok(app.node('wordBank').children.every(button => !button.disabled));
-  app.solveFirst();
   app.tick(10.275);
   app.choose('try');
   app.click('repeatPhrase');
   assert.deepEqual(app.video.seeks, [0.131, 6.5]);
-  assert.equal(app.node('answer').textContent, '');
-  app.video.emit('seeked'); app.tick(10.275); app.solveSecond();
+  assert.equal(app.node('answer').textContent, 'Try');
+  app.video.emit('seeked'); app.tick(10.275);
+  ['another', 'phrase'].forEach(app.choose);
   assert.equal(app.video.paused, false);
   assert.deepEqual(app.video.sources, [sample().video]);
 });
@@ -418,7 +496,7 @@ test('backgrounding pauses and explicit resume preserves the current playback po
   app.document.hidden = true;
   app.events.get('visibilitychange')();
   assert.equal(app.video.paused, true);
-  assert.equal(app.node('puzzle').hidden, true, 'Do not reveal an unfinished phrase');
+  assert.equal(app.node('puzzle').hidden, false, 'Keep words visible while paused');
   assert.equal(app.frames.size, 0);
   app.document.hidden = false;
   app.events.get('visibilitychange')();
