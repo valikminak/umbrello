@@ -3,7 +3,8 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
 const vm = require('node:vm');
-const { words, normalize, validateLesson, shuffledTokens } = require('../assets/js/listen-core.js');
+const core = require('../assets/js/listen-core.js');
+const { words, normalize, validateLesson, shuffledTokens } = core;
 
 const sample = () => ({ title: 'Example', video: 'https://media.example.com/counting-stars.mp4', segments: [
   { start: 0.131, end: 4.125, text: 'We learn and we listen.' },
@@ -96,18 +97,23 @@ test('catalog lessons have valid manual timings and Ukrainian translations for e
 // The mock advances media time without invoking its public setter. Recorded
 // assignments therefore detect accidental seeks or src reloads between phrases.
 // Browser playback/codec support is verified separately with the real video.
-async function controller({ lesson = sample(), storage = new Map(), storageBlocked = false } = {}) {
+// `random` fixes the word order. Layout is faked as three 100px words per 40px row.
+async function controller({ lesson = sample(), storage = new Map(), storageBlocked = false,
+  random, reducedMotion = false } = {}) {
   const nodes = new Map();
   const intervals = new Map();
   const frames = new Map();
   const timeouts = new Map();
   const events = new Map();
+  const vibrations = [];
   let timerId = 0;
   class Element {
     constructor() {
       this.children = []; this.hidden = false; this.disabled = false; this.checked = false;
-      this.textContent = ''; this.style = {}; this.listeners = new Map();
-      this.classList = { add() {}, remove() {}, toggle() {} };
+      this.textContent = ''; this.style = {}; this.listeners = new Map(); this.animations = [];
+      const classes = new Set();
+      this.classList = { add: name => classes.add(name), remove: name => classes.delete(name),
+        contains: name => classes.has(name) };
     }
     set innerHTML(html) {
       this.html = html;
@@ -120,7 +126,29 @@ async function controller({ lesson = sample(), storage = new Map(), storageBlock
     }
     get innerHTML() { return this.html || ''; }
     replaceChildren(...children) { this.children = children; }
-    append(...children) { this.children.push(...children); }
+    append(...children) {
+      for (const child of children) child.parentNode = this;
+      this.children.push(...children);
+    }
+    insertBefore(child, reference) {
+      if (child === reference) return child;
+      if (this.children.includes(child)) this.children.splice(this.children.indexOf(child), 1);
+      this.children.splice(reference ? this.children.indexOf(reference) : this.children.length, 0, child);
+      child.parentNode = this;
+      return child;
+    }
+    // A running glide is measured at its first frame, as if the next tap came at once.
+    getBoundingClientRect() {
+      const i = this.parentNode.children.indexOf(this);
+      const [x, y] = this.getAnimations().at(-1)?.keyframes[0].transform.match(/-?[\d.]+/g).map(Number) || [0, 0];
+      return { left: i % 3 * 100 + x, top: Math.floor(i / 3) * 40 + y };
+    }
+    animate(keyframes, options) {
+      const animation = { keyframes, options, playState: 'running', cancel() { this.playState = 'idle'; } };
+      this.animations.push(animation);
+      return animation;
+    }
+    getAnimations() { return this.animations.filter(animation => animation.playState === 'running'); }
     setAttribute(name, value) { this[name] = value; }
     addEventListener(name, callback) {
       const callbacks = this.listeners.get(name) || [];
@@ -170,17 +198,18 @@ async function controller({ lesson = sample(), storage = new Map(), storageBlock
     addEventListener: (name, callback) => { events.set(name, callback); }
   };
   const context = {
-    window: { addEventListener: (name, callback) => events.set(name, callback) },
+    window: { addEventListener: (name, callback) => events.set(name, callback),
+      matchMedia: query => ({ matches: reducedMotion && query === '(prefers-reduced-motion: reduce)' }) },
     document, URLSearchParams, URL, console,
     location: { search: '?lesson=example', origin: 'http://localhost', reload() {} },
     Profiles: { require: async () => ({ id: "me", name: "me" }), url: page => page + "?user=me", content: file => file },
-    ListenCore: require('../assets/js/listen-core.js'),
+    ListenCore: { ...core, shuffledTokens: items => core.shuffledTokens(items, random) },
     loadJSON: async file => file === 'listen.json' ? [{ id: 'example', file: 'example.json' }] : lesson,
     localStorage: {
       getItem(key) { if (storageBlocked) throw new Error('Storage unavailable'); return storage.get(key) ?? null; },
       setItem(key, value) { if (storageBlocked) throw new Error('Storage unavailable'); storage.set(key, value); }
     },
-    backTo() {}, esc: value => String(value), vibrate() {}, showError: (_, e) => { throw e; },
+    backTo() {}, esc: value => String(value), vibrate: type => vibrations.push(type), showError: (_, e) => { throw e; },
     setTimeout: callback => { const id = ++timerId; timeouts.set(id, callback); return id; },
     clearTimeout: id => timeouts.delete(id),
     setInterval: callback => { const id = ++timerId; intervals.set(id, callback); return id; },
@@ -220,8 +249,22 @@ async function controller({ lesson = sample(), storage = new Map(), storageBlock
   const solveFirst = () => ['we', 'learn', 'and', 'we', 'listen'].forEach(choose);
   const solveSecond = () => ['try', 'another', 'phrase'].forEach(choose);
   const flush = () => new Promise(resolve => setImmediate(resolve));
-  return { node, nodes, click, tick, choose, solveFirst, solveSecond,
-    video, document, events, intervals, frames, timeouts, flush };
+  const bank = () => node('wordBank').children;
+  const texts = () => bank().map(button => button.textContent);
+  // Placed words are disabled and lead the bank in sentence order.
+  const answer = () => {
+    const placed = bank().filter(button => button.disabled);
+    assert.deepEqual(bank().slice(0, placed.length), placed, 'Placed words lead the bank');
+    return placed.map(button => button.textContent).join(' ');
+  };
+  // Time passes: running glides finish and pending timeouts fire.
+  const elapse = () => {
+    for (const button of bank()) for (const animation of button.getAnimations()) animation.playState = 'finished';
+    const pending = [...timeouts.values()]; timeouts.clear();
+    for (const callback of pending) callback();
+  };
+  return { node, nodes, click, tick, choose, solveFirst, solveSecond, bank, texts, answer, elapse,
+    video, document, events, intervals, frames, timeouts, vibrations, flush };
 }
 
 test('translation toggle preserves answers, stays visible during Repeat and follows phrases', async () => {
@@ -242,7 +285,7 @@ test('translation toggle preserves answers, stays visible during Repeat and foll
   toggle.checked = false; toggle.emit('change');
   assert.equal(hint.hidden, true);
   assert.equal(hint.textContent, '');
-  assert.equal(app.node('answer').textContent, 'We');
+  assert.equal(app.answer(), 'We');
   assert.deepEqual(app.node('wordBank').children, bank);
   assert.equal(app.video.playCalls, 1);
   assert.deepEqual(app.video.seeks, []);
@@ -253,13 +296,18 @@ test('translation toggle preserves answers, stays visible during Repeat and foll
   app.tick(4.125);
   assert.equal(hint.textContent, lesson.segments[0].translationUk);
   ['learn', 'and', 'we', 'listen'].forEach(app.choose);
+  assert.equal(hint.textContent, lesson.segments[0].translationUk, 'The solved phrase keeps its hint');
+  app.elapse();
   assert.equal(hint.hidden, false);
   assert.equal(hint.textContent, lesson.segments[1].translationUk);
   app.tick(10.275);
   assert.equal(hint.textContent, lesson.segments[1].translationUk);
   app.solveSecond();
   app.video.ended = true; app.video.paused = true; app.video.emit('ended');
+  assert.equal(hint.textContent, lesson.segments[1].translationUk, 'The last phrase keeps its hint');
+  app.elapse();
   assert.equal(hint.hidden, true);
+  assert.equal(app.node('puzzle').hidden, true);
   app.click('playPhrase'); app.tick(4.125);
   assert.equal(hint.textContent, lesson.segments[0].translationUk);
 });
@@ -312,15 +360,17 @@ test('one source plays from zero through all gaps and the outro without seeking'
   assert.equal(app.video.paused, true);
   assert.equal(app.node('puzzle').hidden, false);
 
+  const shuffled = [...app.bank()];
   app.choose('listen');
-  assert.equal(app.node('answer').textContent, '', 'Wrong words never advance the answer');
+  assert.equal(app.answer(), '', 'Wrong words never advance the answer');
+  assert.deepEqual(app.bank(), shuffled, 'A wrong word stays where it is');
   assert.equal(app.video.playCalls, 1);
   app.solveFirst();
   // Deliberately no promise/timer flush: play must happen within the last click.
   assert.equal(app.video.playCalls, 2, 'The final correct word immediately resumes playback');
   assert.equal(app.video.paused, false);
   assert.equal(app.video.currentTime, 4.125, 'Continue where playback paused');
-  assert.equal(app.node('puzzle').hidden, false, 'The next phrase appears immediately');
+  assert.equal(app.node('puzzle').hidden, false, 'Words stay on screen between phrases');
   assert.equal(app.node('counter').textContent, '2 / 2');
   assert.equal(app.nodes.has('nextPhrase'), false, 'No extra Next button');
   app.tick(5);
@@ -355,10 +405,10 @@ test('case-different duplicate tokens are interchangeable and each is consumed o
   assert.ok(bank().some(button => button.textContent === 'We'), 'Keep written case on buttons');
   const lowercase = bank().find(button => button.textContent === 'we');
   lowercase.emit('click');
-  assert.equal(app.node('answer').textContent, 'We',
+  assert.equal(app.answer(), 'We',
     'A lowercase duplicate is valid while preserving the sentence capitalization');
   lowercase.emit('click');
-  assert.equal(words(app.node('answer').textContent).length, 1, 'Used tokens cannot be selected twice');
+  assert.equal(words(app.answer()).length, 1, 'Used tokens cannot be selected twice');
   app.choose('learn'); app.choose('and'); app.choose('We'); app.choose('listen');
   assert.equal(app.video.playCalls, 2);
   assert.equal(app.video.paused, false);
@@ -377,24 +427,26 @@ test('Play immediately shows words and translation; repeated replay and pause pr
   app.click('repeatPhrase');
   assert.deepEqual(app.node('wordBank').children, bank, 'Repeat before any answer keeps the word order');
   app.choose('we'); app.choose('learn');
+  const placed = [...app.node('wordBank').children];
   for (let repeat = 0; repeat < 2; repeat++) {
     app.tick(2);
     app.click('repeatPhrase');
-    assert.equal(app.node('answer').textContent, 'We learn');
+    assert.equal(app.answer(), 'We learn');
     assert.equal(app.node('puzzle').hidden, false);
     assert.equal(app.node('phraseTranslation').hidden, false);
-    assert.deepEqual(app.node('wordBank').children, bank);
-    assert.equal(bank.filter(button => button.disabled).length, 2);
+    assert.deepEqual(app.node('wordBank').children, placed);
   }
   app.click('playPhrase'); // Pause during replay.
   app.choose('and');
+  const paused = [...app.node('wordBank').children];
   app.click('playPhrase');
   app.tick(4.125);
-  assert.equal(app.node('answer').textContent, 'We learn and');
-  assert.deepEqual(app.node('wordBank').children, bank);
+  assert.equal(app.answer(), 'We learn and');
+  assert.deepEqual(app.node('wordBank').children, paused);
   app.choose('we'); app.choose('listen');
   assert.equal(app.node('counter').textContent, '2 / 2');
-  assert.equal(app.node('answer').textContent, '');
+  app.elapse();
+  assert.equal(app.answer(), '');
   assert.equal(app.node('puzzle').hidden, false);
 });
 
@@ -405,7 +457,8 @@ test('completing words during playback advances without seeking or cutting the a
   assert.equal(app.node('counter').textContent, '2 / 2');
   assert.equal(app.video.currentTime, 2);
   assert.equal(app.video.paused, false);
-  assert.equal(app.node('answer').textContent, '');
+  app.elapse();
+  assert.equal(app.answer(), '');
   assert.deepEqual(app.node('wordBank').children.map(button => button.textContent).sort(), ['Try', 'another', 'phrase']);
   app.tick(4.125);
   assert.equal(app.video.paused, false, 'An already completed phrase does not pause playback');
@@ -423,9 +476,9 @@ test('rejected Repeat playback keeps the partial answer for the next Play attemp
   app.click('repeatPhrase');
   await app.flush();
   assert.equal(app.node('puzzle').hidden, false);
-  assert.equal(app.node('answer').textContent, 'We learn');
+  assert.equal(app.answer(), 'We learn');
   app.click('playPhrase'); app.tick(4.125);
-  assert.equal(app.node('answer').textContent, 'We learn');
+  assert.equal(app.answer(), 'We learn');
   assert.deepEqual(app.node('wordBank').children, bank);
   ['and', 'we', 'listen'].forEach(app.choose);
   assert.equal(app.node('counter').textContent, '2 / 2');
@@ -435,29 +488,30 @@ test('Repeat rewinds without clearing selected words or rebuilding the word bank
   const app = await controller();
   app.click('playPhrase'); app.tick(4.125);
   app.choose('we'); app.choose('learn');
-  assert.equal(words(app.node('answer').textContent).length, 2);
+  assert.equal(words(app.answer()).length, 2);
   const bank = [...app.node('wordBank').children];
   const disabled = bank.map(button => button.disabled);
   app.click('repeatPhrase');
   assert.deepEqual(app.video.seeks, [0.131]);
-  assert.equal(app.node('answer').textContent, 'We learn');
+  assert.equal(app.answer(), 'We learn');
   assert.equal(app.node('puzzle').hidden, false);
   assert.deepEqual(app.node('wordBank').children, bank);
   assert.deepEqual(bank.map(button => button.disabled), disabled);
   app.video.emit('seeked');
   assert.equal(app.video.paused, false);
   app.tick(4.125);
-  assert.equal(app.node('answer').textContent, 'We learn');
+  assert.equal(app.answer(), 'We learn');
   assert.deepEqual(app.node('wordBank').children, bank);
   assert.deepEqual(bank.map(button => button.disabled), disabled);
   ['and', 'we', 'listen'].forEach(app.choose);
-  assert.equal(app.node('answer').textContent, '');
+  app.elapse();
+  assert.equal(app.answer(), '');
   assert.ok(app.node('wordBank').children.every(button => !button.disabled));
   app.tick(10.275);
   app.choose('try');
   app.click('repeatPhrase');
   assert.deepEqual(app.video.seeks, [0.131, 6.5]);
-  assert.equal(app.node('answer').textContent, 'Try');
+  assert.equal(app.answer(), 'Try');
   app.video.emit('seeked'); app.tick(10.275);
   ['another', 'phrase'].forEach(app.choose);
   assert.equal(app.video.paused, false);
@@ -525,4 +579,125 @@ test('a queued pause event from Repeat cannot cancel the newly resumed playback'
   app.tick(4.125);
   assert.equal(app.node('puzzle').hidden, false);
   assert.deepEqual(app.video.seeks, [0.131]);
+});
+
+// With random 0.5 the first phrase is shuffled to: We we learn listen and.
+test('each correct word takes the next slot while the other words keep their order', async () => {
+  const app = await controller({ random: () => 0.5 });
+  app.click('playPhrase'); app.tick(4.125);
+  assert.deepEqual(app.texts(), ['We', 'we', 'learn', 'listen', 'and']);
+  const lowercase = app.bank()[1];
+  lowercase.emit('click');
+  assert.equal(app.bank()[0], lowercase, 'The chosen duplicate becomes the first word');
+  assert.deepEqual(app.texts(), ['We', 'We', 'learn', 'listen', 'and'], 'A placed word takes the sentence spelling');
+  app.choose('learn');
+  assert.deepEqual(app.texts(), ['We', 'learn', 'We', 'listen', 'and']);
+  app.choose('and');
+  assert.deepEqual(app.texts(), ['We', 'learn', 'and', 'We', 'listen'], 'Skipped words shift along instead of swapping');
+  app.choose('we');
+  assert.deepEqual(app.texts(), ['We', 'learn', 'and', 'we', 'listen']);
+  assert.equal(app.answer(), 'We learn and we');
+});
+
+test('placed words ignore taps and a wrong word shakes in place', async () => {
+  const app = await controller({ random: () => 0.5 });
+  app.click('playPhrase'); app.tick(4.125);
+  const learn = app.bank()[2];
+  learn.emit('click');
+  assert.deepEqual(app.texts(), ['We', 'we', 'learn', 'listen', 'and'], 'A wrong word does not move');
+  assert.equal(learn.classList.contains('wrong'), true);
+  assert.deepEqual(app.vibrations, ['error']);
+  app.choose('we');
+  learn.emit('click');
+  assert.equal(app.bank()[1], learn);
+  assert.equal(learn.classList.contains('wrong'), false, 'A placed word drops its earlier error');
+  const order = [...app.bank()];
+  learn.emit('click'); app.bank()[0].emit('click');
+  assert.deepEqual(app.bank(), order, 'Tapping a placed word changes nothing');
+  assert.deepEqual(app.vibrations, ['error'], 'Tapping a placed word gives no feedback');
+  assert.equal(app.answer(), 'We learn');
+});
+
+// The first frame of each word's running glide, in bank order.
+const glides = app => app.bank().map(button => button.getAnimations().at(-1)?.keyframes[0].transform ?? null);
+
+test('a placed word and the words it pushes glide from where they were', async () => {
+  const app = await controller({ random: () => 0.5 });
+  app.click('playPhrase'); app.tick(4.125);
+  app.choose('we');
+  assert.deepEqual(glides(app), ['translate(100px, 0px)', 'translate(-100px, 0px)', null, null, null]);
+  app.elapse();
+  app.choose('learn');
+  app.elapse();
+  // Rows of three: "and" climbs from the second row while the unplaced "We" wraps down to it.
+  app.choose('and');
+  assert.deepEqual(app.texts(), ['We', 'learn', 'and', 'We', 'listen']);
+  assert.deepEqual(glides(app), [null, null, 'translate(-100px, 40px)', 'translate(200px, -40px)', 'translate(-100px, 0px)']);
+});
+
+test('a quick second tap continues each glide from where the word is on screen', async () => {
+  const app = await controller({ random: () => 0.5 });
+  app.click('playPhrase'); app.tick(4.125);
+  app.choose('we');
+  // No time passes: the unplaced "We" is still sliding right when "learn" pushes it further.
+  app.choose('learn');
+  assert.deepEqual(app.texts(), ['We', 'learn', 'We', 'listen', 'and']);
+  assert.deepEqual(glides(app), ['translate(100px, 0px)', 'translate(100px, 0px)', 'translate(-200px, 0px)', null, null]);
+});
+
+test('with reduced motion a correct word jumps to its slot without gliding', async () => {
+  const app = await controller({ random: () => 0.5, reducedMotion: true });
+  app.click('playPhrase'); app.tick(4.125);
+  app.choose('we'); app.choose('learn'); app.choose('and');
+  assert.deepEqual(app.texts(), ['We', 'learn', 'and', 'We', 'listen']);
+  assert.deepEqual(glides(app), [null, null, null, null, null]);
+});
+
+test('a solved phrase stays assembled for a moment while playback continues', async () => {
+  const lesson = sample();
+  lesson.segments[0].translationUk = 'Ми вчимося й слухаємо.';
+  lesson.segments[1].translationUk = 'Спробуй іншу фразу.';
+  const app = await controller({ lesson, storage: new Map([['listen.me.translationUk', 'true']]) });
+  app.click('playPhrase'); app.tick(4.125);
+  app.solveFirst();
+  assert.equal(app.video.paused, false, 'Playback resumes within the last tap');
+  assert.equal(app.bank().length, 5);
+  assert.equal(app.answer(), 'We learn and we listen');
+  const toggle = app.node('translationToggle');
+  toggle.checked = false; toggle.emit('change');
+  toggle.checked = true; toggle.emit('change');
+  assert.equal(app.node('phraseTranslation').textContent, 'Ми вчимося й слухаємо.', 'The hint matches the words on screen');
+  app.elapse();
+  assert.equal(app.answer(), '');
+  assert.deepEqual(app.texts().sort(), ['Try', 'another', 'phrase']);
+  assert.equal(app.node('phraseTranslation').textContent, 'Спробуй іншу фразу.');
+  assert.equal(app.video.playCalls, 2);
+  assert.deepEqual(app.video.seeks, []);
+});
+
+test('reaching the next pause shows its words at once', async () => {
+  const app = await controller();
+  app.click('playPhrase'); app.tick(4.125);
+  app.solveFirst();
+  app.tick(10.275);
+  assert.equal(app.video.paused, true);
+  assert.deepEqual(app.texts().sort(), ['Try', 'another', 'phrase']);
+  app.choose('try');
+  app.elapse();
+  assert.equal(app.answer(), 'Try', 'The skipped moment does not rebuild the bank later');
+});
+
+test('the last phrase stays briefly after the video ends and Start again is not undone by it', async () => {
+  const app = await controller();
+  app.click('playPhrase'); app.tick(4.125); app.solveFirst();
+  app.tick(10.275);
+  app.video.ended = true;
+  app.solveSecond();
+  assert.equal(app.node('listenStatus').textContent, 'Complete ✓');
+  assert.equal(app.answer(), 'Try another phrase');
+  app.click('playPhrase');
+  assert.deepEqual(app.video.seeks, [0]);
+  app.choose('we');
+  app.elapse();
+  assert.equal(app.answer(), 'We', 'The old moment cannot clear the restarted phrase');
 });

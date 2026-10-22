@@ -7,12 +7,12 @@
   const lessonListUrl = Profiles.url("listen.html");
   const menuUrl = Profiles.url("index.html");
   backTo(lessonId ? lessonListUrl : menuUrl);
-  let lesson, video, ui, index = 0, phase = "ready", chosen = [], frame = 0, playRequest = 0;
+  let lesson, video, ui, index = 0, phase = "ready", shown = null, placed = 0, solvedTimer = 0, frame = 0, playRequest = 0;
   const translationKey = `listen.${profile.id}.translationUk`;
+  const reduceMotion = window.matchMedia?.("(prefers-reduced-motion: reduce)");
 
   function updateTranslation() {
-    const text = !ui.puzzle.hidden && ui.translationToggle.checked
-      ? lesson.segments[index]?.translationUk : "";
+    const text = shown && ui.translationToggle.checked ? shown.translationUk : "";
     ui.translation.textContent = text || "";
     ui.translation.hidden = !text;
   }
@@ -37,8 +37,10 @@
   }
 
   function clearAnswer() {
-    chosen = [];
-    ui.answer.textContent = "";
+    clearTimeout(solvedTimer);
+    solvedTimer = 0;
+    shown = null;
+    placed = 0;
     ui.bank.replaceChildren();
     ui.translation.textContent = "";
     ui.translation.hidden = true;
@@ -48,14 +50,35 @@
   function finish() {
     phase = "complete";
     stopFrames();
-    clearAnswer();
+    if (!solvedTimer) clearAnswer(); // A just-solved last phrase stays until its timer clears it.
     controls();
     message("Complete ✓");
+  }
+
+  // FLIP: measure the words, move the chosen one to the next slot, then glide every shifted word from its old spot.
+  function place(button, word) {
+    const buttons = [...ui.bank.children];
+    const before = buttons.map(item => item.getBoundingClientRect());
+    // A glide still in progress restarts from where the word is on screen now.
+    buttons.forEach(item => item.getAnimations?.().forEach(animation => animation.cancel()));
+    button.textContent = word;
+    button.classList.remove("wrong");
+    button.disabled = true;
+    ui.bank.insertBefore(button, ui.bank.children[placed]);
+    placed++;
+    if (reduceMotion?.matches) return;
+    buttons.forEach((item, i) => {
+      const after = item.getBoundingClientRect();
+      const x = before[i].left - after.left, y = before[i].top - after.top;
+      if (x || y) item.animate?.([{ transform: `translate(${x}px, ${y}px)` }, { transform: "none" }],
+        { duration: 300, easing: "cubic-bezier(.2, .8, .2, 1)" });
+    });
   }
 
   function showWords() {
     if (!ui.puzzle.hidden || index >= lesson.segments.length) return;
     const segment = lesson.segments[index];
+    shown = segment;
     ListenCore.shuffledTokens(segment.words).forEach(token => {
       const button = document.createElement("button");
       button.type = "button";
@@ -63,20 +86,23 @@
       button.textContent = token.word;
       button.onclick = () => {
         if (!["playing", "paused", "answer"].includes(phase) || button.disabled) return;
-        if (ListenCore.normalize(token.word) !== ListenCore.normalize(segment.words[chosen.length])) {
+        if (ListenCore.normalize(token.word) !== ListenCore.normalize(segment.words[placed])) {
           button.classList.remove("wrong");
           void button.offsetWidth;
           button.classList.add("wrong");
           vibrate("error");
           return;
         }
-        button.disabled = true;
-        chosen.push(segment.words[chosen.length]);
-        ui.answer.textContent = chosen.join(" ");
-        if (chosen.length === segment.words.length) {
+        // The sentence's own spelling, e.g. "We" when its lowercase duplicate was tapped.
+        place(button, segment.words[placed]);
+        if (placed === segment.words.length) {
           vibrate("success");
           index++;
-          clearAnswer();
+          // The assembled phrase stays for a moment, then the next words replace it.
+          solvedTimer = setTimeout(() => {
+            clearAnswer();
+            showWords();
+          }, 1000);
           // Resume inside this click: no delay, reload, or seek between phrases.
           if (video.ended && index === lesson.segments.length) finish();
           else resume();
@@ -92,6 +118,7 @@
     phase = "answer";
     stopFrames();
     video.pause();
+    if (solvedTimer) clearAnswer(); // The next phrase is due now, so its words cannot wait.
     showWords();
     controls();
     message();
@@ -160,7 +187,6 @@
       </label>
       <section id="puzzle" aria-label="Arrange the words" hidden>
         <p class="listen-translation" id="phraseTranslation" lang="uk" aria-live="polite" hidden></p>
-        <div class="listen-answer" id="answer" aria-live="polite"></div>
         <div class="listen-words" id="wordBank"></div>
       </section>
       <div class="listen-actions">
@@ -171,7 +197,7 @@
     const el = id => document.getElementById(id);
     video = el("lessonVideo");
     ui = { counter: el("counter"), play: el("playPhrase"), repeat: el("repeatPhrase"),
-      puzzle: el("puzzle"), answer: el("answer"), bank: el("wordBank"), status: el("listenStatus"),
+      puzzle: el("puzzle"), bank: el("wordBank"), status: el("listenStatus"),
       translationToggle: el("translationToggle"), translation: el("phraseTranslation") };
     try { ui.translationToggle.checked = localStorage.getItem(translationKey) === "true"; } catch (_) {}
     ui.translationToggle.onchange = () => {
