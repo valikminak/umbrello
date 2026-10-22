@@ -3,6 +3,7 @@
   const host = document.getElementById("app");
   const id = new URLSearchParams(location.search).get("user");
   try {
+    if (!await Profiles.ensureAccess(host)) return;
     if (!id) {
       if (tg?.BackButton) tg.BackButton.hide();
       const profiles = await Profiles.list();
@@ -16,7 +17,7 @@
     }
     const profile = await Profiles.require(host);
     if (!profile) return;
-    backTo("index.html?v=7");
+    backTo("index.html?v=10");
     host.innerHTML = `<h1>Hi, ${esc(profile.name)}!</h1><p class="sub">What would you like to practise today?</p>
       <div class="menu">${[
         ["listen", "🎧", "Listen", "Listen and put the words in order"],

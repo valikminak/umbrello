@@ -34,7 +34,12 @@ async function sendReport(title, text, statusEl, retryEl) {
       body: JSON.stringify({ initData: tg ? tg.initData : "", title,
         text: (window.Profiles?.current ? `Учень: ${Profiles.current.name}\n\n` : "") + text })
     });
-    if (!res.ok) throw new Error(res.status);
+    if (!res.ok) {
+      let data;
+      try { data = await res.json(); } catch (_) {}
+      if (window.Profiles?.refuse(data?.error)) { if (statusEl) statusEl.textContent = ""; return false; }
+      throw new Error(res.status);
+    }
     if (statusEl) { statusEl.className = "status ok"; statusEl.textContent = "Result sent to teacher ✓"; }
     return true;
   } catch (e) {

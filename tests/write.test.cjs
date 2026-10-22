@@ -6,7 +6,7 @@ const source = fs.readFileSync(require('node:path').join(__dirname, '../assets/j
 const passage = { sentences: ['Учора я позичив книжку.', 'Я вже прочитав її.', 'Завтра поверну її другу.', 'Він буде радий.'] };
 const feedback = { summary: 'Good translation.', errors: [], targetFeedback: 'You used the requested construction.', modelTranslation: 'I borrowed a book yesterday. I have already read it. I will return it to my friend tomorrow.' };
 async function page({ authenticated = true } = {}) {
-  const nodes = new Map(), calls = [], responses = [];
+  const nodes = new Map(), calls = [], responses = [], refused = [];
   function node(id) {
     if (!nodes.has(id)) nodes.set(id, {
       value: '', hidden: ['exercise', 'feedback', 'writeContent'].includes(id), disabled: false, innerHTML: '', textContent: '',
@@ -19,7 +19,8 @@ async function page({ authenticated = true } = {}) {
   const forbiddenStorage = new Proxy({}, { get() { throw new Error('Write must not use storage'); } });
   const context = vm.createContext({
     document: { getElementById: node }, URL, AbortController, setTimeout, clearTimeout,
-    Profiles: { require: async () => ({ id: 'me' }), url: page => `${page}?user=me` }, backTo() {},
+    Profiles: { require: async () => ({ id: 'me' }), url: page => `${page}?user=me`,
+      refuse: code => /^(?:app|books|grammar)_(?:forbidden|not_configured)$|^unauthorized$/.test(code) && refused.push(code) > 0 }, backTo() {},
     tg: authenticated ? { initData: 'test-init-data' } : null, WORKER_URL: 'https://worker.test/',
     localStorage: forbiddenStorage, sessionStorage: forbiddenStorage,
     esc: value => String(value).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c])),
@@ -35,7 +36,7 @@ async function page({ authenticated = true } = {}) {
   const generate = async () => {
     node('focus').value = 'borrow and lend'; responses.push(Response.json(passage)); await submit('generateForm');
   };
-  return { node, calls, responses, submit, generate };
+  return { node, calls, responses, submit, generate, refused };
 }
 
 test('Write starts blank, uses no persistent storage, and requires Telegram before calling Worker', async () => {
@@ -208,4 +209,22 @@ test('a new exercise and a new page discard previous answers and feedback', asyn
   assert.equal(fresh.node('focus').value, '');
   assert.equal(fresh.node('translation').value, '');
   assert.equal(fresh.calls.length, 0);
+});
+
+test('a refused account is locked behind the umbrella instead of seeing an error or its ID', async () => {
+  for (const [status, error] of [[403, 'app_forbidden'], [503, 'app_not_configured'], [403, 'unauthorized']]) {
+    const app = await page();
+    app.node('focus').value = 'articles';
+    app.responses.push(Response.json({ error, message: 'Refused by the owner', userId: 555123 }, { status }));
+    await app.submit('generateForm');
+    assert.deepEqual(app.refused, [error]);
+    assert.doesNotMatch(app.node('writeStatus').textContent, /555123|Refused by the owner/);
+    assert.equal(app.calls.length, 1);
+  }
+  const app = await page();
+  app.node('focus').value = 'articles';
+  app.responses.push(Response.json({ error: 'provider_auth', message: 'Key' }, { status: 502 }));
+  await app.submit('generateForm');
+  assert.deepEqual(app.refused, []);
+  assert.match(app.node('writeStatus').textContent, /provider rejected access/);
 });

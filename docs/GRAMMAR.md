@@ -100,13 +100,14 @@ client JavaScript, the unit JSON or a Git-tracked file.
 Keep `BOT_TOKEN`, `CHAT_ID`, `OPENAI_API_KEY` and `OPENAI_MODEL` unchanged. Grammar
 writing feedback reuses the existing model. Other Grammar activities use no AI.
 
-To find your Telegram ID without using another bot: after publishing the new
-page and Worker, open **Grammar → Open unit** inside your Telegram mini app.
-When access is not configured, the connection help displays **Your Telegram
-account ID**. Copy that number into `ALLOWED_USER_IDS` and save/deploy
-the updated Worker configuration. If the browser has no Telegram launch data,
-close it and reopen through the bot. A profile label such as `?user=me` is not an
-authentication credential and does not grant access.
+To find a new account's Telegram ID: open the Mini App after publishing the
+frontend and Worker. A refused account sees only an animated umbrella, with no
+text, ID or buttons, and the owner receives a bot notification with the name,
+@username and ID. Add that number to `ALLOWED_USER_IDS`, save the Worker
+configuration, then close and reopen the Mini App. The same umbrella locks the
+Grammar page when the Worker answers `grammar_forbidden`,
+`grammar_not_configured` or `unauthorized`. A profile label such as
+`?user=me` is not an authentication credential and does not grant access.
 
 An empty or malformed allowlist blocks authenticated Worker requests. Valid
 Telegram users who are not listed cannot retrieve a unit, audio or AI feedback.
@@ -140,21 +141,6 @@ Local regression checks:
 ```sh
 node --test tests/grammar-worker.test.cjs tests/worker.test.cjs tests/grammar.test.cjs
 ```
-
-Optional browser checks, after building the private package, with Playwright and
-Chrome installed:
-
-```sh
-node tools/check-grammar-browser.cjs
-# If Playwright is provided by another runtime:
-node tools/check-grammar-browser.cjs --playwright-path /absolute/path/to/playwright
-```
-
-The browser check serves the local page through intercepted requests, mocks
-Telegram and all API responses, and decodes the local MP3 recordings. It makes
-no real storage or AI calls. It checks the full unit flow, failure recovery,
-multiple correct answers, background feedback, audio races, narrow layouts and
-clearing work on reload. Screenshots are written into a temporary directory.
 
 These tests mock storage and AI. Passing them does not confirm that the actual
 Supabase files, secrets or deployed Worker are configured; the live checks above

@@ -10,7 +10,6 @@
   let view = "library", library = null, reader = null, ticket = 0, disposed = false;
 
   window.addEventListener("pagehide", () => { disposed = true; reader?.destroy(); controllers.forEach(controller => controller.abort()); });
-  window.addEventListener("pageshow", event => { if (event.persisted) location.reload(); });
   // Telegram Back: reader → library → menu. Profile choice is only a label, not access.
   if (tg?.BackButton) {
     tg.BackButton.show();
@@ -18,7 +17,7 @@
   }
 
   class BooksError extends Error {
-    constructor(message, code = "", userId = null) { super(message); this.code = code; this.userId = userId; }
+    constructor(message, code = "") { super(message); this.code = code; }
   }
 
   async function request(action, payload) {
@@ -36,11 +35,10 @@
       try { data = await response.json(); } catch (_) {}
       if (!response.ok) {
         const code = typeof data?.error === "string" ? data.error : "";
+        if (Profiles.refuse(code)) throw new BooksError("Umbrello is closed for this account.", code);
         const reason = typeof data?.message === "string" && data.message.trim() ? data.message.trim() : "";
-        // Shown only when the Worker verified the Telegram signature and returned this account's ID.
-        const userId = Number.isSafeInteger(data?.userId) && data.userId > 0 ? data.userId : null;
         const upstream = Number.isInteger(data?.providerStatus) ? `; HTTP ${data.providerStatus}` : "";
-        if (code) throw new BooksError(`${reason || "The request failed. Please try again."} [${code}${upstream}]`, code, userId);
+        if (code) throw new BooksError(`${reason || "The request failed. Please try again."} [${code}${upstream}]`, code);
         throw new BooksError(`The Worker did not return a readable answer. Check its deployment and logs in Cloudflare. [HTTP ${response.status}]`);
       }
       if (data === null) throw new BooksError("The server returned an unreadable answer. Please try again.");
@@ -110,54 +108,16 @@
   /* ---------- errors ---------- */
 
   function renderError(error, retry, inReader = false) {
-    const titles = {
-      books_forbidden: "Books are not enabled for this account",
-      books_not_configured: "Books are not set up yet",
-      no_telegram: "Open in Telegram",
-    };
+    // Access refusals never get here: request() has already put the umbrella up.
+    const titles = { no_telegram: "Open in Telegram" };
     host.innerHTML = `<div class="books-error" role="alert">
       ${inReader ? `<div class="reader-bar"><button class="reader-action" type="button" id="errorLibrary">← Library</button></div>` : ""}
-      <h2 id="errorTitle"></h2><p class="sub" id="errorMessage"></p><div id="errorExtra"></div>
+      <h2 id="errorTitle"></h2><p class="sub" id="errorMessage"></p>
       ${error.code === "no_telegram" ? "" : `<button class="btn" type="button" id="errorRetry">Try again</button>`}</div>`;
     host.querySelector("#errorTitle").textContent = titles[error.code] || "Could not load";
     host.querySelector("#errorMessage").textContent = error.message;
-    if (error.userId) host.querySelector("#errorExtra").append(userIdCard(error.userId));
     host.querySelector("#errorRetry")?.addEventListener("click", retry);
     host.querySelector("#errorLibrary")?.addEventListener("click", showLibrary);
-  }
-
-  function userIdCard(userId) {
-    const card = el("div", "user-id-card");
-    const value = el("output", "user-id", String(userId));
-    value.id = "telegramUserId";
-    const copy = el("button", "btn ghost", "Copy ID");
-    copy.type = "button"; copy.id = "copyUserId";
-    const status = el("p", "status", "");
-    status.setAttribute("role", "status");
-    copy.onclick = () => copyText(String(userId), value, status);
-    card.append(el("p", "user-id-label", "Your Telegram user ID"), value, copy, status,
-      el("p", "books-note", "Send this ID to the app owner to enable Books for your account."));
-    return card;
-  }
-
-  async function copyText(value, source, status) {
-    try {
-      await navigator.clipboard.writeText(value);
-      status.className = "status ok"; status.textContent = "Copied.";
-      return;
-    } catch (_) {}
-    const area = el("textarea");
-    area.value = value; area.readOnly = true; area.className = "copy-buffer";
-    document.body.append(area);
-    area.select();
-    let copied = false;
-    try { copied = document.execCommand("copy"); } catch (_) {}
-    area.remove();
-    if (copied) { status.className = "status ok"; status.textContent = "Copied."; return; }
-    const range = document.createRange();
-    range.selectNodeContents(source);
-    getSelection().removeAllRanges(); getSelection().addRange(range);
-    status.className = "status bad"; status.textContent = "Could not copy automatically. The number is selected — copy it manually.";
   }
 
   /* ---------- reader ---------- */

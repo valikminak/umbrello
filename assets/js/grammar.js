@@ -46,6 +46,7 @@
         let details;
         try { details = await response.json(); } catch (_) {}
         const code = typeof details?.error === "string" ? details.error : "";
+        if (Profiles.refuse(code)) throw new Error("Umbrello is closed for this account.");
         const reason = typeof details?.message === "string" && details.message.trim() ? details.message.trim() : "";
         const upstream = Number.isInteger(details?.providerStatus) ? `; HTTP ${details.providerStatus}` : "";
         if (code) throw new Error(`${reason || "The request failed. Please try again."} [${code}${upstream}]`);

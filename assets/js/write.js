@@ -73,6 +73,7 @@
       if (!response.ok) {
         let details;
         try { details = await response.json(); } catch (_) { /* Older Workers may return plain text. */ }
+        if (Profiles.refuse(details?.error)) throw new Error("Umbrello is closed for this account.");
         const code = details && typeof details.error === "string" && Object.hasOwn(errorMessages, details.error)
           ? details.error : null;
         if (code) {
