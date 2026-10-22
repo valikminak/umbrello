@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' file:; style-src 'unsafe-inline'; connect-src 'none'; img-src 'none'; base-uri 'none'; form-action 'none'">
+<title>EPUB → JSON · Umbrello</title>
+<style>
+:root{color-scheme:light dark;--bg:#f6f6f4;--fg:#1c1c1c;--mut:#6b6b6b;--card:#fff;--line:#d8d8d4;--acc:#1f5eff;--bad:#b42318}
+@media(prefers-color-scheme:dark){:root{--bg:#151515;--fg:#eee;--mut:#a5a5a5;--card:#202020;--line:#3b3b3b;--acc:#6b95ff;--bad:#ff958b}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.5 system-ui,sans-serif}
+main{max-width:960px;margin:auto;padding:32px 20px 60px;display:grid;gap:20px}
+h1{font-size:28px;margin:0 0 6px}h2{font-size:19px;margin:0 0 12px}p{margin:0 0 12px}
+.muted{color:var(--mut)}.small{font-size:13px}.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:20px}
+.row{display:flex;gap:12px;flex-wrap:wrap;align-items:center}.stack{display:grid;gap:12px}
+button,input,select,textarea{font:inherit;color:inherit}
+button,.file-button{display:inline-block;padding:10px 16px;border:1px solid var(--line);border-radius:8px;background:var(--card);cursor:pointer;min-height:44px}
+button.primary,.file-button{background:var(--acc);border-color:var(--acc);color:#fff;font-weight:600}
+button:disabled{opacity:.45;cursor:default}
+:focus-visible{outline:3px solid var(--acc);outline-offset:3px}
+.file-button:focus-within{outline:3px solid var(--acc);outline-offset:3px}
+.file-button input{position:absolute;width:1px;height:1px;opacity:0;overflow:hidden}
+select{width:100%;padding:9px;border:1px solid var(--line);border-radius:6px;background:var(--card);min-width:0}
+label.field{display:grid;gap:6px;font-size:14px;min-width:0}
+.selectors{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+textarea{display:block;width:100%;min-height:340px;resize:vertical;padding:14px;background:var(--bg);border:1px solid var(--line);border-radius:8px;font:13px/1.55 ui-monospace,Menlo,monospace;tab-size:2}
+progress{width:100%;height:8px;accent-color:var(--acc)}[hidden]{display:none!important}
+#status{margin:12px 0 0;overflow-wrap:anywhere}#status.error{color:var(--bad)}#fileName{overflow-wrap:anywhere}
+dl{display:flex;flex-wrap:wrap;gap:16px 28px;margin:0 0 16px}dl div{display:grid;gap:2px}dt{color:var(--mut);font-size:13px}dd{font-size:22px;font-weight:600;margin:0}
+#bookTitle{overflow-wrap:anywhere}#bookMeta{overflow-wrap:anywhere}code{font:13px ui-monospace,Menlo,monospace;overflow-wrap:anywhere}
+details summary{cursor:pointer}details ul{padding-left:22px;margin-bottom:0}.actions{margin-top:16px}
+#copyStatus{font-size:13px;color:var(--mut)}
+@media(max-width:600px){main{padding:20px 12px}.card{padding:16px}.selectors{grid-template-columns:1fr}}
+</style>
+<script src="vendor/jszip-3.10.1.min.js" defer></script>
+<script src="vendor/sbd-1.0.19.min.js" defer></script>
+<script src="book-preparer-core.js" defer></script>
+<script src="book-preparer.js" defer></script>
+</head>
+<body>
+<main>
+  <header>
+    <h1>EPUB → JSON</h1>
+    <p class="muted">Подготовка английской книги для Umbrello. Выбери EPUB с компьютера — обработка происходит здесь, без загрузки файла на сервер.</p>
+  </header>
+  <section class="card" aria-label="Открыть книгу">
+    <div class="row">
+      <label class="file-button">Открыть EPUB<input id="file" type="file" accept=".epub,application/epub+zip"></label>
+      <span id="fileName" class="muted">Файл не выбран</span>
+    </div>
+    <p id="status" role="status" aria-live="polite">Сначала преобразуй книгу, затем скачай JSON или скопируй отдельный абзац.</p>
+    <progress id="progress" hidden aria-label="Обработка книги"></progress>
+  </section>
+  <section id="result" class="card" hidden>
+    <h2 id="bookTitle"></h2>
+    <p id="bookMeta" class="muted"></p>
+    <dl id="stats"></dl>
+    <p class="small muted">bookId: <code id="bookId"></code></p>
+    <div class="row">
+      <button id="download" class="primary" type="button">Скачать JSON</button>
+      <span id="fileSize" class="small muted"></span>
+    </div>
+    <details id="warnings" class="small" hidden>
+      <summary id="warningsTitle"></summary>
+      <ul id="warningsList"></ul>
+    </details>
+  </section>
+  <section id="sample" class="card stack" hidden>
+    <div>
+      <h2>Фрагмент JSON</h2>
+      <p class="muted small">Выбери абзац, чтобы скопировать его для обсуждения. Скачиваемый файл выше содержит книгу целиком.</p>
+    </div>
+    <div class="selectors">
+      <label class="field">Глава / раздел<select id="chapter"></select></label>
+      <label class="field">Абзац<select id="paragraph"></select></label>
+    </div>
+    <textarea id="jsonSample" readonly spellcheck="false" aria-label="JSON выбранного абзаца"></textarea>
+    <div class="row">
+      <button id="copy" type="button">Скопировать фрагмент</button>
+      <span id="copyStatus" role="status"></span>
+    </div>
+  </section>
+  <details class="card small">
+    <summary>Что находится в JSON</summary>
+    <ul>
+      <li>Главы, абзацы, предложения и их полный текст.</li>
+      <li>У каждого слова: уникальный <code>id</code>, общий <code>key</code> и границы <code>start</code> / <code>end</code> внутри предложения.</li>
+      <li><code>text.slice(start, end)</code> даёт исходное слово. Конец диапазона не включается; смещения — UTF-16, как в JavaScript.</li>
+      <li>Регистр, варианты апострофов и дефисов нормализуются только в <code>key</code>. Разные формы слова не объединяются.</li>
+      <li>Формат <code>2</code>, без готовых страниц по 300 слов. Вывод этого формата в Books будет следующим этапом.</li>
+    </ul>
+  </details>
+  <noscript><p>Для обработки книги нужен включённый JavaScript.</p></noscript>
+</main>
+</body>
+</html>

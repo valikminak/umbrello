@@ -7,20 +7,15 @@
   const core = BooksCore;
   const menuUrl = Profiles.url("index.html");
   const controllers = new Set();
-  let view = "library", library = null, book = null, index = 0, ticket = 0, disposed = false;
+  let view = "library", library = null, reader = null, ticket = 0, disposed = false;
 
-  window.addEventListener("pagehide", () => { disposed = true; controllers.forEach(controller => controller.abort()); });
+  window.addEventListener("pagehide", () => { disposed = true; reader?.destroy(); controllers.forEach(controller => controller.abort()); });
   window.addEventListener("pageshow", event => { if (event.persisted) location.reload(); });
   // Telegram Back: reader → library → menu. Profile choice is only a label, not access.
   if (tg?.BackButton) {
     tg.BackButton.show();
     tg.BackButton.onClick(() => { if (view === "library") location.href = menuUrl; else showLibrary(); });
   }
-  document.addEventListener("keydown", event => {
-    if (view !== "reader" || !book || event.altKey || event.ctrlKey || event.metaKey || /^(INPUT|TEXTAREA|SELECT)$/.test(event.target.tagName)) return;
-    if (event.key === "ArrowLeft") go(index - 1);
-    if (event.key === "ArrowRight") go(index + 1);
-  });
 
   class BooksError extends Error {
     constructor(message, code = "", userId = null) { super(message); this.code = code; this.userId = userId; }
@@ -70,7 +65,8 @@
 
   function showLibrary() {
     ticket++;
-    view = "library"; book = null;
+    view = "library";
+    reader?.destroy(); reader = null;
     setReading(false);
     if (library) renderLibrary(); else loadLibrary();
     window.scrollTo(0, 0);
@@ -91,7 +87,7 @@
 
   function renderLibrary() {
     host.innerHTML = `<header class="books-hero"><h1>Books</h1>
-      <p class="sub">Choose a book. Its pages are prepared in advance.</p></header>
+      <p class="sub">Choose a book to start reading.</p></header>
       <ul class="book-list" id="bookList"></ul>`;
     const list = host.querySelector("#bookList");
     if (!library.length) {
@@ -168,7 +164,8 @@
 
   async function openBook(entry) {
     const current = ++ticket;
-    view = "loading"; book = null;
+    view = "loading";
+    reader?.destroy(); reader = null;
     setReading(true);
     host.innerHTML = `<div class="reader-bar"><button class="reader-action" type="button" id="loadingLibrary">← Library</button></div>
       <p class="sub" role="status" id="loadingStatus"></p>`;
@@ -178,88 +175,14 @@
     try {
       const loaded = core.validateBook(await request("book", { bookId: entry.bookId }), entry.bookId);
       if (disposed || current !== ticket) return;
-      book = loaded; view = "reader";
-      renderReader();
-      go(0);
+      view = "reader";
+      reader = new BookReader({ host, book: loaded, telegram: tg, onBack: showLibrary });
     } catch (error) {
-      if (!disposed && current === ticket) renderError(error, () => openBook(entry), true);
+      if (!disposed && current === ticket) {
+        reader?.destroy(); reader = null;
+        renderError(error, () => openBook(entry), true);
+      }
     }
-  }
-
-  function renderReader() {
-    host.innerHTML = `<div class="reader">
-      <div class="reader-bar">
-        <button class="reader-action" type="button" id="toLibrary">← Library</button>
-        <button class="reader-action" type="button" id="tocToggle" aria-expanded="false" aria-controls="toc">Contents</button>
-      </div>
-      <header class="reader-head"><p class="reader-book" id="bookTitle"></p><p class="reader-chapter" id="chapterTitle"></p></header>
-      <nav class="toc" id="toc" aria-label="Contents" hidden><h2>Contents</h2><ol id="tocList"></ol></nav>
-      <article class="reader-page" id="readerPage" lang="en"></article>
-      <nav class="pager" id="pager" aria-label="Pages">
-        <button class="pager-btn" type="button" id="prevPage">Previous</button>
-        <span class="pager-number" id="pageNumber" aria-live="polite"></span>
-        <button class="pager-btn" type="button" id="nextPage">Next</button>
-      </nav></div>`;
-    host.querySelector("#bookTitle").textContent = book.author ? `${book.title} · ${book.author}` : book.title;
-    host.querySelector("#toLibrary").onclick = showLibrary;
-    host.querySelector("#tocToggle").onclick = () => toggleContents();
-    host.querySelector("#prevPage").onclick = () => go(index - 1);
-    host.querySelector("#nextPage").onclick = () => go(index + 1);
-    const list = host.querySelector("#tocList");
-    core.contents(book).forEach(entry => {
-      const button = el("button", "toc-item");
-      button.type = "button";
-      button.dataset.chapterId = entry.id;
-      button.append(el("span", "toc-title", entry.title || "Untitled section"), el("span", "toc-page", `p. ${entry.page + 1}`));
-      button.onclick = () => go(entry.page);
-      const item = el("li");
-      item.append(button);
-      list.append(item);
-    });
-  }
-
-  function toggleContents(open = host.querySelector("#toc").hidden) {
-    const toggle = host.querySelector("#tocToggle");
-    host.querySelector("#toc").hidden = !open;
-    host.querySelector("#readerPage").hidden = open;
-    host.querySelector("#pager").hidden = open;
-    toggle.setAttribute("aria-expanded", String(open));
-    toggle.textContent = open ? "Close contents" : "Contents";
-    if (open) {
-      host.querySelector(`.toc-item[aria-current="true"]`)?.scrollIntoView({ block: "center" });
-    }
-  }
-
-  function go(target) {
-    if (!book || target < 0 || target >= book.pages.length) return;
-    index = target;
-    const model = core.pageModel(book, index);
-    const article = host.querySelector("#readerPage");
-    article.replaceChildren();
-    article.dataset.page = String(model.page.number);
-    article.dataset.chapterId = model.chapter.id;
-    if (model.startsChapter && model.chapter.title) article.append(el("h2", "chapter-title", model.chapter.title));
-    model.blocks.forEach(block => {
-      const node = el(block.kind === "heading" ? "h3" : "p", block.continued ? "continued" : "");
-      node.dataset.paragraphId = block.id;
-      block.sentences.forEach((sentence, position) => {
-        if (position) node.append(" ");
-        const span = el("span", "sentence", sentence.text);
-        span.dataset.sentenceId = sentence.id;
-        node.append(span);
-      });
-      article.append(node);
-    });
-    host.querySelector("#chapterTitle").textContent = model.chapter.title || "";
-    host.querySelector("#pageNumber").textContent = `Page ${model.page.number} of ${book.pages.length}`;
-    host.querySelector("#prevPage").disabled = index === 0;
-    host.querySelector("#nextPage").disabled = index === book.pages.length - 1;
-    host.querySelectorAll(".toc-item").forEach(item => {
-      if (item.dataset.chapterId === model.chapter.id) item.setAttribute("aria-current", "true");
-      else item.removeAttribute("aria-current");
-    });
-    if (!host.querySelector("#toc").hidden) toggleContents(false);
-    window.scrollTo(0, 0);
   }
 
   showLibrary();

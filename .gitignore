@@ -12,4 +12,6 @@
 .venv/
 /output/
 *.epub
+# Local sample supplied for developing the reader; upload to private Storage.
+/1- The Woman in the Dunes.json
 __pycache__/

@@ -19,17 +19,18 @@
     });
   }
 
-  /* book.json from tools/prepare-book.py (formatVersion 1). Returns the book with
-     lookup tables; pages must reference existing sentences of their own chapter. */
+  /* Both converters are supported. Version 2 already contains word offsets;
+     the reader uses chapters as its source, never the legacy fixed-size pages. */
   function validateBook(data, expectedId) {
     const fail = reason => { throw new Error(`The book file is invalid (${reason}).`); };
-    if (!data || typeof data !== "object" || data.formatVersion !== 1) fail("format version");
+    if (!data || typeof data !== "object" || ![1, 2].includes(data.formatVersion)) fail("format version");
     if (!BOOK_ID.test(data.bookId) || (expectedId !== undefined && data.bookId !== expectedId)) fail("bookId");
     if (!string(data.title, 300) || !(data.author === null || string(data.author, 300))) fail("title or author");
     if (!Array.isArray(data.chapters) || !data.chapters.length) fail("chapters");
-    if (!Array.isArray(data.pages) || !data.pages.length) fail("pages");
+    if (data.formatVersion === 1 && (!Array.isArray(data.pages) || !data.pages.length)) fail("pages");
+    if (data.formatVersion === 2 && data.processing?.offsetUnit !== "utf16") fail("word offsets");
 
-    const ids = new Set(), chapters = new Map(), sentences = new Map();
+    const ids = new Set(), chapters = new Map(), sentences = new Map(), words = new Map();
     const unique = id => { if (typeof id !== "string" || !PART_ID.test(id) || ids.has(id)) fail(`id ${String(id).slice(0, 40)}`); ids.add(id); return id; };
     data.chapters.forEach(chapter => {
       if (!chapter || !(chapter.title === null || string(chapter.title, 1000)) || !Array.isArray(chapter.paragraphs)) fail("chapter");
@@ -37,16 +38,29 @@
       chapter.paragraphs.forEach(paragraph => {
         if (!paragraph || !Array.isArray(paragraph.sentences) || !paragraph.sentences.length ||
             !(paragraph.kind === undefined || paragraph.kind === "text" || paragraph.kind === "heading")) fail("paragraph");
+        if (paragraph.level !== undefined && (!Number.isInteger(paragraph.level) || paragraph.level < 1 || paragraph.level > 6)) fail("heading level");
         unique(paragraph.id);
         paragraph.sentences.forEach((sentence, index) => {
           if (!sentence || !string(sentence.text, 20000)) fail("sentence");
-          sentences.set(unique(sentence.id), { text: sentence.text, paragraph, chapter, first: index === 0 });
+          sentences.set(unique(sentence.id), { ...sentence, paragraph, chapter, first: index === 0 });
+          if (data.formatVersion === 2) {
+            if (!Array.isArray(sentence.words)) fail("words");
+            let end = 0;
+            sentence.words.forEach(word => {
+              if (!word || !string(word.key, 20000) || !Number.isInteger(word.start) || !Number.isInteger(word.end) ||
+                  word.start < end || word.end <= word.start || word.end > sentence.text.length) fail("word range");
+              words.set(unique(word.id), { ...word, sentenceId: sentence.id });
+              end = word.end;
+            });
+          }
         });
       });
     });
+    if (!sentences.size) fail("empty text");
 
+    // Kept for legacy files and their prepared-page helpers.
     const used = new Set(), firstPage = new Map();
-    data.pages.forEach((page, index) => {
+    (data.formatVersion === 1 ? data.pages : []).forEach((page, index) => {
       if (!page || page.number !== index + 1 || !chapters.has(page.chapterId) ||
           !Array.isArray(page.sentenceIds) || !page.sentenceIds.length) fail(`page ${index + 1}`);
       page.sentenceIds.forEach(id => {
@@ -56,7 +70,8 @@
       });
       if (!firstPage.has(page.chapterId)) firstPage.set(page.chapterId, index);
     });
-    return { ...data, sentences, chapters, firstPage };
+    const chapterOrder = [...chapters.values()].filter(chapter => chapter.paragraphs.length);
+    return { ...data, sentences, words, chapters, chapterOrder, firstPage };
   }
 
   // Blocks of one prepared page: paragraphs split across pages are marked as continued.
