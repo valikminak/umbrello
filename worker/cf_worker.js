@@ -45,13 +45,13 @@ No scores, diagnosis, future study plan, identity or memory of other attempts. N
 const GRAMMAR_UNIT_ID = "unit-001";
 const GRAMMAR_AUDIO_PATH = /^unit-001\/audio\/[A-Za-z0-9][A-Za-z0-9_-]{0,63}\.mp3$/;
 const GRAMMAR_STORAGE = {
-  prefix: "grammar", label: "Grammar storage", bucketVariable: "SUPABASE_GRAMMAR_BUCKET",
+  prefix: "grammar", label: "Grammar storage",
   missing: "The unit material is not uploaded yet.",
   size: "The uploaded file exceeds the unit or recording size limit.",
   empty: "Storage returned an empty file. Upload the generated unit files again.",
 };
 const BOOKS_STORAGE = {
-  prefix: "books", label: "Books storage", bucketVariable: "SUPABASE_BOOKS_BUCKET",
+  prefix: "books", label: "Books storage",
   missing: "The book or the catalog is not uploaded yet.",
   size: "The uploaded book or catalog exceeds the size limit.",
   empty: "Storage returned an empty file. Upload the book files again.",
@@ -111,12 +111,13 @@ export default {
       if (!(await isValid(body.initData, env.BOT_TOKEN))) {
         throw new HttpError(403, "unauthorized", "Reopen the app from Telegram and try again.");
       }
+      // One allowlist covers every authenticated API, including AI and reports.
+      // Keep section error codes for the existing client error screens.
+      requireAccess(body.initData, env, isBooks ? "books" : isGrammar ? "grammar" : "app");
       if (isGrammar) {
-        requireGrammarAccess(body.initData, env);
         return await grammarRequest(route, body, env);
       }
       if (isBooks) {
-        requireBooksAccess(body.initData, env);
         return await booksRequest(route, body, env);
       }
       if (isWrite) {
@@ -189,27 +190,16 @@ function signedUserId(initData) {
   return Number.isSafeInteger(user?.id) && user.id > 0 ? user.id : null;
 }
 
-function requireGrammarAccess(initData, env) {
-  const ids = allowedUserIds(env.GRAMMAR_ALLOWED_USER_IDS);
-  if (!ids) {
-    throw new HttpError(503, "grammar_not_configured", "Grammar access is not configured. Set GRAMMAR_ALLOWED_USER_IDS in the Worker.");
-  }
-  const userId = signedUserId(initData);
-  if (!userId || !ids.includes(String(userId))) {
-    throw new HttpError(403, "grammar_forbidden", "Grammar is available only to the accounts enabled by its owner.");
-  }
-}
-
-function requireBooksAccess(initData, env) {
-  const ids = allowedUserIds(env.BOOKS_ALLOWED_USER_IDS);
+function requireAccess(initData, env, prefix) {
+  const ids = allowedUserIds(env.ALLOWED_USER_IDS);
   const userId = signedUserId(initData);
   // The signed ID is returned to its own owner so access can be enabled without another bot.
   const details = userId ? { userId } : undefined;
   if (!ids) {
-    throw new HttpError(503, "books_not_configured", "Books access is not configured. Set BOOKS_ALLOWED_USER_IDS in the Worker.", undefined, details);
+    throw new HttpError(503, `${prefix}_not_configured`, "App access is not configured. Set ALLOWED_USER_IDS in the Worker.", undefined, details);
   }
   if (!userId || !ids.includes(String(userId))) {
-    throw new HttpError(403, "books_forbidden", "Books are available only to the accounts enabled by the owner.", undefined, details);
+    throw new HttpError(403, `${prefix}_forbidden`, "Umbrello is available only to the accounts enabled by the owner.", undefined, details);
   }
 }
 
@@ -275,14 +265,13 @@ async function grammarRequest(route, body, env) {
 function storageConfig(env, scope) {
   const url = typeof env.SUPABASE_URL === "string" ? env.SUPABASE_URL.trim().replace(/\/$/, "") : "";
   const key = typeof env.SUPABASE_SERVICE_ROLE_KEY === "string" ? env.SUPABASE_SERVICE_ROLE_KEY.trim() : "";
-  // Books default to the Grammar bucket, so one private bucket can hold both.
-  const configured = [env[scope.bucketVariable], env.SUPABASE_GRAMMAR_BUCKET].find(value => typeof value === "string");
-  const bucket = configured !== undefined ? configured.trim() : "grammar";
+  // All materials share one explicitly configured, case-sensitive bucket name.
+  const bucket = typeof env.SUPABASE_BUCKET === "string" ? env.SUPABASE_BUCKET.trim() : "";
   const newKey = /^sb_secret_[A-Za-z0-9_-]+$/.test(key);
   const legacyKey = /^[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$/.test(key);
   if (!/^https:\/\/[a-z0-9][a-z0-9-]{0,62}\.supabase\.co$/.test(url) ||
       (!newKey && !legacyKey) || !/^[A-Za-z0-9][A-Za-z0-9_-]{0,62}$/.test(bucket)) {
-    throw new HttpError(503, `${scope.prefix}_not_configured`, `${scope.label} is not configured. Check the Supabase URL, secret key and private bucket in the Worker.`);
+    throw new HttpError(503, `${scope.prefix}_not_configured`, `${scope.label} is not configured. Check SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY and SUPABASE_BUCKET in the Worker.`);
   }
   // New secret keys are opaque API keys, not JWT bearer tokens.
   return { url, bucket, headers: { apikey: key, ...(legacyKey ? { Authorization: `Bearer ${key}` } : {}) } };

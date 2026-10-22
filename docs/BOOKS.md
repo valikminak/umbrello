@@ -7,15 +7,15 @@
 
 Книги и каталог хранятся в приватном Supabase Storage и приходят только через
 Cloudflare Worker. Worker проверяет подпись Telegram `initData` и пускает лишь
-аккаунты из `BOOKS_ALLOWED_USER_IDS`. Выбранный профиль (`?user=me`) — только
-подпись в интерфейсе, а не авторизация. Доступ к Grammar настраивается отдельно
-и не меняется.
+аккаунты из общего `ALLOWED_USER_IDS`. Выбранный профиль (`?user=me`) — только
+подпись в интерфейсе, а не авторизация. Единые настройки приложения описаны
+в [WORKER.md](WORKER.md).
 
 ```text
 GitHub Pages: books.html + JS/CSS, без текста книг
     │ POST + Telegram initData
     ▼
-Cloudflare Worker: подпись Telegram → BOOKS_ALLOWED_USER_IDS
+Cloudflare Worker: подпись Telegram → ALLOWED_USER_IDS
     └─ читает books/index.json и книги из каталога в приватном Storage
 ```
 
@@ -126,13 +126,11 @@ uv run --project tools python -m unittest tests/prepare_book_test.py
 
 ## 2. Расположение файлов в Storage
 
-Используется тот же приватный bucket, что и для Grammar (`SUPABASE_GRAMMAR_BUCKET`,
-по умолчанию `grammar`), если не задан отдельный `SUPABASE_BOOKS_BUCKET`.
+Используется общий приватный bucket приложения: `SUPABASE_BUCKET=Umbrello`.
+Название учитывает регистр; отдельной переменной или bucket для Books нет.
 
 ```text
-<bucket>/
-├── unit-001.json            ← Grammar, без изменений
-├── unit-001/audio/…
+Umbrello/
 └── books/
     ├── index.json           ← каталог
     ├── my-book/
@@ -184,18 +182,19 @@ Worker нужны:
 
 | Имя | Тип | Значение |
 | --- | --- | --- |
-| `BOOKS_ALLOWED_USER_IDS` | Variable | Два числовых Telegram ID через запятую, например `111111111,222222222` |
-| `SUPABASE_BOOKS_BUCKET` | Variable, необязательно | Bucket для книг, если он отличается от Grammar |
-| `SUPABASE_URL` | Variable | Уже есть для Grammar: `https://<project-ref>.supabase.co` |
-| `SUPABASE_SERVICE_ROLE_KEY` | Secret | Уже есть для Grammar: `sb_secret_…` или legacy service-role JWT |
-| `SUPABASE_GRAMMAR_BUCKET` | Variable | Уже есть; используется для книг, если `SUPABASE_BOOKS_BUCKET` не задан |
+| `ALLOWED_USER_IDS` | Variable | Общий список числовых Telegram ID через запятую, например `111111111,222222222` |
+| `SUPABASE_BUCKET` | Variable | `Umbrello` — общий приватный bucket приложения |
+| `SUPABASE_URL` | Variable | Существующий URL проекта: `https://<project-ref>.supabase.co` |
+| `SUPABASE_SERVICE_ROLE_KEY` | Secret | Существующий ключ `sb_secret_…` или legacy service-role JWT |
 | `BOT_TOKEN` | Secret | Уже есть; нужен для проверки подписи Telegram |
 
-Флаг совместимости `cache_option_enabled`, включённый для Grammar, нужен и здесь.
-`GRAMMAR_ALLOWED_USER_IDS`, OpenAI и отчёты не меняются. Ключ Supabase остаётся
-только в секретах Worker: в браузер не попадают ни ключ, ни ссылки на Storage.
+Существующий флаг совместимости `cache_option_enabled` оставь включённым.
+`BOT_TOKEN`, `CHAT_ID` и настройки OpenAI сохраняются. Общий список доступа
+используется всеми POST-маршрутами Worker, в том числе Write и отчётами.
+Ключ Supabase остаётся только в секретах Worker: в браузер не попадают ни ключ,
+ни ссылки на Storage. Переименование старых переменных — в [WORKER.md](WORKER.md).
 
-Пустой или некорректный `BOOKS_ALLOWED_USER_IDS` закрывает Books для всех
+Пустой или некорректный `ALLOWED_USER_IDS` закрывает Books для всех
 (`books_not_configured`). Аккаунт не из списка получает `books_forbidden`.
 В обоих случаях Worker, уже проверив подпись Telegram, возвращает ID этого
 аккаунта, и страница Books показывает **Your Telegram user ID** с кнопкой
@@ -208,27 +207,27 @@ Worker нужны:
 2. **Составь каталог** локально, например `output/index.json` (папка
    не попадает в Git). Добавь запись книги по формату из раздела 3; при
    следующей книге дополняй тот же файл, сохраняя прежние записи.
-3. **Загрузи книгу.** Supabase → **Storage** → приватный bucket (тот же, что
-   у Grammar). Создай папку `books`, внутри — `my-book`, и загрузи туда
+3. **Загрузи книгу.** Supabase → **Storage** → приватный bucket `Umbrello`.
+   Создай папку `books`, внутри — `my-book`, и загрузи туда
    `output/my-book/book.json`. Итоговый ключ: `books/my-book/book.json`.
    `preview.html` и EPUB не загружай. Bucket должен оставаться не Public.
 4. **Загрузи каталог** в `books/` под именем `index.json`. Если файл уже есть,
    удали старый `books/index.json` (или выбери замену, если панель её
    предлагает) и загрузи новый. Название файла должно быть ровно `index.json`.
-5. **При первой настройке обнови Worker:** вставь код из `worker/cf_worker.js`,
-   сохрани существующие переменные и секреты и нажми **Deploy**.
-   Если Books уже работал, для формата 2 повторный деплой Worker не требуется:
-   он передаёт файл книги без изменения. Версия каталога остаётся `1`.
+5. **Обнови Worker:** вставь код из `worker/cf_worker.js`, настрой общие
+   `ALLOWED_USER_IDS` и `SUPABASE_BUCKET` по [WORKER.md](WORKER.md) и нажми **Deploy**.
+   После перехода на эти настройки новые книги не требуют повторного деплоя
+   Worker: он передаёт файл книги без изменения. Версия каталога остаётся `1`.
 6. **Опубликуй сайт** привычным способом (GitHub Pages). Нужны файлы:
    `books.html`, `read.html`, `index.html`, `assets/js/books.js`,
    `assets/js/books-core.js`, `assets/js/books-reader.js`, `assets/js/read-tabs.js`,
    `assets/js/home.js`, `assets/css/style.css`, `assets/css/books.css`.
    Не публикуй локальные книги: `output/`, `*.epub` и JSON с текстом.
 7. **Узнай Telegram ID.** Закрой и снова открой мини‑приложение из Telegram,
-   затем **Read → Books**. Пока `BOOKS_ALLOWED_USER_IDS` не задан, страница
+   затем **Read → Books**. Пока `ALLOWED_USER_IDS` не задан, страница
    покажет **Your Telegram user ID** — нажми **Copy ID**. То же сделай со
    второго аккаунта.
-8. **Разреши доступ:** впиши оба ID в `BOOKS_ALLOWED_USER_IDS` через запятую
+8. **Разреши доступ:** впиши оба ID в `ALLOWED_USER_IDS` через запятую
    и снова задеплой Worker.
 9. **Проверь вживую:** открой Books с обоих аккаунтов — книга видна, страницы
    листаются свайпом, длинное предложение продолжается на следующем экране,
@@ -274,8 +273,8 @@ Worker нужны:
 | Код | Что проверить |
 | --- | --- |
 | `unauthorized` | Открой приложение заново из Telegram: подпись неверна или старше 24 часов. |
-| `books_not_configured` | С ID: не задан или некорректен `BOOKS_ALLOWED_USER_IDS`. Без ID: `SUPABASE_URL`, ключ или имя bucket. |
-| `books_forbidden` | Подписанный ID не в `BOOKS_ALLOWED_USER_IDS`. |
+| `books_not_configured` | С ID: не задан или некорректен `ALLOWED_USER_IDS`. Без ID: `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY` или `SUPABASE_BUCKET`. |
+| `books_forbidden` | Подписанный ID не в `ALLOWED_USER_IDS`. |
 | `books_not_found` | Нет `books/index.json` или файла книги по пути из каталога; книги нет в каталоге. |
 | `books_catalog_invalid` | Формат `books/index.json` (раздел 3). |
 | `books_storage_auth` | Секретный ключ и доступ к приватному bucket. |

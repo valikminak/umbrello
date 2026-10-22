@@ -7,7 +7,7 @@ const { webcrypto, createHmac } = require('node:crypto');
 const { validateUnit } = require('../assets/js/grammar-core.js');
 const source = fs.readFileSync(path.join(__dirname, '../worker/cf_worker.js'), 'utf8');
 const env = {
-  BOT_TOKEN: 'test-bot-token', GRAMMAR_ALLOWED_USER_IDS: '123, 456',
+  BOT_TOKEN: 'test-bot-token', ALLOWED_USER_IDS: '123, 456', SUPABASE_BUCKET: 'Umbrello',
   SUPABASE_URL: 'https://testproject.supabase.co', SUPABASE_SERVICE_ROLE_KEY: 'sb_secret_test-key',
   OPENAI_API_KEY: 'test-openai-key', OPENAI_MODEL: 'test-model',
 };
@@ -72,7 +72,7 @@ test('Grammar allowlist fails closed when absent or malformed and never grants a
   for (const route of routes) {
     for (const value of [undefined, '', ' ', '123,', '123,me', '*', '0123', '9999999999999999']) {
       const app = harness();
-      const response = await app.call(route + '?user=me', {}, { env: { GRAMMAR_ALLOWED_USER_IDS: value } });
+      const response = await app.call(route + '?user=me', {}, { env: { ALLOWED_USER_IDS: value } });
       assert.equal(response.status, 503);
       assert.equal((await response.json()).error, 'grammar_not_configured');
       assert.equal(app.calls.length, 0);
@@ -99,7 +99,7 @@ test('allowed users receive a validated unit through private Storage without cre
     assert.equal(response.headers.get('cache-control'), 'no-store');
     assert.equal(app.calls.length, 1);
     const call = app.calls[0];
-    assert.equal(call.url, 'https://testproject.supabase.co/storage/v1/object/authenticated/grammar/unit-001.json');
+    assert.equal(call.url, 'https://testproject.supabase.co/storage/v1/object/authenticated/Umbrello/unit-001.json');
     assert.equal(call.config.method, 'GET');
     assert.equal(call.config.headers.apikey, env.SUPABASE_SERVICE_ROLE_KEY);
     assert.equal('Authorization' in call.config.headers, false, 'opaque keys must not be used as JWTs');
@@ -112,13 +112,13 @@ test('allowed users receive a validated unit through private Storage without cre
 
 test('existing mixed-case bucket names are preserved in private Storage URLs', async () => {
   const app = harness();
-  assert.equal((await app.call('/grammar/unit', undefined, { env: { SUPABASE_GRAMMAR_BUCKET: 'Umbrello' } })).status, 200);
+  assert.equal((await app.call('/grammar/unit', undefined, { env: { SUPABASE_BUCKET: 'Umbrello' } })).status, 200);
   assert.equal(app.calls[0].url, 'https://testproject.supabase.co/storage/v1/object/authenticated/Umbrello/unit-001.json');
 });
 
 test('legacy service-role JWTs use apikey and Bearer headers, never browser credentials', async () => {
   const app = harness();
-  const response = await app.call('/grammar/unit', undefined, { env: { SUPABASE_SERVICE_ROLE_KEY: 'eyJheader.eyJpayload.signature', SUPABASE_GRAMMAR_BUCKET: 'personal-grammar' } });
+  const response = await app.call('/grammar/unit', undefined, { env: { SUPABASE_SERVICE_ROLE_KEY: 'eyJheader.eyJpayload.signature', SUPABASE_BUCKET: 'personal-grammar' } });
   assert.equal(response.status, 200);
   assert.equal(app.calls[0].config.headers.Authorization, 'Bearer eyJheader.eyJpayload.signature');
   assert.equal(app.calls[0].config.headers.apikey, 'eyJheader.eyJpayload.signature');
@@ -130,7 +130,8 @@ test('invalid Storage configuration cannot make outbound requests to arbitrary h
     { SUPABASE_URL: 'http://testproject.supabase.co' }, { SUPABASE_URL: 'https://evil.test' },
     { SUPABASE_URL: 'https://testproject.supabase.co.evil.test' }, { SUPABASE_URL: 'https://user:pass@testproject.supabase.co' },
     { SUPABASE_URL: 'https://testproject.supabase.co/path' }, { SUPABASE_URL: 'https://testproject.supabase.co?key=x' },
-    { SUPABASE_SERVICE_ROLE_KEY: '' }, { SUPABASE_SERVICE_ROLE_KEY: 'sb_publishable_test' }, { SUPABASE_GRAMMAR_BUCKET: '../other' },
+    { SUPABASE_SERVICE_ROLE_KEY: '' }, { SUPABASE_SERVICE_ROLE_KEY: 'sb_publishable_test' }, { SUPABASE_BUCKET: '../other' },
+    { SUPABASE_BUCKET: undefined }, { SUPABASE_BUCKET: '' },
   ]) {
     const app = harness();
     assert.equal((await app.call('/grammar/unit', undefined, { env: change })).status, 503);
@@ -161,7 +162,7 @@ test('audio is limited to references in the trusted unit and served without publ
     assert.equal(response.headers.get('x-content-type-options'), 'nosniff');
     assert.deepEqual([...new Uint8Array(await response.arrayBuffer())], [73, 68, 51, 4]);
     assert.equal(app.calls.length, 2);
-    assert.equal(app.calls[1].url, `https://testproject.supabase.co/storage/v1/object/authenticated/grammar/${path}`);
+    assert.equal(app.calls[1].url, `https://testproject.supabase.co/storage/v1/object/authenticated/Umbrello/${path}`);
   }
   const app = harness(); const response = await app.call('/grammar/audio', { path: 'unit-001/audio/999.mp3' });
   assert.equal(response.status, 404);

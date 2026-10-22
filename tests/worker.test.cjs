@@ -4,7 +4,7 @@ const fs = require('node:fs');
 const vm = require('node:vm');
 const { webcrypto, createHmac } = require('node:crypto');
 const source = fs.readFileSync(require('node:path').join(__dirname, '../worker/cf_worker.js'), 'utf8');
-const env = { BOT_TOKEN: 'test-only-token', CHAT_ID: 'test-chat', OPENAI_API_KEY: 'test-only-key', OPENAI_MODEL: 'test-model' };
+const env = { BOT_TOKEN: 'test-only-token', CHAT_ID: 'test-chat', ALLOWED_USER_IDS: '123', OPENAI_API_KEY: 'test-only-key', OPENAI_MODEL: 'test-model' };
 const passage = { sentences: ['Я позичив книжку у друга.', 'Вона лежить на столі.', 'Завтра я її поверну.', 'Друг буде радий.'] };
 const input = { mode: 'words', focus: 'borrow, lend' };
 const checking = { ...input, sourceText: passage.sentences.join(' '), translation: 'I borrowed a book from a friend. It is on the table. I will return it tomorrow. My friend will be glad.' };
@@ -106,7 +106,7 @@ test('malformed or oversized input is rejected before any provider call', async 
 
 test('configuration errors and provider failures return safe actionable errors', async () => {
   const app = harness();
-  assert.equal((await app.call('/write/generate', input, { env: { BOT_TOKEN: env.BOT_TOKEN } })).status, 503);
+  assert.equal((await app.call('/write/generate', input, { env: { BOT_TOKEN: env.BOT_TOKEN, ALLOWED_USER_IDS: env.ALLOWED_USER_IDS } })).status, 503);
   assert.equal(app.calls.length, 0);
   for (const [providerStatus, expected] of [[429, 429], [400, 502], [503, 502]]) {
     const app = harness(null, { fetch: () => new Response('secret provider diagnostic', { status: providerStatus }) });
@@ -218,7 +218,9 @@ test('invalid, blocked, truncated and wrong-shaped model responses are rejected'
 
 test('legacy reports still send to Telegram without OpenAI configuration', async () => {
   const app = harness(null, { fetch: () => Response.json({ ok: true }) });
-  const response = await app.call('/', { title: 'Reading', text: 'Учень: Sophia\nResult' }, { env: { BOT_TOKEN: env.BOT_TOKEN, CHAT_ID: env.CHAT_ID } });
+  const response = await app.call('/', { title: 'Reading', text: 'Учень: Sophia\nResult' }, { env: {
+    BOT_TOKEN: env.BOT_TOKEN, CHAT_ID: env.CHAT_ID, ALLOWED_USER_IDS: env.ALLOWED_USER_IDS,
+  } });
   assert.equal(response.status, 200);
   assert.equal(await response.text(), 'sent');
   assert.equal(app.calls.length, 1);

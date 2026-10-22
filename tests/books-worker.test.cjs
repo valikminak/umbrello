@@ -6,7 +6,7 @@ const vm = require('node:vm');
 const { webcrypto, createHmac } = require('node:crypto');
 const source = fs.readFileSync(path.join(__dirname, '../worker/cf_worker.js'), 'utf8');
 const env = {
-  BOT_TOKEN: 'test-bot-token', BOOKS_ALLOWED_USER_IDS: '123, 456', GRAMMAR_ALLOWED_USER_IDS: '789',
+  BOT_TOKEN: 'test-bot-token', ALLOWED_USER_IDS: '123, 456', SUPABASE_BUCKET: 'Umbrello',
   SUPABASE_URL: 'https://testproject.supabase.co', SUPABASE_SERVICE_ROLE_KEY: 'sb_secret_test-key',
 };
 const ID_A = 'a'.repeat(64), ID_B = 'b'.repeat(64), MISSING = 'c'.repeat(64);
@@ -64,7 +64,7 @@ test('Books allowlist fails closed and returns only the signed ID of the caller'
   for (const [route, body] of routes) {
     for (const value of [undefined, '', ' ', '123,', '123,me', '*', '0123', '9999999999999999']) {
       const app = harness();
-      const response = await app.call(route + '?user=me', { ...body, initData: signed({ id: 321 }) }, { env: { BOOKS_ALLOWED_USER_IDS: value } });
+      const response = await app.call(route + '?user=me', { ...body, initData: signed({ id: 321 }) }, { env: { ALLOWED_USER_IDS: value } });
       assert.equal(response.status, 503);
       assert.deepEqual({ ...(await response.json()), message: undefined },
         { error: 'books_not_configured', message: undefined, userId: 321 });
@@ -82,14 +82,19 @@ test('Books allowlist fails closed and returns only the signed ID of the caller'
   }
 });
 
-test('Grammar and Books allowlists are independent', async () => {
-  const grammarUser = harness();
-  assert.equal((await grammarUser.call('/books/list', { initData: signed({ id: 789 }) })).status, 403);
-  const booksUser = harness({ fetch: () => { throw new Error('storage must not be called'); } });
-  const response = await booksUser.call('/grammar/unit', { unitId: 'unit-001', initData: signed({ id: 123 }) });
-  assert.equal(response.status, 403);
-  assert.equal((await response.json()).error, 'grammar_forbidden');
-  assert.equal(booksUser.calls.length, 0);
+test('one allowlist controls Books, Grammar, Write and reports before any provider request', async () => {
+  for (const [route, body] of [
+    ['/books/book', { bookId: 'invalid' }], ['/grammar/unit', { unitId: 'missing' }],
+    ['/write/generate', {}], ['/', {}],
+  ]) {
+    for (const id of [123, 456, 789]) {
+      const app = harness({ fetch: () => { throw new Error('no provider should be called'); } });
+      const response = await app.call(route, { ...body, initData: signed({ id }) });
+      // Allowed accounts reach input validation; unlisted accounts are denied first.
+      assert.equal(response.status, id === 789 ? 403 : 400);
+      assert.equal(app.calls.length, 0);
+    }
+  }
 });
 
 test('allowed users receive the catalog without storage paths, read through private Storage', async () => {
@@ -104,7 +109,7 @@ test('allowed users receive the catalog without storage paths, read through priv
     ] });
     assert.equal(app.calls.length, 1);
     const call = app.calls[0];
-    assert.equal(call.url, 'https://testproject.supabase.co/storage/v1/object/authenticated/grammar/books/index.json');
+    assert.equal(call.url, 'https://testproject.supabase.co/storage/v1/object/authenticated/Umbrello/books/index.json');
     assert.equal(call.config.method, 'GET');
     assert.equal(call.config.headers.apikey, env.SUPABASE_SERVICE_ROLE_KEY);
     assert.equal(call.config.redirect, 'manual');
@@ -112,11 +117,10 @@ test('allowed users receive the catalog without storage paths, read through priv
   }
 });
 
-test('Books use their own bucket when set, otherwise the Grammar bucket', async () => {
-  for (const [extra, bucket] of [[{ SUPABASE_GRAMMAR_BUCKET: 'Umbrello' }, 'Umbrello'],
-    [{ SUPABASE_GRAMMAR_BUCKET: 'Umbrello', SUPABASE_BOOKS_BUCKET: 'library' }, 'library']]) {
+test('Books use the shared configured bucket and preserve its case', async () => {
+  for (const bucket of ['Umbrello', 'library']) {
     const app = harness();
-    assert.equal((await app.call('/books/list', {}, { env: extra })).status, 200);
+    assert.equal((await app.call('/books/list', {}, { env: { SUPABASE_BUCKET: bucket } })).status, 200);
     assert.equal(app.calls[0].url, `https://testproject.supabase.co/storage/v1/object/authenticated/${bucket}/books/index.json`);
   }
 });
@@ -128,7 +132,7 @@ test('a book is served only from the path listed for its bookId in the catalog',
   assert.equal(await response.text(), bookBytes);
   assert.match(response.headers.get('content-type'), /^application\/json/);
   assert.equal(response.headers.get('x-content-type-options'), 'nosniff');
-  assert.deepEqual(app.calls.map(call => call.url.split('/grammar/')[1]), ['books/index.json', 'books/first-book/book.json']);
+  assert.deepEqual(app.calls.map(call => call.url.split('/Umbrello/')[1]), ['books/index.json', 'books/first-book/book.json']);
 
   const unknown = harness();
   const missing = await unknown.call('/books/book', { bookId: MISSING });

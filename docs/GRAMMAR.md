@@ -60,10 +60,9 @@ the converter; it is not the finished unit file to upload.
 ## Set up private Supabase Storage
 
 1. Open your existing Supabase project, then **Storage**.
-2. Create a bucket named `grammar`, leaving **Public bucket** disabled. If it
-   already exists, confirm that it is private.
-   An existing private bucket such as `Umbrello` works too: set
-   `SUPABASE_GRAMMAR_BUCKET` to its exact, case-sensitive name in the Worker.
+2. Use the app's existing private bucket `Umbrello`, leaving **Public bucket**
+   disabled. Set `SUPABASE_BUCKET` to its exact, case-sensitive name in the
+   Worker. Books and other private materials share this bucket.
 3. Upload the **contents** of `private/grammar-upload/` into that bucket,
    preserving folders. The exact storage keys must be `unit-001.json` and
    `unit-001/audio/111.mp3`, etc. Do not add an extra `grammar-upload/` parent.
@@ -91,8 +90,8 @@ Keep the existing Worker and its working Write configuration. Open
 | --- | --- | --- |
 | `SUPABASE_URL` | Variable | `https://<project-ref>.supabase.co` |
 | `SUPABASE_SERVICE_ROLE_KEY` | Secret | Your `sb_secret_…` key, or legacy service-role JWT |
-| `SUPABASE_GRAMMAR_BUCKET` | Variable, optional | `grammar` (the default) |
-| `GRAMMAR_ALLOWED_USER_IDS` | Variable | Your numeric Telegram ID; additional IDs separated by commas |
+| `SUPABASE_BUCKET` | Variable | `Umbrello`, the shared private bucket |
+| `ALLOWED_USER_IDS` | Variable | Your numeric Telegram ID; additional IDs separated by commas |
 
 Despite its compatibility-oriented name, `SUPABASE_SERVICE_ROLE_KEY` accepts the
 new secret key format. Paste the key directly into Cloudflare, not into chat,
@@ -104,14 +103,15 @@ writing feedback reuses the existing model. Other Grammar activities use no AI.
 To find your Telegram ID without using another bot: after publishing the new
 page and Worker, open **Grammar → Open unit** inside your Telegram mini app.
 When access is not configured, the connection help displays **Your Telegram
-account ID**. Copy that number into `GRAMMAR_ALLOWED_USER_IDS` and save/deploy
+account ID**. Copy that number into `ALLOWED_USER_IDS` and save/deploy
 the updated Worker configuration. If the browser has no Telegram launch data,
 close it and reopen through the bot. A profile label such as `?user=me` is not an
 authentication credential and does not grant access.
 
-An empty or malformed allowlist blocks Grammar. Valid Telegram users who are not
-listed also cannot retrieve a unit, audio or AI feedback. This new restriction
-applies to Grammar; it does not change Write or report authorization.
+An empty or malformed allowlist blocks authenticated Worker requests. Valid
+Telegram users who are not listed cannot retrieve a unit, audio or AI feedback.
+The same `ALLOWED_USER_IDS` controls Books, Write and report submission.
+See [WORKER.md](WORKER.md) for the common variables and migration from old names.
 
 ## Deploy and verify
 
