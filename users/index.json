@@ -1,10 +1,4 @@
 [
-  {
-    "id": "sophia",
-    "name": "Sophia"
-  },
-  {
-    "id": "me",
-    "name": "me"
-  }
+  { "id": "sophia", "name": "Sophia", "level": "A2", "reports": true },
+  { "id": "me", "name": "me", "level": "C1", "reports": false }
 ]

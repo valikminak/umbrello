@@ -24,8 +24,10 @@ function start() {
 }
 
 function finish(r) {
+  // reports: false in users/index.json keeps results on the phone, nothing goes to the bot.
+  const reports = profile.reports !== false;
   if (r.log.length) {
-    sendReport("📝 Тест", quizReportText(r));
+    if (reports) sendReport("📝 Тест", quizReportText(r));
     runQuiz(app, r.log.map(m => m.item), finish);
     return;
   }
@@ -33,6 +35,7 @@ function finish(r) {
   const status = app.querySelector("#status"), retry = app.querySelector("#retry");
   app.querySelector("#again").onclick = start;
   app.querySelector("#menu").onclick = () => { location.href = menuUrl; };
+  if (!reports) { status?.remove(); retry?.remove(); return; }
   const send = () => sendReport("📝 Тест", "Тест завершено успішно!\n\n" + quizReportText(r), status, retry);
   retry.onclick = send;
   send();

@@ -1,7 +1,11 @@
 (async function () {
   "use strict";
   const host = document.getElementById("app");
-  if (!await Profiles.require(host)) return;
+  const profile = await Profiles.require(host);
+  if (!profile) return;
+  // The learner's CEFR level from users/index.json; the model writes and judges for it.
+  const level = /^[ABC][12]$/.test(profile.level || "") ? profile.level : null;
+  const withLevel = payload => level ? { ...payload, level } : payload;
   backTo(Profiles.url("index.html"));
   const el = id => document.getElementById(id);
   const ui = Object.fromEntries(["writeContent", "generateForm", "modeFields", "focus", "generate", "exercise",
@@ -101,13 +105,13 @@
     setBusy(true);
     status("Generating…");
     try {
-      const result = await request("generate", { mode, focus });
+      const result = await request("generate", withLevel({ mode, focus }));
       if (!result || !Array.isArray(result.sentences) || result.sentences.length < 4 || result.sentences.length > 8 ||
           !result.sentences.every(s => typeof s === "string" && s.trim())) throw new Error("Could not get an exercise. Please try again.");
       // Replace the old exercise only after a successful response.
       exercise = { mode, focus, sourceText: result.sentences.join(" ") };
       ui.sourceText.textContent = exercise.sourceText;
-      ui.exerciseFocus.textContent = `${mode === "words" ? "Words" : "Grammar"}: ${focus}`;
+      ui.exerciseFocus.textContent = `${mode === "words" ? "Words" : "Grammar"}: ${focus}${level ? ` · ${level}` : ""}`;
       ui.translation.value = "";
       clearFeedback();
       ui.exercise.hidden = false;
@@ -125,7 +129,7 @@
     clearFeedback();
     status("Checking…");
     try {
-      const result = await request("check", { ...exercise, translation });
+      const result = await request("check", withLevel({ ...exercise, translation }));
       if (!result || ![result.summary, result.targetFeedback, result.modelTranslation].every(s => typeof s === "string" && s.trim()) ||
           !Array.isArray(result.errors) || !result.errors.every(e => e && Object.hasOwn(labels, e.category) &&
             [e.original, e.correction, e.explanation].every(s => typeof s === "string"))) {

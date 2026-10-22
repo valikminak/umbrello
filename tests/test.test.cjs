@@ -4,13 +4,13 @@ const fs = require('node:fs');
 const path = require('node:path');
 const vm = require('node:vm');
 
-async function openTest(questions) {
+async function openTest(questions, profile = {}) {
   const reports = [], timers = [];
   const host = {
     set innerHTML(html) {
       this.html = html;
       this.nodes = new Map([...html.matchAll(/id="([^"]+)"/g)].map(([, id]) =>
-        ['#' + id, { style: {} }]));
+        ['#' + id, { style: {}, remove() { this.removed = true; } }]));
       this.options = [...html.matchAll(/data-i="(\d+)"/g)].map(([, i]) =>
         ({ dataset: { i }, disabled: false, classList: { add() {} } }));
     },
@@ -19,7 +19,7 @@ async function openTest(questions) {
   };
   const profiles = {
     current: { name: 'Student' },
-    require: async () => ({}), content: file => file, url: file => file
+    require: async () => profile, content: file => file, url: file => file
   };
   const context = vm.createContext({
     window: { Profiles: profiles }, Profiles: profiles,
@@ -110,4 +110,18 @@ test('sending a result locks the page behind the umbrella when the Worker refuse
   assert.match(status.textContent, /Couldn't send/);
   assert.equal(retry.style.display, 'block');
   assert.deepEqual(refused, ['app_forbidden']);
+});
+
+test('reports: false keeps every round on the phone and hides the sending status', async () => {
+  const app = await openTest([{ q: 'One', right: 'A', wrong: ['B'] }, { q: 'Two', right: 'C', wrong: ['D'] }], { name: 'Student', reports: false });
+  app.answer(true);
+  app.answer();
+  assert.equal(app.reports.length, 0, 'round with a mistake');
+  app.answer();
+  assert.equal(app.reports.length, 0, 'clean round');
+  assert.equal(app.host.querySelector('#status')?.removed, true);
+  assert.equal(app.host.querySelector('#retry')?.removed, true);
+  const sending = await openTest([{ q: 'One', right: 'A', wrong: ['B'] }], { name: 'Student', reports: true });
+  sending.answer();
+  assert.equal(sending.reports.length, 1);
 });

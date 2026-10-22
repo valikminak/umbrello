@@ -105,6 +105,7 @@ test('malformed or oversized input is rejected before any provider call', async 
     ['/write/generate', { mode: 'other', focus: 'test' }], ['/write/generate', { ...input, focus: ' ' }],
     ['/write/generate', { ...input, focus: 'x'.repeat(1201) }], ['/write/check', input],
     ['/write/check', { ...checking, translation: 'x'.repeat(6001) }], ['/write/check', { ...checking, sourceText: 'x'.repeat(4001) }],
+    ['/write/generate', { ...input, level: 'Z9' }], ['/write/generate', { ...input, level: 'b1' }], ['/write/check', { ...checking, level: 7 }],
   ]) {
     const app = harness();
     assert.equal((await app.call(route, body)).status, 400);
@@ -329,4 +330,16 @@ test('a network failure while notifying also pauses, and the pause never grants 
   time.tick(5 * 60 * 1000 + 1000);
   assert.equal(await notice(app), true);
   assert.equal(app.calls.length, 2);
+});
+
+test('a valid profile level reaches the model with both Write requests', async () => {
+  const app = harness();
+  assert.equal((await app.call('/write/generate', { ...input, level: 'A2' })).status, 200);
+  assert.deepEqual(JSON.parse(app.calls[0].body.input[0].content), { ...input, level: 'A2' });
+  const review = harness(feedback);
+  assert.equal((await review.call('/write/check', { ...checking, level: 'C1' })).status, 200);
+  assert.equal(JSON.parse(review.calls[0].body.input[0].content).level, 'C1');
+  const none = harness();
+  await none.call('/write/generate', { ...input, level: null });
+  assert.equal('level' in JSON.parse(none.calls[0].body.input[0].content), false);
 });

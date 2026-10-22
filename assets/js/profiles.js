@@ -100,14 +100,18 @@
     </div>`;
   }
 
+  // Profile settings live next to the names: level (CEFR, used by Write) and
+  // reports (whether Test results go to the bot). Both are optional.
   async function list() {
     const profiles = await loadJSON("users/index.json");
-    if (!Array.isArray(profiles) || !profiles.length ||
-        profiles.some(p => !p || !/^[a-z0-9-]+$/.test(p.id) || typeof p.name !== "string" || !p.name.trim()) ||
+    const valid = p => p && /^[a-z0-9-]+$/.test(p.id) && typeof p.name === "string" && p.name.trim() &&
+      (p.level === undefined || p.level === null || /^[ABC][12]$/.test(p.level)) &&
+      (p.reports === undefined || typeof p.reports === "boolean");
+    if (!Array.isArray(profiles) || !profiles.length || !profiles.every(valid) ||
         new Set(profiles.map(p => p.id)).size !== profiles.length) {
       throw new Error("Check the user list in users/index.json.");
     }
-    return profiles;
+    return profiles.map(p => ({ id: p.id, name: p.name, level: p.level || null, reports: p.reports !== false }));
   }
 
   function url(page, profile = current) {

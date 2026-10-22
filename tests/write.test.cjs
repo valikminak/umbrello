@@ -5,7 +5,7 @@ const vm = require('node:vm');
 const source = fs.readFileSync(require('node:path').join(__dirname, '../assets/js/write.js'), 'utf8');
 const passage = { sentences: ['Учора я позичив книжку.', 'Я вже прочитав її.', 'Завтра поверну її другу.', 'Він буде радий.'] };
 const feedback = { summary: 'Good translation.', errors: [], targetFeedback: 'You used the requested construction.', modelTranslation: 'I borrowed a book yesterday. I have already read it. I will return it to my friend tomorrow.' };
-async function page({ authenticated = true } = {}) {
+async function page({ authenticated = true, level = null } = {}) {
   const nodes = new Map(), calls = [], responses = [], refused = [];
   function node(id) {
     if (!nodes.has(id)) nodes.set(id, {
@@ -19,7 +19,7 @@ async function page({ authenticated = true } = {}) {
   const forbiddenStorage = new Proxy({}, { get() { throw new Error('Write must not use storage'); } });
   const context = vm.createContext({
     document: { getElementById: node }, URL, AbortController, setTimeout, clearTimeout,
-    Profiles: { require: async () => ({ id: 'me' }), url: page => `${page}?user=me`,
+    Profiles: { require: async () => ({ id: 'me', name: 'me', level, reports: true }), url: page => `${page}?user=me`,
       refuse: code => /^(?:app|books|grammar)_(?:forbidden|not_configured)$|^unauthorized$/.test(code) && refused.push(code) > 0 }, backTo() {},
     tg: authenticated ? { initData: 'test-init-data' } : null, WORKER_URL: 'https://worker.test/',
     localStorage: forbiddenStorage, sessionStorage: forbiddenStorage,
@@ -227,4 +227,20 @@ test('a refused account is locked behind the umbrella instead of seeing an error
   await app.submit('generateForm');
   assert.deepEqual(app.refused, []);
   assert.match(app.node('writeStatus').textContent, /provider rejected access/);
+});
+
+test('the profile level travels with generate and check, and is absent when the profile has none', async () => {
+  const app = await page({ level: 'B1' });
+  await app.generate();
+  assert.equal(app.calls[0].body.level, 'B1');
+  assert.match(app.node('exerciseFocus').textContent, /· B1$/);
+  app.node('translation').value = 'A translation.';
+  app.responses.push(Response.json(feedback));
+  await app.submit('checkForm');
+  assert.equal(app.calls[1].body.level, 'B1');
+  assert.equal(app.calls[1].body.sourceText, passage.sentences.join(' '));
+  const plain = await page();
+  await plain.generate();
+  assert.equal('level' in plain.calls[0].body, false);
+  assert.doesNotMatch(plain.node('exerciseFocus').textContent, /·/);
 });

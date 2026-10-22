@@ -36,6 +36,7 @@ async function page(script, search = '', failFile, options = {}) {
     loadJSON: async file => {
       requested.push(file);
       if (file === failFile) throw new Error('Unavailable');
+      if (file === 'users/index.json' && options.profiles) return options.profiles;
       return JSON.parse(fs.readFileSync(path.join(root, file), 'utf8'));
     },
     showError: (_, e) => errors.push(e.message),
@@ -212,4 +213,20 @@ test('Profiles.refuse locks an already open page behind the umbrella when the Wo
   }
   assert.equal(app.locked(), false);
   assert.doesNotMatch(app.node('accessScreen').innerHTML, /umbrella/);
+});
+
+test('profiles carry their level and reports setting, with safe defaults', async () => {
+  const sophia = await page('home', '?user=sophia');
+  assert.equal(sophia.context.Profiles.current.level, 'A2');
+  assert.equal(sophia.context.Profiles.current.reports, true);
+  const me = await page('home', '?user=me');
+  assert.equal(me.context.Profiles.current.level, 'C1');
+  assert.equal(me.context.Profiles.current.reports, false);
+  const plain = await page('home', '?user=alex', undefined, { profiles: [{ id: 'alex', name: 'Alex' }] });
+  assert.deepEqual({ ...plain.context.Profiles.current }, { id: 'alex', name: 'Alex', level: null, reports: true });
+  for (const profile of [{ id: 'alex', name: 'Alex', level: 'Z9' }, { id: 'alex', name: 'Alex', level: 'b1' },
+    { id: 'alex', name: 'Alex', reports: 'yes' }, { id: 'alex', name: 'Alex', level: 2 }]) {
+    const app = await page('home', '?user=alex', undefined, { profiles: [profile] });
+    assert.deepEqual(app.errors, ['Check the user list in users/index.json.'], JSON.stringify(profile));
+  }
 });
