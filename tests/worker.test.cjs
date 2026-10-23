@@ -275,7 +275,7 @@ test('refused accounts never reach OpenAI or Supabase on any route', async () =>
   const app = harness(null, { fetch: telegramOk });
   const payload = { ...checking, title: 'Reading', text: 'Result', unit: 1, bookId: 'a'.repeat(64) };
   for (const [route, code] of [['/write/generate', 'app_forbidden'], ['/write/check', 'app_forbidden'], ['/', 'app_forbidden'],
-    ['/grammar/unit', 'grammar_forbidden'], ['/grammar/check', 'grammar_forbidden'], ['/books/list', 'books_forbidden'], ['/books/book', 'books_forbidden']]) {
+    ['/books/list', 'books_forbidden'], ['/books/book', 'books_forbidden']]) {
     const response = await app.call(route, payload, stranger);
     assert.equal(response.status, 403, route);
     assert.equal((await response.json()).error, code, route);

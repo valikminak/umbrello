@@ -61,7 +61,7 @@
   // The pages are public static files, so the entry check can be skipped: every Worker refusal
   // (no access, allowlist not configured, unverifiable launch data) locks the page the same way.
   // Returns true when the code was such a refusal and the umbrella is up.
-  const REFUSAL = /^(?:app|books|grammar)_(?:forbidden|not_configured)$|^unauthorized$/;
+  const REFUSAL = /^(?:app|books)_(?:forbidden|not_configured)$|^unauthorized$/;
   function refuse(code) {
     if (typeof code !== "string" || !REFUSAL.test(code)) return false;
     accessGranted = false;

@@ -20,7 +20,7 @@ async function page({ authenticated = true, level = null } = {}) {
   const context = vm.createContext({
     document: { getElementById: node }, URL, AbortController, setTimeout, clearTimeout,
     Profiles: { require: async () => ({ id: 'me', name: 'me', level, reports: true }), url: page => `${page}?user=me`,
-      refuse: code => /^(?:app|books|grammar)_(?:forbidden|not_configured)$|^unauthorized$/.test(code) && refused.push(code) > 0 }, backTo() {},
+      refuse: code => /^(?:app|books)_(?:forbidden|not_configured)$|^unauthorized$/.test(code) && refused.push(code) > 0 }, backTo() {},
     tg: authenticated ? { initData: 'test-init-data' } : null, WORKER_URL: 'https://worker.test/',
     localStorage: forbiddenStorage, sessionStorage: forbiddenStorage,
     esc: value => String(value).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c])),

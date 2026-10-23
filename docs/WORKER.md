@@ -47,8 +47,9 @@ Umbrello/                         ← bucket (не Public)
 
 - Каждый рабочий POST-запрос сначала проходит проверку Telegram-подписи,
   затем общего `ALLOWED_USER_IDS`: проверка входа, Books (включая definitions
-  через `/books/define`, который использует настройки OpenAI), существующие
-  маршруты Grammar, Write и отправка отчётов.
+  через `/books/define`, который использует настройки OpenAI), Write
+  и отправка отчётов, в том числе результатов теста Grammar. Своих маршрутов
+  у Grammar нет: вопросы лежат в проекте.
 - Пустой или некорректный список закрывает доступ к этим API. Имя профиля
   в URL не влияет на проверку.
 - Отсутствующий `SUPABASE_BUCKET` даёт ошибку конфигурации. Скрытого перехода
@@ -63,8 +64,8 @@ Umbrello/                         ← bucket (не Public)
   закрыть и снова открыть Mini App.
 - Страницы — публичные файлы GitHub Pages, поэтому входной экран можно обойти.
   Тот же зонтик поднимается на любой странице, когда Worker отвечает
-  `app_forbidden`, `books_forbidden`, `grammar_forbidden`, `*_not_configured`
-  или `unauthorized` на запрос Books, Grammar, Write или отправку отчёта
+  `app_forbidden`, `books_forbidden`, `*_not_configured`
+  или `unauthorized` на запрос Books, Write или отправку отчёта
   (`Profiles.refuse(code)` в `assets/js/profiles.js`). Страница блокируется
   целиком; ID и текст ошибки не показываются.
 - Решение о доступе не сохраняется в localStorage. Новая страница и возврат

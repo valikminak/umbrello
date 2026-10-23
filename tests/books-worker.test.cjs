@@ -26,7 +26,7 @@ function signed(user = { id: 123 }, date = Math.floor(Date.now() / 1000)) {
 function harness(options = {}) {
   const calls = [];
   const context = vm.createContext({ Request, Response, URL, URLSearchParams, Uint8Array, TextEncoder, TextDecoder,
-    AbortController, AbortSignal, crypto: webcrypto, setTimeout, clearTimeout, console: { warn() {} },
+    AbortController, AbortSignal, crypto: webcrypto, setTimeout: options.setTimeout || setTimeout, clearTimeout, console: { warn() {} },
     fetch: async (url, config) => {
       calls.push({ url, config });
       if (options.fetch) return options.fetch(url, config);
@@ -82,10 +82,9 @@ test('Books allowlist fails closed and returns only the signed ID of the caller'
   }
 });
 
-test('one allowlist controls Books, Grammar, Write and reports before any provider request', async () => {
+test('one allowlist controls Books, Write and reports before any provider request', async () => {
   for (const [route, body] of [
-    ['/books/book', { bookId: 'invalid' }], ['/grammar/unit', { unitId: 'missing' }],
-    ['/write/generate', {}], ['/', {}],
+    ['/books/book', { bookId: 'invalid' }], ['/write/generate', {}], ['/', {}],
   ]) {
     for (const id of [123, 456, 789]) {
       const app = harness({ fetch: () => { throw new Error('no provider should be called'); } });
@@ -201,4 +200,91 @@ test('storage failures map to safe Books error codes and never leak secrets or s
   assert.equal(result.error, 'books_not_configured');
   assert.equal('userId' in result, false, 'storage configuration errors are not access errors');
   assert.equal(unconfigured.calls.length, 0);
+});
+
+test('legacy service-role JWTs use apikey and Bearer headers; new secret keys use apikey only', async () => {
+  const legacy = harness();
+  assert.equal((await legacy.call('/books/list', {}, { env: { SUPABASE_SERVICE_ROLE_KEY: 'eyJheader.eyJpayload.signature' } })).status, 200);
+  assert.equal(legacy.calls[0].config.headers.Authorization, 'Bearer eyJheader.eyJpayload.signature');
+  assert.equal(legacy.calls[0].config.headers.apikey, 'eyJheader.eyJpayload.signature');
+  const current = harness();
+  assert.equal((await current.call('/books/list')).status, 200);
+  assert.equal('Authorization' in current.calls[0].config.headers, false);
+});
+
+test('invalid Storage configuration cannot make outbound requests to arbitrary hosts', async () => {
+  for (const change of [
+    { SUPABASE_URL: 'http://testproject.supabase.co' }, { SUPABASE_URL: 'https://evil.test' },
+    { SUPABASE_URL: 'https://testproject.supabase.co.evil.test' }, { SUPABASE_URL: 'https://user:pass@testproject.supabase.co' },
+    { SUPABASE_URL: 'https://testproject.supabase.co/path' }, { SUPABASE_URL: 'https://testproject.supabase.co?key=x' },
+    { SUPABASE_SERVICE_ROLE_KEY: '' }, { SUPABASE_SERVICE_ROLE_KEY: 'sb_publishable_test' }, { SUPABASE_BUCKET: '../other' },
+    { SUPABASE_BUCKET: undefined }, { SUPABASE_BUCKET: '' },
+  ]) {
+    const app = harness();
+    assert.equal((await app.call('/books/list', {}, { env: change })).status, 503, JSON.stringify(change));
+    assert.equal(app.calls.length, 0);
+  }
+});
+
+test('storage HTTP statuses, timeouts, runtime and network failures return safe Books errors', async () => {
+  for (const [status, expected] of [[401, 502], [403, 502], [404, 404], [429, 502], [500, 502], [302, 502]]) {
+    const app = harness({ fetch: () => new Response('private upstream text sb_secret_test-key', { status, headers: { Location: 'https://evil.test' } }) });
+    const response = await app.call('/books/list');
+    assert.equal(response.status, expected, String(status));
+    assert.doesNotMatch(await response.text(), /private upstream|sb_secret|evil\.test/);
+    assert.equal(app.calls.length, 1, 'redirects are never followed');
+  }
+  const redirected = harness({ fetch: () => new Response(null, { status: 302, headers: { Location: 'https://elsewhere.example/books/index.json' } }) });
+  assert.equal((await (await redirected.call('/books/list')).json()).providerStatus, 302);
+  const timeout = harness({ setTimeout: callback => setTimeout(callback, 1), fetch: (_, config) => new Promise((resolve, reject) => {
+    config.signal.addEventListener('abort', () => reject(new Error('aborted')));
+  }) });
+  const slow = await timeout.call('/books/list');
+  assert.equal(slow.status, 504);
+  assert.equal((await slow.json()).error, 'books_storage_timeout');
+  for (const [message, code] of [
+    ["The 'cache' field on 'RequestInitializerDict' is not implemented.", 'books_runtime_cache'],
+    ['Unsupported cache mode: no-store', 'books_runtime_cache'],
+    ['private DNS detail with sb_secret_test-key', 'books_storage_network'],
+  ]) {
+    const app = harness({ fetch: () => { throw new TypeError(message); } });
+    const body = await (await app.call('/books/list')).json();
+    assert.equal(body.error, code);
+    assert.doesNotMatch(JSON.stringify(body), /private DNS|sb_secret_test/);
+  }
+});
+
+test('storage 400 diagnostics separate access, missing objects and other failures', async () => {
+  for (const [diagnostic, code] of [
+    [{ code: 'InvalidJWT' }, 'books_storage_auth'],
+    [{ error: 'unauthorized' }, 'books_storage_auth'],
+    [{ statusCode: '403' }, 'books_storage_auth'],
+    [{ code: 'NoSuchBucket' }, 'books_not_found'],
+    [{ code: 'NoSuchKey' }, 'books_not_found'],
+    [{ message: 'private provider diagnostic' }, 'books_storage_error'],
+  ]) {
+    const app = harness({ fetch: () => Response.json(diagnostic, { status: 400 }) });
+    const body = await (await app.call('/books/list')).json();
+    assert.equal(body.error, code);
+    if (code !== 'books_not_found') assert.equal(body.providerStatus, 400);
+    assert.doesNotMatch(JSON.stringify(body), /private provider/);
+  }
+});
+
+test('storage reads are size bounded even without Content-Length; the catalog is parsed whatever its MIME type', async () => {
+  for (const announce of [false, true]) {
+    const length = String(256 * 1024 + 1);
+    const oversized = harness({ fetch: () => new Response('x'.repeat(256 * 1024 + 1), announce ? { headers: { 'Content-Length': length } } : {}) });
+    assert.equal((await (await oversized.call('/books/list')).json()).error, 'books_storage_size');
+  }
+  const book = harness({ fetch: url => url.endsWith('index.json') ? Response.json(catalog()) : new Response('x'.repeat(8 * 1024 * 1024 + 1)) });
+  assert.equal((await (await book.call('/books/book', { bookId: ID_A })).json()).error, 'books_storage_size');
+  for (const mime of ['text/plain; charset=utf-8', 'application/octet-stream', 'application/json', 'text/json']) {
+    const app = harness({ fetch: () => new Response(JSON.stringify(catalog()), { headers: { 'Content-Type': mime } }) });
+    assert.equal((await app.call('/books/list')).status, 200, mime);
+  }
+  for (const content of ['<html>login</html>', '{}', 'not JSON']) {
+    const app = harness({ fetch: () => new Response(content, { headers: { 'Content-Type': 'text/plain' } }) });
+    assert.equal((await (await app.call('/books/list')).json()).error, 'books_catalog_invalid');
+  }
 });

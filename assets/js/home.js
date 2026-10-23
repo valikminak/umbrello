@@ -21,7 +21,8 @@
         <div class="menu">${[
           ["listen", "🎧", "Listen", "Listen and put the words in order"],
           ["books", "📚", "Books", "Read a book with word hints"],
-          ["grammar", "🧩", "Grammar", "Understand, practise and use each grammar point"],
+          ["grammar", "🧩", "Grammar", "Level test and grammar lessons"],
+          ["vocabulary", "🔤", "Vocabulary", "Words and phrases"],
         ].map(([page, icon, title, description]) => tile(page, icon, title, description, null)).join("")}</div>`;
       return;
     }

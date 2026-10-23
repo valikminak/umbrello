@@ -94,7 +94,7 @@ test('a clean first round immediately sends success and shows completion', async
 test('sending a result locks the page behind the umbrella when the Worker refuses the account', async () => {
   const refused = [];
   const profiles = { current: { name: 'Student' },
-    refuse: code => /^(?:app|books|grammar)_(?:forbidden|not_configured)$|^unauthorized$/.test(code) && refused.push(code) > 0 };
+    refuse: code => /^(?:app|books)_(?:forbidden|not_configured)$|^unauthorized$/.test(code) && refused.push(code) > 0 };
   const context = vm.createContext({ window: { Profiles: profiles }, Profiles: profiles, WORKER_URL: '/report',
     fetch: async () => ({ ok: false, status: 403, json: async () => ({ error: 'app_forbidden', message: 'Refused', userId: 555123 }) }) });
   vm.runInContext(fs.readFileSync(path.join(__dirname, '../assets/js/app.js'), 'utf8'), context);

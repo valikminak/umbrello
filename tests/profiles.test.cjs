@@ -120,7 +120,7 @@ test('entry page offers both names and the shared sections without choosing a de
   assert.match(html, /Sophia/);
   assert.match(html, /user=sophia/);
   assert.match(html, /user=me/);
-  for (const section of ['listen', 'books', 'grammar']) assert.ok(html.includes(`href="${section}.html?v=10"`), section);
+  for (const section of ['listen', 'books', 'grammar', 'vocabulary']) assert.ok(html.includes(`href="${section}.html?v=10"`), section);
   assert.doesNotMatch(html, /test\.html|write\.html|read\.html/);
   assert.equal(app.context.Profiles.current, null);
   assert.deepEqual(app.requested, ['users/index.json']);
@@ -132,7 +132,7 @@ test('profile menus offer only Test and Write and keep the chosen profile', asyn
     assert.deepEqual(app.errors, []);
     const html = app.node('app').innerHTML;
     for (const section of ['test', 'write']) assert.ok(html.includes(`${section}.html?v=10&user=${id}`), section);
-    assert.doesNotMatch(html, /listen\.html|books\.html|grammar\.html|read\.html/);
+    assert.doesNotMatch(html, /listen\.html|books\.html|grammar\.html|vocabulary\.html|read\.html/);
     assert.match(app.node('profileNav').innerHTML, /Switch profile/);
     assert.equal(app.context.Profiles.current.id, id);
   }
@@ -161,6 +161,23 @@ test('Listen is shared: opens without a profile, ignores ?user and filters the c
   assert.match(html, /href="listen\.html\?v=10&level=B1&lesson=counting-stars"/);
   const bogus = await page('listen', '?level=Z9');
   assert.match(bogus.node('listenApp').innerHTML, /Count on Me[\s\S]*Counting Stars[\s\S]*Row Your Boat/);
+});
+
+test('Vocabulary is shared and empty for now: no profile, nothing requested, a way back to the menu', async () => {
+  for (const search of ['', '?user=sophia']) {
+    const app = await page('vocabulary', search);
+    assert.deepEqual(app.errors, [], search);
+    assert.equal(app.context.location.redirect, undefined, search);
+    assert.deepEqual(app.requested, [], search);
+    const html = app.node('app').innerHTML;
+    assert.match(html, /<h1>Vocabulary<\/h1>/, search);
+    assert.match(html, /href="index\.html\?v=10"/, search);
+    assert.doesNotMatch(html, /user=/, search);
+    assert.match(app.node('profileNav').innerHTML, /← Menu/);
+  }
+  const refused = await page('vocabulary', '', undefined, { holdTimers: true, fetch: async () => refusals[0][1] });
+  assert.equal(refused.locked(), true);
+  assert.equal(refused.node('app').innerHTML, '');
 });
 
 test('Sophia and me have their own tests and nothing else is requested from their folders', async () => {
@@ -195,8 +212,7 @@ test('loading errors never fall back to another profile and paths stay inside th
 });
 
 test('Profiles.refuse locks an already open page behind the umbrella when the Worker refuses later', async () => {
-  const codes = ['app_forbidden', 'app_not_configured', 'books_forbidden', 'books_not_configured',
-    'grammar_forbidden', 'grammar_not_configured', 'unauthorized'];
+  const codes = ['app_forbidden', 'app_not_configured', 'books_forbidden', 'books_not_configured', 'unauthorized'];
   for (const code of codes) {
     const app = await page('home', '?user=me', undefined, { holdTimers: true });
     assert.equal(app.locked(), false, code);
@@ -208,7 +224,7 @@ test('Profiles.refuse locks an already open page behind the umbrella when the Wo
     assert.equal(app.fetches.length, 1, code);
   }
   const app = await page('home', '?user=me', undefined, { holdTimers: true });
-  for (const code of ['invalid_input', 'provider_auth', 'books_storage_error', 'grammar_storage_timeout', 'not_found', 'forbidden', '', undefined, null, 403]) {
+  for (const code of ['invalid_input', 'provider_auth', 'books_storage_error', 'books_storage_timeout', 'not_found', 'forbidden', '', undefined, null, 403]) {
     assert.equal(app.context.Profiles.refuse(code), false, String(code));
   }
   assert.equal(app.locked(), false);
