@@ -1,0 +1,126 @@
+{
+  "book": "English Vocabulary in Use · Upper-intermediate",
+  "groups": [
+    {"title": "Effective vocabulary learning", "units": [
+      {"number":1,"title":"Learning vocabulary"},
+      {"number":2,"title":"Organising a vocabulary notebook"},
+      {"number":3,"title":"Using your dictionary"},
+      {"number":4,"title":"Guessing and explaining meaning"}
+    ]},
+    {"title": "Topics", "units": [
+      {"number":5,"title":"Countries, nationalities and languages"},
+      {"number":6,"title":"The weather"},
+      {"number":7,"title":"Describing people: appearance"},
+      {"number":8,"title":"Describing people: personality"},
+      {"number":9,"title":"Idioms describing people"},
+      {"number":10,"title":"Relationships"},
+      {"number":11,"title":"At home"},
+      {"number":12,"title":"Everyday minor problems","id":"unit-012"},
+      {"number":13,"title":"Global problems"},
+      {"number":14,"title":"Education"},
+      {"number":15,"title":"Higher education"},
+      {"number":16,"title":"Work"},
+      {"number":17,"title":"Business"},
+      {"number":18,"title":"Sport"},
+      {"number":19,"title":"Art and literature"},
+      {"number":20,"title":"Theatre and cinema"},
+      {"number":21,"title":"Music"},
+      {"number":22,"title":"Food"},
+      {"number":23,"title":"Physical geography"},
+      {"number":24,"title":"Environmental problems"},
+      {"number":25,"title":"Towns"},
+      {"number":26,"title":"The natural world"},
+      {"number":27,"title":"Clothes"},
+      {"number":28,"title":"Health and medicine"},
+      {"number":29,"title":"Medicine and technology"},
+      {"number":30,"title":"Health and lifestyle"},
+      {"number":31,"title":"Travel"},
+      {"number":32,"title":"Holidays"},
+      {"number":33,"title":"Science and technology"},
+      {"number":34,"title":"Computers"},
+      {"number":35,"title":"Communications and the Internet"},
+      {"number":36,"title":"Social media"},
+      {"number":37,"title":"The press and the media"},
+      {"number":38,"title":"Politics and public institutions"},
+      {"number":39,"title":"Crime"},
+      {"number":40,"title":"Money"},
+      {"number":41,"title":"Describing objects"}
+    ]},
+    {"title": "Feelings and actions", "units": [
+      {"number":42,"title":"Belief and opinion"},
+      {"number":43,"title":"Pleasant and unpleasant feelings"},
+      {"number":44,"title":"Like, dislike and desire"},
+      {"number":45,"title":"Speaking"},
+      {"number":46,"title":"The six senses"},
+      {"number":47,"title":"What your body does"},
+      {"number":48,"title":"Praising and criticising"},
+      {"number":49,"title":"Emotions and moods"},
+      {"number":50,"title":"Commenting on problematic situations"}
+    ]},
+    {"title": "Basic concepts", "units": [
+      {"number":51,"title":"Number, quantity, degree and intensity"},
+      {"number":52,"title":"Numbers and shapes"},
+      {"number":53,"title":"Time"},
+      {"number":54,"title":"Distances and dimensions"},
+      {"number":55,"title":"Obligation, need, possibility and probability"},
+      {"number":56,"title":"Sound and light"},
+      {"number":57,"title":"Possession and giving"},
+      {"number":58,"title":"Movement and speed"},
+      {"number":59,"title":"Texture, brightness, weight and density"},
+      {"number":60,"title":"Success, failure and difficulty"}
+    ]},
+    {"title": "Connecting and linking words", "units": [
+      {"number":61,"title":"Time: connecting words and expressions"},
+      {"number":62,"title":"Condition"},
+      {"number":63,"title":"Cause, reason, purpose and result"},
+      {"number":64,"title":"Concession and contrast"},
+      {"number":65,"title":"Addition"},
+      {"number":66,"title":"Referring words"},
+      {"number":67,"title":"Discourse markers in spoken English"},
+      {"number":68,"title":"Linking words in writing"},
+      {"number":69,"title":"Talking and communicating"}
+    ]},
+    {"title": "Word formation", "units": [
+      {"number":70,"title":"Suffixes"},
+      {"number":71,"title":"Prefixes"},
+      {"number":72,"title":"Roots"},
+      {"number":73,"title":"Abstract nouns"},
+      {"number":74,"title":"Compound adjectives"},
+      {"number":75,"title":"Compound nouns 1: noun + noun"},
+      {"number":76,"title":"Compound nouns 2: verb + preposition"},
+      {"number":77,"title":"Binomials"},
+      {"number":78,"title":"Abbreviations and acronyms"},
+      {"number":79,"title":"Multi-word expressions"}
+    ]},
+    {"title": "Words and pronunciation", "units": [
+      {"number":80,"title":"Words commonly mispronounced"},
+      {"number":81,"title":"Onomatopoeic words"},
+      {"number":82,"title":"Homophones and homographs"}
+    ]},
+    {"title": "Counting people and things", "units": [
+      {"number":83,"title":"Uncountable nouns"},
+      {"number":84,"title":"Words that only occur in the plural"},
+      {"number":85,"title":"Countable and uncountable nouns with different meanings"},
+      {"number":86,"title":"Making uncountable nouns countable"},
+      {"number":87,"title":"Collective nouns"},
+      {"number":88,"title":"Containers and contents"}
+    ]},
+    {"title": "Phrasal verbs and verb-based expressions", "units": [
+      {"number":89,"title":"Expressions with do and make"},
+      {"number":90,"title":"Expressions with bring and take"},
+      {"number":91,"title":"Expressions with get"},
+      {"number":92,"title":"Expressions with set and put"},
+      {"number":93,"title":"Expressions with come and go"},
+      {"number":94,"title":"Expressions with other common verbs"}
+    ]},
+    {"title": "Varieties and styles", "units": [
+      {"number":95,"title":"Formal and informal words 1"},
+      {"number":96,"title":"Formal and informal words 2"},
+      {"number":97,"title":"Similes"},
+      {"number":98,"title":"Proverbs"},
+      {"number":99,"title":"The language of signs and notices"},
+      {"number":100,"title":"Headline English"},
+      {"number":101,"title":"US English"}
+    ]}
+  ]
+}

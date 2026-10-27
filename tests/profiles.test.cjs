@@ -44,7 +44,9 @@ async function page(script, search = '', failFile, options = {}) {
   });
   context.window = context;
   context.addEventListener = () => {};
+  context.scrollTo = () => {};
   vm.runInContext(fs.readFileSync(path.join(root, 'assets/js/profiles.js'), 'utf8'), context);
+  if (script === 'vocabulary') vm.runInContext(fs.readFileSync(path.join(root, 'assets/js/vocabulary-core.js'), 'utf8'), context);
   await vm.runInContext(fs.readFileSync(path.join(root, `assets/js/${script}.js`), 'utf8'), context);
   await new Promise(resolve => setImmediate(resolve));
   const fire = async () => {
@@ -163,21 +165,40 @@ test('Listen is shared: opens without a profile, ignores ?user and filters the c
   assert.match(bogus.node('listenApp').innerHTML, /Count on Me[\s\S]*Counting Stars[\s\S]*Row Your Boat/);
 });
 
-test('Vocabulary is shared and empty for now: no profile, nothing requested, a way back to the menu', async () => {
+test('Vocabulary is shared: the book list opens without a profile and links to prepared units', async () => {
   for (const search of ['', '?user=sophia']) {
     const app = await page('vocabulary', search);
     assert.deepEqual(app.errors, [], search);
     assert.equal(app.context.location.redirect, undefined, search);
-    assert.deepEqual(app.requested, [], search);
+    assert.deepEqual(app.requested, ['vocabulary/index.json'], search);
     const html = app.node('app').innerHTML;
     assert.match(html, /<h1>Vocabulary<\/h1>/, search);
-    assert.match(html, /href="index\.html\?v=10"/, search);
+    assert.match(html, /href="vocabulary\.html\?v=10&unit=unit-012"/, search);
+    assert.match(html, /Everyday minor problems/, search);
     assert.doesNotMatch(html, /user=/, search);
+    assert.deepEqual(app.backs, ['index.html?v=10'], search);
     assert.match(app.node('profileNav').innerHTML, /← Menu/);
   }
   const refused = await page('vocabulary', '', undefined, { holdTimers: true, fetch: async () => refusals[0][1] });
   assert.equal(refused.locked(), true);
   assert.equal(refused.node('app').innerHTML, '');
+  assert.deepEqual(refused.requested, []);
+});
+
+test('a Vocabulary unit opens on its intro with only the first step available; bad unit links load nothing', async () => {
+  const app = await page('vocabulary', '?unit=unit-012');
+  assert.deepEqual(app.errors, []);
+  assert.deepEqual(app.requested, ['vocabulary/unit-012.json']);
+  assert.deepEqual(app.backs, ['vocabulary.html?v=10']);
+  const html = app.node('app').innerHTML;
+  assert.match(html, /<h1>Unit 12 · Everyday minor problems<\/h1>/);
+  assert.equal((html.match(/data-act="open" data-id="(?:learn|practice|story|mix)" disabled/g) || []).length, 4);
+  assert.match(html, />Start</);
+  for (const search of ['?unit=../users/me/test', '?unit=unit-12']) {
+    const bad = await page('vocabulary', search);
+    assert.deepEqual(bad.requested, [], search);
+    assert.match(bad.node('app').innerHTML, /Unit not found/, search);
+  }
 });
 
 test('Sophia and me have their own tests and nothing else is requested from their folders', async () => {

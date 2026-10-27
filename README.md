@@ -31,19 +31,22 @@ listen/
   *.json                 — файлы уроков
 grammar/
   level-test.json        — вопросы теста уровня грамматики (A1–C2)
-vocabulary/              — материалы Vocabulary (пока пусто)
+vocabulary/
+  index.json             — оглавление English Vocabulary in Use, готовые юниты с id
+  unit-012.json          — файлы юнитов
 tools/
   listen-time-getter.html — инструмент разметки видео
   book-preparer.html      — локальный EPUB → JSON v2 с ID слов и копированием фрагмента
   prepare-book.py        — локальная подготовка EPUB к чтению (book.json + preview.html)
   pyproject.toml, uv.lock — зависимости конвертера (uv)
 worker/
-  cf_worker.js           — Cloudflare Worker: доступ, отчёты, Write и приватные Books
+  cf_worker.js           — Cloudflare Worker: доступ, отчёты, Write, приватные Books и истории Vocabulary
 docs/
   WORKER.md              — единые переменные Worker, доступ и общий bucket
   WRITE.md               — подключение и устройство Write
   LISTEN.md              — инструкция по Listen
   GRAMMAR.md             — тест уровня грамматики: правила и формат вопросов
+  VOCABULARY.md          — Vocabulary: шаги юнита, формат файла юнита, маршрут истории
   BOOKS.md               — Books: подготовка, Storage, Worker и загрузка книг
 tests/                   — автоматические проверки
 ```
@@ -72,7 +75,9 @@ Write и отправкой отчётов. Полный список
 - **Grammar (общий):** вопросы теста уровня лежат в `grammar/level-test.json`,
   по 8 на каждый уровень A1–C2. Формат — [docs/GRAMMAR.md](docs/GRAMMAR.md).
   Материалов для вкладки Learn пока нет, они тоже будут в `grammar/`.
-- **Vocabulary (общий):** раздел пока пустой, материалы будут в `vocabulary/`.
+- **Vocabulary (общий):** юнит — файл `vocabulary/unit-NNN.json`, в оглавлении
+  `vocabulary/index.json` ему добавляется `"id": "unit-NNN"`. Формат —
+  [docs/VOCABULARY.md](docs/VOCABULARY.md).
 
 ## Как добавить пользователя
 
@@ -110,6 +115,18 @@ Test — тест уровня грамматики, от A1 до C2. На ка�
 Раздел общий для всех разрешённых аккаунтов и открывается с главного экрана,
 профиль не нужен. Все материалы лежат в проекте: Supabase и ИИ не используются.
 Подробности — [docs/GRAMMAR.md](docs/GRAMMAR.md).
+
+## Vocabulary
+
+Юниты English Vocabulary in Use Upper-intermediate. Раздел общий, открывается
+с главного экрана без профиля: оглавление книги, готовые юниты открываются.
+Юнит начинается с описания и проходит пять шагов по очереди: Warm-up (угадать
+фразы до объяснений), Learn (части A, B, C с проверкой после каждой), Practice
+(выбор из шести вариантов, дальше — только при рейтинге 4.5 по последним
+20 ответам), Story (ИИ пишет историю на украинском со списком фраз, свой перевод
+сравниваешь с английской версией) и Final mix. Прогресс не сохраняется.
+Для Story нужен Worker с маршрутом `/vocabulary/story` и настроенным OpenAI.
+Подробности — [docs/VOCABULARY.md](docs/VOCABULARY.md).
 
 ## Books
 
