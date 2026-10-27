@@ -2,51 +2,217 @@
   {
     "q": "Що означає «compelling» у реченні «She put forward a compelling argument for reform»?",
     "right": "переконливий",
-    "wrong": ["суперечливий", "поверховий", "двозначний"]
+    "wrong": [
+      "суперечливий",
+      "поверховий",
+      "двозначний"
+    ]
   },
   {
     "q": "Що означає «meticulous» у реченні «The researcher kept meticulous records of every experiment»?",
     "right": "ретельний, скрупульозний",
-    "wrong": ["приблизний, неточний", "стислий, лаконічний", "упереджений, необ’єктивний"]
+    "wrong": [
+      "приблизний, неточний",
+      "стислий, лаконічний",
+      "упереджений, необ’єктивний"
+    ]
   },
   {
     "q": "Що означає «ambiguous» у реченні «The instructions were ambiguous, so nobody knew exactly what to do»?",
     "right": "неоднозначний, двозначний",
-    "wrong": ["вичерпний, докладний", "обов’язковий, неодмінний", "недоречний, несвоєчасний"]
+    "wrong": [
+      "вичерпний, докладний",
+      "обов’язковий, неодмінний",
+      "недоречний, несвоєчасний"
+    ]
   },
   {
     "q": "Що означає «undermine» у реченні «Repeated broken promises can undermine public trust»?",
     "right": "підривати, послаблювати",
-    "wrong": ["відновлювати, зміцнювати", "вимірювати, оцінювати", "приховувати, замовчувати"]
+    "wrong": [
+      "відновлювати, зміцнювати",
+      "вимірювати, оцінювати",
+      "приховувати, замовчувати"
+    ]
   },
   {
     "q": "Що означає «plausible» у реченні «Her explanation sounded plausible, but we still needed evidence»?",
     "right": "правдоподібний",
-    "wrong": ["беззаперечний", "суперечливий", "незрозумілий"]
+    "wrong": [
+      "беззаперечний",
+      "суперечливий",
+      "незрозумілий"
+    ]
   },
   {
     "q": "Що означає «detrimental» у реченні «Chronic sleep deprivation can be detrimental to your health»?",
     "right": "шкідливий, згубний",
-    "wrong": ["корисний, сприятливий", "несуттєвий, незначний", "неминучий, невідворотний"]
+    "wrong": [
+      "корисний, сприятливий",
+      "несуттєвий, незначний",
+      "неминучий, невідворотний"
+    ]
   },
   {
     "q": "Що означає «reluctant» у реченні «He was reluctant to admit that he had made a mistake»?",
     "right": "неохочий, такий, що вагається",
-    "wrong": ["нетерплячий, сповнений бажання", "нездатний, неспроможний", "байдужий, незацікавлений"]
+    "wrong": [
+      "нетерплячий, сповнений бажання",
+      "нездатний, неспроможний",
+      "байдужий, незацікавлений"
+    ]
   },
   {
     "q": "Що означає «scrutinize» у реченні «The auditors will scrutinize every transaction for signs of fraud»?",
     "right": "ретельно перевіряти, вивчати",
-    "wrong": ["офіційно схвалювати", "навмисно приховувати", "побіжно згадувати"]
+    "wrong": [
+      "офіційно схвалювати",
+      "навмисно приховувати",
+      "побіжно згадувати"
+    ]
   },
   {
     "q": "Що означає «exacerbate» у реченні «A lack of affordable housing could exacerbate the crisis»?",
     "right": "загострювати, погіршувати",
-    "wrong": ["пом’якшувати, полегшувати", "передбачати, прогнозувати", "пояснювати, обґрунтовувати"]
+    "wrong": [
+      "пом’якшувати, полегшувати",
+      "передбачати, прогнозувати",
+      "пояснювати, обґрунтовувати"
+    ]
   },
   {
     "q": "Що означає «ubiquitous» у реченні «Smartphones have become ubiquitous in modern society»?",
     "right": "повсюдний, усюдисущий",
-    "wrong": ["застарілий, немодний", "незамінний, необхідний", "непомітний, прихований"]
+    "wrong": [
+      "застарілий, немодний",
+      "незамінний, необхідний",
+      "непомітний, прихований"
+    ]
+  },
+  {
+    "q": "Що означає «flatter» у реченні «Rather than flatter the minister to secure funding, the adviser openly challenged her assumptions.»?",
+    "right": "лестити, підлещуватися",
+    "wrong": [
+      "дорікати, докоряти",
+      "наслідувати, копіювати",
+      "виправдовувати, захищати"
+    ]
+  },
+  {
+    "q": "Що означає «guilty» у реченні «Although the executive was found guilty of fraud, several board members continued to defend his conduct.»?",
+    "right": "винний",
+    "wrong": [
+      "підозрюваний",
+      "виправданий",
+      "упереджений"
+    ]
+  },
+  {
+    "q": "Що означає «controversial» у реченні «The proposal remains controversial, with economists sharply divided over its likely consequences.»?",
+    "right": "спірний, такий, що викликає суперечки",
+    "wrong": [
+      "непереконливий, недостатньо обґрунтований",
+      "нездійсненний, нереалістичний",
+      "незаконний, заборонений"
+    ]
+  },
+  {
+    "q": "Що означає «hypothetical» у реченні «The panel considered a hypothetical scenario in which all private donations to political parties were prohibited.»?",
+    "right": "гіпотетичний, припущений",
+    "wrong": [
+      "достовірний, підтверджений",
+      "неминучий, невідворотний",
+      "типовий, поширений"
+    ]
+  },
+  {
+    "q": "Що означає «double-edged sword» у реченні «Greater transparency can be a double-edged sword: it exposes corruption but may also compromise sensitive negotiations.»?",
+    "right": "те, що має як переваги, так і недоліки",
+    "wrong": [
+      "те, що дає змогу досягти двох цілей одночасно",
+      "суперечка, у якій обидві сторони однаково винні",
+      "вибір між двома однаково невигідними рішеннями"
+    ]
+  },
+  {
+    "q": "Що означає «transparent electoral system» у реченні «A transparent electoral system allows independent observers to scrutinise how votes are collected, counted and reported.»?",
+    "right": "прозора виборча система",
+    "wrong": [
+      "пропорційна виборча система",
+      "централізована виборча система",
+      "автоматизована виборча система"
+    ]
+  },
+  {
+    "q": "Що означає «rule of law» у реченні «By subjecting senior officials to the same legal constraints as ordinary citizens, the judgment reaffirmed the rule of law.»?",
+    "right": "верховенство права",
+    "wrong": [
+      "необмежені повноваження уряду",
+      "панування парламентської більшості",
+      "незмінність чинного законодавства"
+    ]
+  },
+  {
+    "q": "Що означає «public opinion» у реченні «Despite mounting criticism in the press, public opinion remained broadly favourable towards the proposed reforms.»?",
+    "right": "громадська думка",
+    "wrong": [
+      "офіційна позиція уряду",
+      "редакційна політика преси",
+      "узгоджений висновок експертів"
+    ]
+  },
+  {
+    "q": "Що означає «abuse of power» у реченні «Awarding lucrative contracts to relatives without a competitive tender was condemned as an abuse of power.»?",
+    "right": "зловживання владою",
+    "wrong": [
+      "перевищення запланованих витрат",
+      "передання владних повноважень",
+      "нездатність виконувати посадові обов’язки"
+    ]
+  },
+  {
+    "q": "Що означає «accountability» у реченні «The reforms aim to strengthen accountability by requiring officials to justify their decisions and face consequences for misconduct.»?",
+    "right": "підзвітність, відповідальність за свої дії",
+    "wrong": [
+      "повноваження діяти на власний розсуд",
+      "недоторканність під час виконання обов’язків",
+      "здатність передбачати наслідки рішень"
+    ]
+  },
+  {
+    "q": "Що означає «overlook» у реченні «In their eagerness to demonstrate progress, the consultants may overlook evidence that contradicts their initial conclusions.»?",
+    "right": "не помічати, випускати з уваги",
+    "wrong": [
+      "свідомо спростовувати",
+      "ретельно перевіряти",
+      "надмірно підкреслювати"
+    ]
+  },
+  {
+    "q": "Що означає «point out» у реченні «The reviewer was careful to point out that a correlation between the two variables did not establish a causal relationship.»?",
+    "right": "вказувати, звертати увагу",
+    "wrong": [
+      "натякати, не висловлюючи прямо",
+      "заперечувати, відкидати",
+      "припускати, не маючи доказів"
+    ]
+  },
+  {
+    "q": "Що означає «on the contrary» у реченні «The findings do not weaken our argument; on the contrary, they provide compelling evidence in its favour.»?",
+    "right": "навпаки",
+    "wrong": [
+      "незважаючи на це",
+      "водночас",
+      "отже"
+    ]
+  },
+  {
+    "q": "Що означає «that's just how the world works» у реченні «When challenged about the unfair advantage enjoyed by wealthy candidates, he shrugged and said, 'That's just how the world works.'»?",
+    "right": "так уже влаштований світ",
+    "wrong": [
+      "світ поступово змінюється на краще",
+      "усі люди повинні діяти однаково",
+      "це лише один зі способів пояснити світ"
+    ]
   }
 ]

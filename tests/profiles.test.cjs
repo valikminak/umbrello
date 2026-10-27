@@ -187,7 +187,7 @@ test('Sophia and me have their own tests and nothing else is requested from thei
   assert.deepEqual(sophia.requested, ['users/index.json', 'users/sophia/test.json']);
   const me = await page('test', '?user=me');
   assert.deepEqual(me.errors, []);
-  assert.equal(me.quizzes[0].length, 10);
+  assert.deepEqual(me.quizzes[0], JSON.parse(fs.readFileSync(path.join(root, 'users/me/test.json'), 'utf8')));
   assert.deepEqual(me.requested, ['users/index.json', 'users/me/test.json']);
 });
 
