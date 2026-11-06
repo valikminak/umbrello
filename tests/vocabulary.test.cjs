@@ -40,6 +40,27 @@ test('the unit list and Unit 12 pass validation, and every listed unit has its f
   }
 });
 
+test('every prepared unit trains each phrase at least twice in practice and once in the final mix, with Ukrainian notes', () => {
+  const ready = core.validateIndex(read('vocabulary/index.json')).groups.flatMap(group => group.units).filter(unit => unit.id);
+  assert.ok(ready.length >= 6);
+  const cyrillic = /[А-Яа-яІіЇїЄєҐґ]/u;
+  for (const { id } of ready) {
+    const unit = core.validateUnit(read(`vocabulary/${id}.json`));
+    const ids = new Set(unit.items.map(item => item.id));
+    for (const item of unit.items) {
+      assert.ok(unit.practice.filter(q => q.item === item.id).length >= 2, `${id}: practice for ${item.id}`);
+      assert.ok(unit.mix.some(q => q.item === item.id), `${id}: mix for ${item.id}`);
+      assert.match(item.uk, cyrillic, `${id}: ${item.id}.uk`);
+      if (item.watchOut) assert.match(item.watchOut, cyrillic, `${id}: ${item.id}.watchOut`);
+    }
+    for (const q of [...unit.warmup, ...Object.values(unit.checks).flat()]) assert.match(q.explain || '', cyrillic, `${id}: ${q.q}`);
+    assert.equal(unit.warmup.length, 8, `${id}: warm-up`);
+    for (const list of Object.values(unit.checks)) assert.equal(list.length, 3, `${id}: checks`);
+    assert.ok(unit.story.example && core.storyIds(unit.story.example.en, ids).length >= 8, `${id}: example story`);
+    assert.doesNotMatch(unit.story.example.uk, /[A-Za-z]{3,}/, `${id}: English words in the Ukrainian story`);
+  }
+});
+
 test('Unit 12 trains every phrase in practice and in the final mix, with Ukrainian notes', () => {
   const unit = core.validateUnit(read('vocabulary/unit-012.json'));
   assert.equal(unit.items.length, 27);
@@ -72,6 +93,8 @@ test('malformed units are rejected with the place to fix', () => {
     [broken(d => { d.practice.forEach(q => { q.item = 'a1'; }); }), /practice: no question for b1/],
     [broken(d => { d.mix = d.mix.slice(0, 1); }), /mix: no question for b1/],
     [broken(d => { d.mix[0].answers = []; }), /mix\[0\]: add answers/],
+    [broken(d => { d.practice[5].q = d.practice[2].q.toUpperCase(); }), /practice\[5\]: the same sentence as practice\[2\]/],
+    [broken(d => { d.mix[1].q = d.practice[3].q; }), /mix\[1\]: use a new sentence, not practice\[3\]/],
     [broken(d => { d.parts[1] = { id: 'H', title: 'Help' }; }), /part H has no items, table or note/],
     [broken(d => { d.parts[1].table = { columns: ['A', 'B'], rows: [['one']] }; }), /parts\[1\]\.table/],
     [broken(d => { d.story.topics = []; }), /story: add topics/],
@@ -113,6 +136,7 @@ test('a wrong practice question comes back after four to seven others; a new dec
 test('typed answers ignore case, curly apostrophes and end punctuation; one typo in a longer word is almost right', () => {
   assert.deepEqual(core.checkTyped(["wouldn't start"], ' Wouldn’t  START. '), { status: 'ok', matched: "wouldn't start" });
   assert.deepEqual(core.checkTyped(['bump', 'bang'], 'bang'), { status: 'ok', matched: 'bang' });
+  assert.deepEqual(core.checkTyped(['heat wave'], 'heat-wave'), { status: 'ok', matched: 'heat wave' }, 'a hyphen counts as a space');
   assert.deepEqual(core.checkTyped(['mislaid'], 'mislayd'), { status: 'almost', matched: 'mislaid' });
   assert.deepEqual(core.checkTyped(['flat'], 'flet'), { status: 'bad' }, 'short words must be exact');
   assert.deepEqual(core.checkTyped(['leaking'], ''), { status: 'bad' });
@@ -137,4 +161,32 @@ test('the Vocabulary page loads the rules before the page script', () => {
   assert.ok(order.every(i => i > 0), 'all scripts included');
   assert.deepEqual([...order].sort((a, b) => a - b), order);
   assert.match(html, /assets\/css\/vocabulary\.css/);
+});
+
+test('saved progress keeps only known steps, valid scores and the last 20 practice answers', () => {
+  assert.deepEqual(core.progressOf(null), { done: [], scores: {}, practice: null, finishedAt: null });
+  assert.deepEqual(core.progressOf('broken'), { done: [], scores: {}, practice: null, finishedAt: null });
+  const saved = core.progressOf({
+    done: ['learn', 'warm', 'hack', 'learn'], scores: { warm: '7 / 8', mix: '<b>27</b>', extra: '1 / 1' },
+    practice: { history: Array(25).fill(true), right: 25, wrong: 0 }, finishedAt: '2026-11-06',
+  });
+  assert.deepEqual(saved.done, ['warm', 'learn']);
+  assert.deepEqual(saved.scores, { warm: '7 / 8' });
+  assert.equal(saved.practice.history.length, 20);
+  assert.equal(saved.finishedAt, '2026-11-06');
+  assert.equal(core.progressOf({ practice: { history: [true, 'yes'], right: 1, wrong: 0 } }).practice, null);
+  assert.equal(core.progressOf({ practice: { history: [], right: -1, wrong: 0 } }).practice, null);
+  assert.equal(core.progressOf({ finishedAt: 'yesterday' }).finishedAt, null);
+});
+
+test('a step opens only after every step before it; the list shows Open, the next step or Done', () => {
+  assert.equal(core.unlockedSteps([]), 0);
+  assert.equal(core.unlockedSteps(['warm', 'learn']), 2);
+  assert.equal(core.unlockedSteps(['warm', 'practice']), 1, 'a gap stops the chain');
+  assert.equal(core.unlockedSteps(core.STEP_IDS), 5);
+  const label = saved => core.progressLabel(core.progressOf(saved));
+  assert.deepEqual(label(null), { kind: 'new', text: 'Open' });
+  assert.deepEqual(label({ done: ['warm', 'learn'] }), { kind: 'progress', text: 'Step 3 of 5' });
+  assert.deepEqual(label({ done: core.STEP_IDS.slice(0, 4) }), { kind: 'progress', text: 'Step 5 of 5' });
+  assert.deepEqual(label({ done: ['warm'], finishedAt: '2026-11-06' }), { kind: 'done', text: 'Done' }, 'a finished unit stays done while repeated');
 });

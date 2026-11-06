@@ -11,6 +11,8 @@
 .voc-unit.ready{color:var(--text);font-weight:600}
 .voc-chip{display:inline-block;font-size:13px;font-weight:600;padding:4px 9px;border-radius:9px;background:var(--seen);color:var(--accent);white-space:nowrap}
 .voc-chip.ok{background:var(--ok-soft);color:var(--ok)}
+.voc-chip.done{background:var(--ok-soft);color:var(--ok)}
+.voc-chip.new{background:var(--line);color:var(--hint)}
 
 /* top of a step */
 .voc-nav{display:flex;align-items:center;gap:10px;min-height:40px;margin-bottom:6px}

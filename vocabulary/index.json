@@ -9,7 +9,7 @@
     ]},
     {"title": "Topics", "units": [
       {"number":5,"title":"Countries, nationalities and languages"},
-      {"number":6,"title":"The weather"},
+      {"number":6,"title":"The weather","id":"unit-006"},
       {"number":7,"title":"Describing people: appearance"},
       {"number":8,"title":"Describing people: personality"},
       {"number":9,"title":"Idioms describing people"},
@@ -48,7 +48,7 @@
     ]},
     {"title": "Feelings and actions", "units": [
       {"number":42,"title":"Belief and opinion"},
-      {"number":43,"title":"Pleasant and unpleasant feelings"},
+      {"number":43,"title":"Pleasant and unpleasant feelings","id":"unit-043"},
       {"number":44,"title":"Like, dislike and desire"},
       {"number":45,"title":"Speaking"},
       {"number":46,"title":"The six senses"},
@@ -72,7 +72,7 @@
     {"title": "Connecting and linking words", "units": [
       {"number":61,"title":"Time: connecting words and expressions"},
       {"number":62,"title":"Condition"},
-      {"number":63,"title":"Cause, reason, purpose and result"},
+      {"number":63,"title":"Cause, reason, purpose and result","id":"unit-063"},
       {"number":64,"title":"Concession and contrast"},
       {"number":65,"title":"Addition"},
       {"number":66,"title":"Referring words"},
@@ -81,7 +81,7 @@
       {"number":69,"title":"Talking and communicating"}
     ]},
     {"title": "Word formation", "units": [
-      {"number":70,"title":"Suffixes"},
+      {"number":70,"title":"Suffixes","id":"unit-070"},
       {"number":71,"title":"Prefixes"},
       {"number":72,"title":"Roots"},
       {"number":73,"title":"Abstract nouns"},
@@ -106,7 +106,7 @@
       {"number":88,"title":"Containers and contents"}
     ]},
     {"title": "Phrasal verbs and verb-based expressions", "units": [
-      {"number":89,"title":"Expressions with do and make"},
+      {"number":89,"title":"Expressions with do and make","id":"unit-089"},
       {"number":90,"title":"Expressions with bring and take"},
       {"number":91,"title":"Expressions with get"},
       {"number":92,"title":"Expressions with set and put"},

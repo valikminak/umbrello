@@ -7,14 +7,29 @@
   const unitUrl = id => `${listUrl}&unit=${encodeURIComponent(id)}`;
   const unitId = new URLSearchParams(location.search).get("unit");
 
+  // Progress lives on this device only, per verified Telegram account and unit (like Books).
+  const storeKey = id => `umbrello.vocabulary.v1.${Profiles.userId}.${id}`;
+  function readProgress(id) {
+    if (!Profiles.userId) return core.progressOf(null);
+    try { return core.progressOf(JSON.parse(localStorage.getItem(storeKey(id)) ?? "null")); } catch (_) { return core.progressOf(null); }
+  }
+  function writeProgress(id, value) {
+    if (!Profiles.userId) return;
+    try { localStorage.setItem(storeKey(id), JSON.stringify(value)); } catch (_) {}
+  }
+
   // ---------- Unit list: the book's contents, prepared units open ----------
+  function statusChip(id) {
+    const label = core.progressLabel(readProgress(id));
+    return `<span class="voc-chip ${label.kind}">${label.kind === "done" ? "✓ " : ""}${esc(label.text)}</span>`;
+  }
   async function showList() {
     backTo(Profiles.url("index.html"));
     try {
       const index = core.validateIndex(await loadJSON("vocabulary/index.json"));
       host.innerHTML = `<h1>Vocabulary</h1><p class="sub">${esc(index.book)}</p>
         ${index.groups.map(group => `<h2 class="voc-group">${esc(group.title)}</h2><div class="voc-units">${group.units.map(unit => unit.id
-          ? `<a class="voc-unit ready" href="${unitUrl(unit.id)}"><span class="n">${unit.number}</span><span class="t">${esc(unit.title)}</span><span class="voc-chip ok">Open</span></a>`
+          ? `<a class="voc-unit ready" href="${unitUrl(unit.id)}"><span class="n">${unit.number}</span><span class="t">${esc(unit.title)}</span>${statusChip(unit.id)}</a>`
           : `<div class="voc-unit"><span class="n">${unit.number}</span><span class="t">${esc(unit.title)}</span></div>`).join("")}</div>`).join("")}`;
     } catch (error) { showError(host, error, showList); }
   }
@@ -46,7 +61,10 @@
     { id: "mix", short: "Mix", title: "Final mix", how: "Type the missing phrase. The first letters are given." },
   ];
   const ICON = '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 5 6 9H3v6h3l5 4z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/><path d="M18.5 5.5a9 9 0 0 1 0 13"/></svg>';
-  const say = t => `<button class="voc-say" type="button" data-act="say" data-t="${esc(t.replace(/\*\*/g, ""))}" aria-label="Listen">${ICON}</button>`;
+  // Spoken text: no ** marks, no root-word cue like "(DRIVE)"; a bare prefix or suffix has nothing to say.
+  const spoken = t => t.replace(/\*\*/g, "").replace(/\s*\([A-Z][A-Z' -]*\)/g, "").trim();
+  const say = t => /^-|-$/.test(t.trim()) ? "" :
+    `<button class="voc-say" type="button" data-act="say" data-t="${esc(spoken(t))}" aria-label="Listen">${ICON}</button>`;
   const md = s => esc(s).replace(/\*\*(.+?)\*\*/g, "<b>$1</b>");
   const fillGap = (q, a, cls) => esc(q).replace("___", () => `<b${cls ? ` class="${cls}"` : ""}>${esc(a)}</b>`);
   const blank = q => esc(q).replace("___", '<span class="voc-gap">   </span>');
@@ -54,34 +72,55 @@
   const isRight = status => status === "ok" || status === "almost";
   let S, pracTimer = null, storyCtl = null;
 
-  function start() {
-    S = { view: "intro", unlocked: 0, done: new Set(), learnPart: unit.parts[0].id, learnReached: 0,
-      run: null, prac: null, story: { status: "idle", data: null, source: null, topic: "", phase: "write", text: "", err: "" }, scores: {} };
+  function start(over = false) {
+    const saved = readProgress(unitId);
+    if (over) Object.assign(saved, { done: [], scores: {}, practice: null });
+    S = { view: "intro", done: new Set(saved.done), unlocked: core.unlockedSteps(saved.done), learnPart: unit.parts[0].id, learnReached: 0,
+      run: null, prac: null, savedPractice: saved.practice, finishedAt: saved.finishedAt, confirmReset: false,
+      story: { status: "idle", data: null, source: null, topic: "", phase: "write", text: "", err: "" }, scores: { ...saved.scores } };
+    if (over) save();
     show("intro");
+  }
+  function save() {
+    const p = S.prac;
+    writeProgress(unitId, { done: [...S.done], scores: S.scores, finishedAt: S.finishedAt,
+      practice: p ? { history: p.history.slice(-core.WINDOW), right: p.right, wrong: p.wrong } : S.savedPractice });
+  }
+  function today() {
+    const d = new Date(), two = n => String(n).padStart(2, "0");
+    return `${d.getFullYear()}-${two(d.getMonth() + 1)}-${two(d.getDate())}`;
   }
   function show(view) {
     clearTimeout(pracTimer);
     if (S.view === "story" && S.story.phase === "write") S.story.text = host.querySelector("#vocMine")?.value || S.story.text;
     try { speechSynthesis.cancel(); } catch (_) {}
     S.view = view;
+    S.confirmReset = false;
     render();
     window.scrollTo(0, 0);
   }
   function complete(stepId) {
     S.done.add(stepId);
-    S.unlocked = Math.max(S.unlocked, STEPS.findIndex(step => step.id === stepId) + 1);
+    S.unlocked = core.unlockedSteps([...S.done]);
+    if (stepId === "mix") S.finishedAt = today();
+    save();
   }
   function openStep(id) {
     if (STEPS.findIndex(step => step.id === id) > S.unlocked) return;
     if (id === "warm") return startRun({ step: "warm", cards: unit.warmup.map(q => ({ ...q, idk: true })), order: false,
-      onEnd: () => { complete("warm"); show("warmResult"); } });
+      onEnd: () => { S.scores.warm = runScore(); complete("warm"); show("warmResult"); } });
     if (id === "learn") return show("learn");
     if (id === "practice") { if (!S.prac) startPractice(); return show("practice"); }
     if (id === "story") { show("story"); if (S.story.status === "idle") getStory(); return; }
     if (id === "mix") return startRun({ step: "mix", cards: unit.mix.map(q => ({ ...q, typed: true })), requeue: true,
-      onEnd: () => { complete("mix"); show("mixResult"); } });
+      onEnd: () => { S.scores.mix = runScore(); complete("mix"); show("mixResult"); } });
   }
 
+  // Right the first time out of all questions (repeats of missed ones don't count).
+  function runScore() {
+    const first = S.run.res.filter(x => !x.retry);
+    return `${first.filter(x => isRight(x.out.status)).length} / ${first.length}`;
+  }
   const nav = () => `<div class="voc-nav"><button class="voc-back" type="button" data-act="intro">‹ Unit ${unit.number}</button>
     <span>${esc(unit.title)}</span></div>`;
   const stepbar = current => `<div class="voc-steps" aria-label="Unit steps">${STEPS.map(step =>
@@ -100,7 +139,9 @@
         <span class="num">${S.done.has(step.id) ? "✓" : i + 1}</span><span class="body"><b>${step.title}</b><span>${esc(step.how)}</span></span></button>`).join("")}</div>
       ${S.done.has("mix") ? `<button class="btn" type="button" data-act="show" data-id="done">See unit results</button>`
         : `<button class="btn" type="button" data-act="open" data-id="${next.id}">${S.unlocked === 0 ? "Start" : "Continue: " + next.title}</button>`}
-      <p class="sub voc-note">Nothing is saved. Closing the page starts the unit again.</p>`;
+      ${S.finishedAt ? `<p class="sub voc-note">Finished on ${esc(new Date(S.finishedAt + "T12:00:00").toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" }))}.</p>` : ""}
+      <p class="sub voc-note">Progress is saved on this device.</p>
+      ${S.done.size ? `<button class="btn ghost" type="button" data-act="reset">${S.confirmReset ? "Tap again to start over" : "Start the unit over"}</button>` : ""}`;
   }
 
   function itemCard(item) {
@@ -206,7 +247,6 @@
 
   function viewWarmResult() {
     const right = S.run.res.filter(x => isRight(x.out.status)).length, total = S.run.res.length;
-    S.scores.warm = `${right} / ${total}`;
     return `${nav()}${stepbar("warm")}
       <div class="voc-result"><p class="sub">You already knew</p><div class="big">${right} / ${total}</div>
       <p class="sub">All of these phrases are in this unit. Now learn them.</p></div>
@@ -216,7 +256,6 @@
     const r = S.run, first = r.res.filter(x => !x.retry), right = first.filter(x => isRight(x.out.status)).length;
     const retried = r.res.filter(x => x.retry), fixed = retried.filter(x => isRight(x.out.status)).length;
     const missed = first.filter(x => !isRight(x.out.status));
-    S.scores.mix = `${right} / ${first.length}`;
     return `${nav()}${stepbar("mix")}
       <div class="voc-result"><p class="sub">Right the first time</p><div class="big">${right} / ${first.length}</div>
       <p class="sub">${retried.length ? `${fixed} of ${retried.length} fixed on the second try.` : "No mistakes."}</p></div>
@@ -225,10 +264,11 @@
       <button class="btn" type="button" data-act="show" data-id="done">Finish the unit</button>`;
   }
   function viewDone() {
+    const practice = S.prac || S.savedPractice;
     return `${nav()}<h1>Unit ${unit.number} done</h1><p class="sub">${esc(unit.title)}</p>
       <div class="voc-summary">
         <div><span>Warm-up</span><b>${esc(S.scores.warm || "—")}</b></div>
-        <div><span>Practice rating</span><b>${S.prac ? `${core.rating(S.prac.history).toFixed(1)} · ${S.prac.history.length} answers` : "—"}</b></div>
+        <div><span>Practice rating</span><b>${practice ? `${core.rating(practice.history).toFixed(1)} · ${practice.right + practice.wrong} answers` : "—"}</b></div>
         <div><span>Story</span><b>${S.done.has("story") ? "translated" : "—"}</b></div>
         <div><span>Final mix</span><b>${esc(S.scores.mix || "—")}</b></div>
       </div>
@@ -238,7 +278,9 @@
 
   // ---------- Practice: like Polyglot, the next step opens at a rating of 4.5 ----------
   function startPractice() {
-    S.prac = { queue: core.practiceDeck(unit.practice), current: null, options: [], history: [], right: 0, wrong: 0, phase: "ask", picked: null, passed: false };
+    const saved = S.savedPractice || { history: [], right: 0, wrong: 0 };
+    S.prac = { queue: core.practiceDeck(unit.practice), current: null, options: [], history: saved.history.slice(), right: saved.right, wrong: saved.wrong,
+      phase: "ask", picked: null, passed: S.done.has("practice") || core.passed(saved.history) };
     nextPractice();
   }
   function nextPractice() {
@@ -256,7 +298,7 @@
     p.history.push(ok);
     if (ok) p.right++; else { p.wrong++; core.requeue(p.queue, p.current); }
     vibrate(ok ? "success" : "error");
-    if (!p.passed && core.passed(p.history)) { p.passed = true; complete("practice"); }
+    if (!p.passed && core.passed(p.history)) { p.passed = true; complete("practice"); } else save();
     render();
     if (ok) pracTimer = setTimeout(() => { if (S.view === "practice" && S.prac.phase === "right") { nextPractice(); render(); } }, 700);
     else host.querySelector('[data-act="pnext"]')?.focus({ preventScroll: true });
@@ -427,7 +469,10 @@
         render();
         window.scrollTo(0, 0);
         return;
-      case "restart": return start();
+      case "restart": return start(true);
+      case "reset":
+        if (!S.confirmReset) { S.confirmReset = true; return render(); }
+        return start(true);
     }
   };
   host.onkeydown = event => {

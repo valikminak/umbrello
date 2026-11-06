@@ -45,6 +45,10 @@ async function page(script, search = '', failFile, options = {}) {
   context.window = context;
   context.addEventListener = () => {};
   context.scrollTo = () => {};
+  if (options.storage) context.localStorage = {
+    getItem: key => (key in options.storage ? options.storage[key] : null),
+    setItem: (key, value) => { options.storage[key] = String(value); },
+  };
   vm.runInContext(fs.readFileSync(path.join(root, 'assets/js/profiles.js'), 'utf8'), context);
   if (script === 'vocabulary') vm.runInContext(fs.readFileSync(path.join(root, 'assets/js/vocabulary-core.js'), 'utf8'), context);
   await vm.runInContext(fs.readFileSync(path.join(root, `assets/js/${script}.js`), 'utf8'), context);
@@ -199,6 +203,25 @@ test('a Vocabulary unit opens on its intro with only the first step available; b
     assert.deepEqual(bad.requested, [], search);
     assert.match(bad.node('app').innerHTML, /Unit not found/, search);
   }
+});
+
+test('Vocabulary progress is read per account: the list shows the next step and the unit continues there', async () => {
+  const key = 'umbrello.vocabulary.v1.123.unit-012';
+  const storage = { [key]: JSON.stringify({ done: ['warm', 'learn'], scores: { warm: '6 / 8' }, practice: { history: [true, false], right: 1, wrong: 1 } }),
+    'umbrello.vocabulary.v1.999.unit-012': JSON.stringify({ finishedAt: '2026-11-01' }) };
+  const list = await page('vocabulary', '', undefined, { storage });
+  assert.match(list.node('app').innerHTML, /<span class="voc-chip progress">Step 3 of 5<\/span>/);
+  assert.doesNotMatch(list.node('app').innerHTML, /Done/, 'another account\'s progress is not shown');
+  const unit = await page('vocabulary', '?unit=unit-012', undefined, { storage });
+  const html = unit.node('app').innerHTML;
+  assert.match(html, />Continue: Practice</);
+  assert.match(html, /data-act="open" data-id="practice">/, 'Practice is open');
+  assert.match(html, /data-act="open" data-id="story" disabled/);
+  assert.match(html, /Start the unit over/);
+  assert.match(html, /Progress is saved on this device/);
+  const fresh = await page('vocabulary', '?unit=unit-012', undefined, { storage: {} });
+  assert.match(fresh.node('app').innerHTML, />Start</);
+  assert.doesNotMatch(fresh.node('app').innerHTML, /Start the unit over/);
 });
 
 test('Sophia and me have their own tests and nothing else is requested from their folders', async () => {

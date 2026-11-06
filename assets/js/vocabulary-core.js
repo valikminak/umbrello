@@ -9,6 +9,7 @@
   const MIN_PRACTICE = 20;
   const STORY_MIN_PHRASES = 5;
   const UNIT_ID = /^unit-\d{3}$/;
+  const STEP_IDS = ["warm", "learn", "practice", "story", "mix"];
   const MARK = /\[\[([^\]|]+)\|([a-z0-9]+)\]\]/g;
 
   const filled = value => typeof value === "string" && value.trim() !== "";
@@ -124,6 +125,15 @@
       return { q: clean(q.q), answers: q.answers.map(clean), item: itemRef(where, q.item) };
     });
 
+    // Final mix needs new sentences: a repeat from Practice tests memory of that sentence, not the phrase.
+    const sentence = q => q.toLowerCase().replace(/[^a-z0-9_]+/g, " ").trim();
+    const seen = new Map();
+    practice.forEach((q, i) => {
+      if (seen.has(sentence(q.q))) fail(`practice[${i}]`, `the same sentence as practice[${seen.get(sentence(q.q))}].`);
+      seen.set(sentence(q.q), i);
+    });
+    mix.forEach((q, i) => { if (seen.has(sentence(q.q))) fail(`mix[${i}]`, `use a new sentence, not practice[${seen.get(sentence(q.q))}].`); });
+
     for (const [name, list] of [["practice", practice], ["mix", mix]]) {
       const missing = items.filter(item => !list.some(q => q.item === item.id)).map(item => item.id);
       if (missing.length) fail(name, `no question for ${missing.join(", ")}.`);
@@ -167,8 +177,8 @@
     return a;
   }
 
-  // Typed answers: case, curly apostrophes, spaces and end punctuation don't matter; one typo in a longer word is "almost".
-  const normalize = value => String(value).toLowerCase().replace(/[’‘`]/g, "'").replace(/\s+/g, " ")
+  // Typed answers: case, curly apostrophes, hyphens, spaces and end punctuation don't matter; one typo in a longer word is "almost".
+  const normalize = value => String(value).toLowerCase().replace(/[’‘`]/g, "'").replace(/[\s-]+/g, " ")
     .replace(/^[\s"'«“]+|[\s.!?,;:"'»”]+$/g, "").trim();
   function distance(a, b) {
     const row = Array.from({ length: b.length + 1 }, (_, j) => j);
@@ -210,7 +220,38 @@
   const storyIds = (text, ids) => [...new Set(storyParts(text, ids).filter(part => part.item).map(part => part.item))];
   const plainStory = text => text.replace(MARK, "$1");
 
-  const api = { WINDOW, PASS, PRACTICE_OPTIONS, MIN_PRACTICE, STORY_MIN_PHRASES, UNIT_ID,
+  // Progress saved on the device for one unit. Anything unexpected is dropped, never trusted.
+  // Only finished steps are stored: a step is open when every step before it is finished.
+  function progressOf(saved) {
+    const out = { done: [], scores: {}, practice: null, finishedAt: null };
+    if (!saved || typeof saved !== "object") return out;
+    if (Array.isArray(saved.done)) out.done = STEP_IDS.filter(id => saved.done.includes(id));
+    for (const key of ["warm", "mix"]) {
+      const score = saved.scores?.[key];
+      if (typeof score === "string" && /^\d{1,3} \/ \d{1,3}$/.test(score)) out.scores[key] = score;
+    }
+    const p = saved.practice;
+    if (p && Array.isArray(p.history) && p.history.every(x => typeof x === "boolean") &&
+        Number.isInteger(p.right) && p.right >= 0 && Number.isInteger(p.wrong) && p.wrong >= 0) {
+      out.practice = { history: p.history.slice(-WINDOW), right: p.right, wrong: p.wrong };
+    }
+    if (typeof saved.finishedAt === "string" && /^\d{4}-\d{2}-\d{2}$/.test(saved.finishedAt)) out.finishedAt = saved.finishedAt;
+    return out;
+  }
+  function unlockedSteps(done) {
+    let open = 0;
+    while (open < STEP_IDS.length && done.includes(STEP_IDS[open])) open++;
+    return open;
+  }
+  // What the unit list shows next to a unit. A unit finished once stays "Done" while it is repeated.
+  function progressLabel(progress) {
+    if (progress.finishedAt) return { kind: "done", text: "Done" };
+    const open = unlockedSteps(progress.done);
+    if (!open) return { kind: "new", text: "Open" };
+    return { kind: "progress", text: `Step ${Math.min(open + 1, STEP_IDS.length)} of ${STEP_IDS.length}` };
+  }
+
+  const api = { WINDOW, STEP_IDS, progressOf, unlockedSteps, progressLabel, PASS, PRACTICE_OPTIONS, MIN_PRACTICE, STORY_MIN_PHRASES, UNIT_ID,
     validateIndex, validateUnit, rating, passed, practiceDeck, requeue, normalize, distance, checkTyped, firstLetters,
     storyParts, storyIds, plainStory };
   if (typeof module !== "undefined" && module.exports) module.exports = api;
