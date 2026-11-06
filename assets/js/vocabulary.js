@@ -97,10 +97,9 @@
     { id: "mix", short: "Mix", title: "Final mix", how: "Type the missing phrase. The first letters are given." },
   ];
   const ICON = '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 5 6 9H3v6h3l5 4z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/><path d="M18.5 5.5a9 9 0 0 1 0 13"/></svg>';
-  // Spoken text: no ** marks, no root-word cue like "(DRIVE)"; a bare prefix or suffix has nothing to say.
-  const spoken = t => t.replace(/\*\*/g, "").replace(/\s*\([A-Z][A-Z' -]*\)/g, "").trim();
+  // A bare prefix or suffix has nothing to say; everything else is read as core.spokenText shapes it.
   const say = t => /^-|-$/.test(t.trim()) ? "" :
-    `<button class="voc-say" type="button" data-act="say" data-t="${esc(spoken(t))}" aria-label="Listen">${ICON}</button>`;
+    `<button class="voc-say" type="button" data-act="say" data-t="${esc(core.spokenText(t))}" aria-label="Listen">${ICON}</button>`;
   const md = s => esc(s).replace(/\*\*(.+?)\*\*/g, "<b>$1</b>");
   const fillGap = (q, a, cls) => esc(q).replace("___", () => `<b${cls ? ` class="${cls}"` : ""}>${esc(a)}</b>`);
   const blank = q => esc(q).replace("___", '<span class="voc-gap">   </span>');

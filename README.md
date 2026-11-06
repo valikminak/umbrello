@@ -33,7 +33,8 @@ grammar/
   level-test.json        — вопросы теста уровня грамматики (A1–C2)
 vocabulary/
   index.json             — уровни Vocabulary по блокам (по одной книге на уровень)
-  elementary/, upper-intermediate/, collocations-intermediate/
+  elementary/, upper-intermediate/, collocations-intermediate/,
+  phrasal-verbs-intermediate/, phrasal-verbs-advanced/
     index.json           — оглавление книги уровня, готовые юниты с id
     unit-012.json        — файлы юнитов
 tools/
@@ -121,9 +122,10 @@ Test — тест уровня грамматики, от A1 до C2. На ка�
 
 ## Vocabulary
 
-Книги «in Use» по уровням, юнит за юнитом, двумя блоками: Vocabulary
-(English Vocabulary in Use — Elementary и Upper-intermediate) и Collocations
-(English Collocations in Use — Intermediate). Раздел общий, открывается
+Книги «in Use» по уровням, юнит за юнитом, тремя блоками: Vocabulary
+(English Vocabulary in Use — Elementary и Upper-intermediate), Collocations
+(English Collocations in Use — Intermediate) и Phrasal verbs (English Phrasal
+Verbs in Use — Intermediate и Advanced). Раздел общий, открывается
 с главного экрана без профиля: уровни → оглавление уровня → готовый юнит.
 Юнит начинается с описания и проходит пять шагов по очереди: Warm-up (угадать
 фразы до объяснений), Learn (части A, B, C с проверкой после каждой), Practice

@@ -220,6 +220,14 @@
   }
   const firstLetters = answer => answer.split(" ").map(word => word[0] + "…").join(" ");
 
+  // Text for the speech button: no ** marks and no root-word cue like "(DRIVE)";
+  // dictionary shorthand is read as words: "pick sb/sth out" → "pick somebody or something out",
+  // "make / take a decision" → "make or take a decision".
+  const spokenText = text => text.replace(/\*\*/g, "").replace(/\s*\([A-Z][A-Z' -]*\)/g, "")
+    .replace(/\bsb\/sth\b/g, "somebody or something").replace(/\bsb's\b/g, "somebody's")
+    .replace(/\bsb\b/g, "somebody").replace(/\bsth\b/g, "something")
+    .replace(/\s+\/\s+/g, " or ").trim();
+
   // Story marks: [[words used|item id]]. Unknown ids are kept as plain text.
   function storyParts(text, ids) {
     const out = [];
@@ -280,7 +288,7 @@
   }
 
   const api = { BOOK_ID, validateLibrary, shelfGroups, WINDOW, STEP_IDS, progressOf, unlockedSteps, progressLabel, PASS, PRACTICE_OPTIONS, MIN_PRACTICE, STORY_MIN_PHRASES, UNIT_ID,
-    validateIndex, validateUnit, rating, passed, practiceDeck, requeue, normalize, distance, checkTyped, firstLetters,
+    validateIndex, validateUnit, rating, passed, practiceDeck, requeue, normalize, distance, checkTyped, firstLetters, spokenText,
     storyParts, storyIds, plainStory };
   if (typeof module !== "undefined" && module.exports) module.exports = api;
   else root.VocabularyCore = api;

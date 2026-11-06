@@ -86,7 +86,11 @@
     const definitions = new Map();
     if (saved && typeof saved === "object" && !Array.isArray(saved)) {
       for (const [key, entry] of Object.entries(saved)) {
-        if (typeof entry?.term === "string" && typeof entry?.definition === "string") definitions.set(key, { term: entry.term, definition: entry.definition });
+        if (typeof entry?.term === "string" && typeof entry?.definition === "string") {
+          definitions.set(key, { term: entry.term, definition: entry.definition,
+            example: typeof entry.example === "string" ? entry.example : "",
+            translation: typeof entry.translation === "string" ? entry.translation : "" });
+        }
       }
     }
     return definitions;
@@ -208,7 +212,7 @@
 
   /* ---------- definitions ---------- */
 
-  const popup = { open: false, key: null, ui: null };
+  const popup = { open: false, key: null, ui: null, data: null, detail: null };
 
   function popupUI() {
     if (popup.ui) return popup.ui;
@@ -222,29 +226,59 @@
       <button class="define-close" type="button" id="defineClose" aria-label="Close">✕</button></header>
       <p class="define-status" id="defineStatus" role="status" aria-live="polite"></p>
       <p class="define-text" id="defineText"></p>
+      <div class="define-detail" id="defineDetail" hidden aria-live="polite">
+        <span class="define-detail-label" id="defineDetailLabel"></span>
+        <p id="defineDetailText"></p>
+      </div>
       <div class="define-actions">
-        <button class="btn ghost" type="button" id="defineRetry">Try again</button>
-        <button class="btn ghost define-delete" type="button" id="defineDelete">Delete definition</button>
+        <button class="define-action" type="button" id="defineExample" aria-pressed="false" aria-controls="defineDetail">Example</button>
+        <button class="define-action" type="button" id="defineTranslation" aria-pressed="false" aria-controls="defineDetail">Translation</button>
+        <button class="define-action define-delete" type="button" id="defineDelete">Delete</button>
       </div>`;
     document.body.append(backdrop, sheet);
     backdrop.onclick = closePopup;
     sheet.querySelector("#defineClose").onclick = closePopup;
+    sheet.querySelector("#defineExample").onclick = () => toggleDetail("example");
+    sheet.querySelector("#defineTranslation").onclick = () => toggleDetail("translation");
     document.addEventListener("keydown", event => { if (event.key === "Escape") closePopup(); });
     popup.ui = { backdrop, sheet, term: sheet.querySelector("#defineTerm"), status: sheet.querySelector("#defineStatus"),
-      text: sheet.querySelector("#defineText"), retry: sheet.querySelector("#defineRetry"), remove: sheet.querySelector("#defineDelete") };
+      text: sheet.querySelector("#defineText"), example: sheet.querySelector("#defineExample"),
+      translation: sheet.querySelector("#defineTranslation"), remove: sheet.querySelector("#defineDelete"),
+      detail: sheet.querySelector("#defineDetail"), detailLabel: sheet.querySelector("#defineDetailLabel"),
+      detailText: sheet.querySelector("#defineDetailText") };
     return popup.ui;
   }
 
-  function renderPopup({ term, status = "", definition = "", error = false, saved = false }) {
+  function renderPopup({ term, status = "", definition = "", example = "", translation = "", error = false, saved = false, pending = false }) {
     const ui = popupUI();
+    popup.data = { example, translation };
+    popup.detail = null;
     ui.term.textContent = term;
     ui.status.textContent = status;
     ui.status.className = `define-status${error ? " bad" : ""}`;
     ui.status.hidden = !status;
     ui.text.textContent = definition;
     ui.text.hidden = !definition;
-    ui.retry.hidden = !error;
-    ui.remove.hidden = !saved;
+    ui.example.disabled = !example;
+    ui.translation.disabled = !translation;
+    ui.remove.disabled = !saved && !pending;
+    renderDetail();
+  }
+
+  function toggleDetail(kind) {
+    if (!popup.data?.[kind]) return;
+    popup.detail = popup.detail === kind ? null : kind;
+    renderDetail();
+  }
+
+  function renderDetail() {
+    const ui = popupUI(), kind = popup.detail;
+    ui.example.setAttribute("aria-pressed", String(kind === "example"));
+    ui.translation.setAttribute("aria-pressed", String(kind === "translation"));
+    ui.detail.hidden = !kind;
+    ui.detailLabel.textContent = kind === "example" ? "Example" : kind === "translation" ? "Translation" : "";
+    ui.detailText.textContent = kind ? popup.data[kind] : "";
+    ui.detailText.lang = kind === "translation" ? "uk" : "en";
   }
 
   // The popup sits above the book and blocks its gestures; the page underneath is not touched.
@@ -260,6 +294,8 @@
     if (!popup.open) return;
     popup.open = false;
     popup.key = null;
+    popup.data = null;
+    popup.detail = null;
     popup.ui.backdrop.hidden = popup.ui.sheet.hidden = true;
     reader?.setBlocked(false);
   }
@@ -279,27 +315,30 @@
     if (!context) return;
     const key = word.key;
     const ui = popupUI();
-    ui.retry.onclick = () => lookup(current, key, context);
     ui.remove.onclick = () => deleteDefinition(current, key);
     openPopup(key);
     const saved = current.definitions.get(key);
-    if (saved) renderPopup({ term: saved.term, definition: saved.definition, saved: true });
+    if (saved?.example?.trim() && saved?.translation?.trim()) renderPopup({ ...saved, saved: true });
     else lookup(current, key, context);
   }
 
   const showing = (current, key) => popup.open && popup.key === key && current === session;
 
   function lookup(current, key, context) {
-    renderPopup({ term: context.word, status: "Looking up…" });
+    // Older cached definitions are kept visible while one request fills in both new fields.
+    const saved = current.definitions.get(key);
+    renderPopup({ term: context.word, ...saved, saved: Boolean(saved), pending: true,
+      status: saved ? "Updating…" : "Looking up…" });
     let entry = current.pending.get(key);
     if (!entry) {
       // One request per word at a time: another tap during the request waits for the same answer.
       entry = { cancelled: false };
       entry.promise = request("define", context).then(result => {
-        if (typeof result?.term !== "string" || typeof result?.definition !== "string" || !result.term.trim() || !result.definition.trim()) {
-          throw new BooksError("The definition could not be read. Please try again.");
+        if (!["term", "definition", "example", "translation"].every(field => typeof result?.[field] === "string" && result[field].trim())) {
+          throw new BooksError("The word details could not be read. Close this card and tap the word again.");
         }
-        const definition = { term: result.term.trim().slice(0, 80), definition: result.definition.trim().slice(0, 300) };
+        const definition = { term: result.term.trim().slice(0, 80), definition: result.definition.trim().slice(0, 300),
+          example: result.example.trim().slice(0, 300), translation: result.translation.trim().slice(0, 200) };
         // A deletion during the request wins: the late answer is not written back.
         if (!entry.cancelled) {
           current.definitions.set(key, definition);
@@ -312,10 +351,11 @@
       current.pending.set(key, entry);
     }
     entry.promise.then(definition => {
-      if (showing(current, key)) renderPopup({ term: definition.term, definition: definition.definition, saved: current.definitions.get(key) === definition });
+      if (!entry.cancelled && showing(current, key)) renderPopup({ ...definition, saved: current.definitions.get(key) === definition });
     }, error => {
-      // Errors are shown, never stored, and the word stays without an underline.
-      if (showing(current, key)) renderPopup({ term: context.word, status: error.message, error: true });
+      // Errors are never stored; an older saved definition survives a failed upgrade.
+      if (!entry.cancelled && showing(current, key)) renderPopup({ term: context.word, ...saved,
+        saved: Boolean(saved), status: error.message, error: true });
     });
   }
 

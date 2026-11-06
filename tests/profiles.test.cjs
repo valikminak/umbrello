@@ -177,14 +177,15 @@ test('Vocabulary is shared: the shelf of levels opens without a profile and link
     assert.deepEqual(app.errors, [], search);
     assert.equal(app.context.location.redirect, undefined, search);
     assert.deepEqual(app.requested, ['vocabulary/index.json', 'vocabulary/elementary/index.json', `vocabulary/${VOC_BOOK}/index.json`,
-      'vocabulary/collocations-intermediate/index.json'], search);
+      'vocabulary/collocations-intermediate/index.json', 'vocabulary/phrasal-verbs-intermediate/index.json',
+      'vocabulary/phrasal-verbs-advanced/index.json'], search);
     const html = app.node('app').innerHTML;
     assert.match(html, /<h1>Vocabulary<\/h1>/, search);
     assert.match(html, new RegExp(`href="vocabulary\\.html\\?v=10&book=${VOC_BOOK}"`), search);
     assert.match(html, /<b>Elementary<\/b><span class="voc-chip">A1–A2<\/span>/, search);
     assert.match(html, /<b>Upper-intermediate<\/b><span class="voc-chip">B2<\/span>/, search);
     assert.ok(html.indexOf('Elementary') < html.indexOf('Upper-intermediate'), 'easiest level first');
-    assert.match(html, /<h2 class="voc-group">Vocabulary<\/h2>[\s\S]*Upper-intermediate[\s\S]*<h2 class="voc-group">Collocations<\/h2>[\s\S]*<b>Intermediate<\/b>/, search);
+    assert.match(html, /<h2 class="voc-group">Vocabulary<\/h2>[\s\S]*Upper-intermediate[\s\S]*<h2 class="voc-group">Collocations<\/h2>[\s\S]*<b>Intermediate<\/b>[\s\S]*<h2 class="voc-group">Phrasal verbs<\/h2>[\s\S]*<b>Intermediate<\/b><span class="voc-chip">B1–B2<\/span>[\s\S]*<b>Advanced<\/b><span class="voc-chip">C1<\/span>/, search);
     assert.match(html, /href="vocabulary\.html\?v=10&book=collocations-intermediate"/, search);
     assert.match(html, /6 of 101 units ready/, search);
     assert.doesNotMatch(html, /user=/, search);

@@ -1,0 +1,91 @@
+{
+  "book": "English Phrasal Verbs in Use · Intermediate",
+  "groups": [
+    {"title": "Learning about phrasal verbs", "units": [
+      {"number": 1, "title": "Phrasal verbs: the basics"},
+      {"number": 2, "title": "The meaning of phrasal verbs"},
+      {"number": 3, "title": "Particles in phrasal verbs"},
+      {"number": 4, "title": "Nouns and adjectives based on phrasal verbs"},
+      {"number": 5, "title": "Metaphor and register"}
+    ]},
+    {"title": "Key verbs", "units": [
+      {"number": 6, "title": "Come"},
+      {"number": 7, "title": "Get"},
+      {"number": 8, "title": "Go"},
+      {"number": 9, "title": "Look"},
+      {"number": 10, "title": "Make"},
+      {"number": 11, "title": "Put"},
+      {"number": 12, "title": "Take", "id": "unit-012"}
+    ]},
+    {"title": "Key particles", "units": [
+      {"number": 13, "title": "Up", "id": "unit-013"},
+      {"number": 14, "title": "Out"},
+      {"number": 15, "title": "Off"},
+      {"number": 16, "title": "On and in"},
+      {"number": 17, "title": "Down and over"},
+      {"number": 18, "title": "Around and about"},
+      {"number": 19, "title": "For and with"},
+      {"number": 20, "title": "Through and back"},
+      {"number": 21, "title": "Into and away"}
+    ]},
+    {"title": "Concepts", "units": [
+      {"number": 22, "title": "Time: spending time"},
+      {"number": 23, "title": "Time: passing of time"},
+      {"number": 24, "title": "Location"},
+      {"number": 25, "title": "Cause and effect"},
+      {"number": 26, "title": "Change"},
+      {"number": 27, "title": "Success and failure"},
+      {"number": 28, "title": "Starting and finishing", "id": "unit-028"},
+      {"number": 29, "title": "Actions and movement"},
+      {"number": 30, "title": "Destroying and reacting to destruction"},
+      {"number": 31, "title": "Communication"}
+    ]},
+    {"title": "Functions", "units": [
+      {"number": 32, "title": "Describing people and places"},
+      {"number": 33, "title": "Describing public events"},
+      {"number": 34, "title": "Describing situations"},
+      {"number": 35, "title": "Giving and getting information"},
+      {"number": 36, "title": "Solving problems"},
+      {"number": 37, "title": "Decisions and plans", "id": "unit-037"},
+      {"number": 38, "title": "Disagreeing"},
+      {"number": 39, "title": "Persuading"},
+      {"number": 40, "title": "Praising and criticising"},
+      {"number": 41, "title": "Exclamations and warnings"}
+    ]},
+    {"title": "Work, study and finance", "units": [
+      {"number": 42, "title": "The classroom and learning"},
+      {"number": 43, "title": "Student life: courses and exams"},
+      {"number": 44, "title": "Student life: reading and writing"},
+      {"number": 45, "title": "Work: jobs and career"},
+      {"number": 46, "title": "Work: being busy"},
+      {"number": 47, "title": "Money: salaries, bills, payments"},
+      {"number": 48, "title": "Money: buying and selling"},
+      {"number": 49, "title": "Business"},
+      {"number": 50, "title": "Calling people"}
+    ]},
+    {"title": "Personal life", "units": [
+      {"number": 51, "title": "Feelings"},
+      {"number": 52, "title": "Relationships", "id": "unit-052"},
+      {"number": 53, "title": "Relationships: problems"},
+      {"number": 54, "title": "Secrets and conversations"},
+      {"number": 55, "title": "Stages through life"},
+      {"number": 56, "title": "Health"},
+      {"number": 57, "title": "Sport"},
+      {"number": 58, "title": "Homes and daily routines"},
+      {"number": 59, "title": "Socialising"},
+      {"number": 60, "title": "Food and drink"}
+    ]},
+    {"title": "The world around us", "units": [
+      {"number": 61, "title": "Weather"},
+      {"number": 62, "title": "Travel"},
+      {"number": 63, "title": "Driving and cycling"},
+      {"number": 64, "title": "Mobile devices"},
+      {"number": 65, "title": "Computers"},
+      {"number": 66, "title": "News"},
+      {"number": 67, "title": "Crime"},
+      {"number": 68, "title": "Power and authority"},
+      {"number": 69, "title": "American and Australian phrasal verbs"},
+      {"number": 70, "title": "Academic writing"}
+    ]}
+  ]
+}

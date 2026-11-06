@@ -46,9 +46,15 @@ test('the shelf lists each book once; every book has contents and every listed u
   assert.deepEqual(elementary.contents.groups.flatMap(group => group.units).map(unit => unit.number), Array.from({ length: 60 }, (_, i) => i + 1));
   const collocations = books.find(b => b.book.id === 'collocations-intermediate');
   assert.deepEqual(collocations.contents.groups.flatMap(group => group.units).map(unit => unit.number), Array.from({ length: 60 }, (_, i) => i + 1));
-  assert.deepEqual(books.map(b => b.book.id), ['elementary', 'upper-intermediate', 'collocations-intermediate'], 'easiest level first in each block');
+  const numbers = id => books.find(b => b.book.id === id).contents.groups.flatMap(group => group.units).map(unit => unit.number);
+  assert.deepEqual(numbers('phrasal-verbs-intermediate'), Array.from({ length: 70 }, (_, i) => i + 1));
+  assert.deepEqual(numbers('phrasal-verbs-advanced'), Array.from({ length: 60 }, (_, i) => i + 1));
+  assert.deepEqual(books.map(b => b.book.id),
+    ['elementary', 'upper-intermediate', 'collocations-intermediate', 'phrasal-verbs-intermediate', 'phrasal-verbs-advanced'],
+    'easiest level first in each block');
   assert.deepEqual(core.shelfGroups(books.map(b => b.book)).map(group => [group.series, group.books.map(book => book.id)]),
-    [['Vocabulary', ['elementary', 'upper-intermediate']], ['Collocations', ['collocations-intermediate']]]);
+    [['Vocabulary', ['elementary', 'upper-intermediate']], ['Collocations', ['collocations-intermediate']],
+      ['Phrasal verbs', ['phrasal-verbs-intermediate', 'phrasal-verbs-advanced']]]);
   for (const { book, ready } of books) {
     for (const unit of ready) {
       const data = core.validateUnit(read(`vocabulary/${book.id}/${unit.id}.json`));
@@ -93,6 +99,15 @@ test('the shelf rejects repeated or unsafe ids and levels without a name or book
   assert.throws(() => core.validateLibrary(books([{ id: 'a', level: 'L', book: 'B' }, { id: 'a', level: 'M', book: 'B' }])), /unique id/);
   assert.throws(() => core.validateLibrary(books([{ id: 'a', level: 'L' }])), /level and the book's name/);
   assert.throws(() => core.validateLibrary(books([{ id: 'a', level: 'L', book: 'B', cefr: '' }])), /cefr must be text/);
+});
+
+test('the speech button reads dictionary shorthand as words and skips marks and root cues', () => {
+  assert.equal(core.spokenText('pick sb/sth out'), 'pick somebody or something out');
+  assert.equal(core.spokenText("take sb's advice"), "take somebody's advice");
+  assert.equal(core.spokenText('run out (of sth)'), 'run out (of something)');
+  assert.equal(core.spokenText('make / take a decision'), 'make or take a decision');
+  assert.equal(core.spokenText('She **kicked him out** (KICK)'), 'She kicked him out');
+  assert.equal(core.spokenText('a sthenic sbire'), 'a sthenic sbire', 'only whole words');
 });
 
 test('shelf blocks keep the order of their first book and the order of books inside a block', () => {

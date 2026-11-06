@@ -4,7 +4,8 @@
 не нужен. Каждый уровень — одна книга серии «in Use», юнит за юнитом.
 Книги разложены по блокам: **Vocabulary** — English Vocabulary in Use,
 уровни Elementary (A1–A2) и Upper-intermediate (B2); **Collocations** —
-English Collocations in Use, уровень Intermediate (B1–B2).
+English Collocations in Use, уровень Intermediate (B1–B2); **Phrasal verbs** —
+English Phrasal Verbs in Use, уровни Intermediate (B1–B2, 70 юнитов) и Advanced (C1).
 Каждый юнит самостоятельный, связей с другими разделами нет. Минимальный
 прогресс сохраняется на устройстве (см. «Прогресс на устройстве»).
 
@@ -12,7 +13,7 @@ English Collocations in Use, уровень Intermediate (B1–B2).
 
 - `vocabulary.html` без параметров показывает список уровней из
   `vocabulary/index.json`: уровень, CEFR, книга, сколько юнитов готово и пройдено.
-  Уровни собраны в блоки по полю `series` (Vocabulary, Collocations): блоки идут
+  Уровни собраны в блоки по полю `series` (Vocabulary, Collocations, Phrasal verbs): блоки идут
   в порядке первого уровня каждого блока, уровни внутри блока — в порядке списка,
   от лёгкого к сложному. На странице уровня название блока стоит над заголовком.
 - `vocabulary.html?v=10&book=upper-intermediate` показывает оглавление уровня
@@ -34,9 +35,15 @@ vocabulary/
 │   ├── index.json
 │   ├── unit-006.json
 │   └── unit-012.json …
-└── collocations-intermediate/
+├── collocations-intermediate/
+│   ├── index.json
+│   └── unit-006.json …
+├── phrasal-verbs-intermediate/
+│   ├── index.json
+│   └── unit-012.json …
+└── phrasal-verbs-advanced/
     ├── index.json
-    └── unit-006.json …
+    └── unit-014.json …
 ```
 
 Юнит начинается с короткого описания: о чём он, части A, B, C и пять шагов.
@@ -120,6 +127,9 @@ Worker, каждого уровня и юнита — ключ `umbrello.vocabul
   неправильные варианты — другие формы того же корня (employer / employment…).
   В Final mix в конце предложения стоит корень заглавными, например `(DRIVE)`:
   одной первой буквы мало. Корень в скобках и голый суффикс не озвучиваются.
+- Кнопка озвучки читает словарные сокращения словами: `sb` — somebody, `sth` —
+  something, `sb/sth` — somebody or something, а ` / ` между вариантами — or
+  (`make / take a decision` → make or take a decision).
 - **Коллокации** (Collocations in Use): фраза — сама коллокация, как её стоит
   запомнить (`heavy rain`, `take action`, `utterly ridiculous`); если книга
   даёт несколько партнёров, которые работают одинаково, они в одной фразе
@@ -132,6 +142,15 @@ Worker, каждого уровня и юнита — ключ `umbrello.vocabul
   перечислены все партнёры, которые подходят.
 - Мета-юниты книги о коллокациях (1–5 в Collocations Intermediate: что такое
   коллокация, словари, регистр) тренировать нечем, их можно не делать.
+- **Фразовые глаголы** (Phrasal Verbs in Use): фраза — глагол в одном значении,
+  с sb/sth на месте дополнения (`fall back on sth`, `iron sth out`); два значения
+  одного глагола — две фразы. В `pattern` — грамматика: есть ли дополнение,
+  разрывается ли глагол (`iron them out`, не `iron out them`), какой предлог
+  дальше, регистр. В Practice пропускается частица, глагол или весь фразовый
+  глагол; неправильный вариант не должен давать другой настоящий фразовый
+  глагол, который подходит к предложению (`kick / throw sb out`). В юните про
+  одну частицу (Out) частицу не пропускают, в юните про один глагол (Get) —
+  наоборот, чаще всего её.
 - При вводе ответа дефис считается пробелом: `heat-wave` = `heat wave`.
 
 Вопросы и примеры пишутся для приложения: фразы из книги, предложения свои.

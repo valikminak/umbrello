@@ -43,6 +43,52 @@ function harness(options = {}) {
 }
 const routes = [['/books/list', {}], ['/books/book', { bookId: ID_A }]];
 
+const wordInput = { sentence: 'Please give up smoking.', word: 'give', start: 7, end: 11, occurrence: 1, occurrences: 1 };
+const wordCard = { term: 'give up', definition: 'To stop doing something.', example: 'She gave up eating sweets.', translation: 'покинути, відмовитися від' };
+const aiEnv = { OPENAI_API_KEY: 'test-ai-key', OPENAI_MODEL: 'gpt-5-mini' };
+const aiReply = value => Response.json({ status: 'completed', output: [
+  { type: 'message', content: [{ type: 'output_text', text: JSON.stringify(value) }] },
+] });
+
+test('one definition request returns the definition, English example and Ukrainian translation without storage', async () => {
+  const app = harness({ fetch: () => aiReply(wordCard) });
+  const response = await app.call('/books/define', wordInput, { env: aiEnv });
+  assert.equal(response.status, 200);
+  assert.deepEqual(await response.json(), wordCard);
+  assert.equal(app.calls.length, 1);
+  assert.equal(app.calls[0].url, 'https://api.openai.com/v1/responses');
+  const payload = JSON.parse(app.calls[0].config.body);
+  assert.deepEqual(payload.text.format.schema.required, ['term', 'definition', 'example', 'translation']);
+  assert.equal(payload.text.format.strict, true);
+  assert.match(payload.instructions, /Ukrainian/);
+  assert.deepEqual(JSON.parse(payload.input[0].content), wordInput);
+});
+
+test('incomplete or oversized word cards are rejected instead of silently dropping fields', async () => {
+  for (const change of [
+    { example: undefined }, { translation: undefined }, { example: ' ' }, { translation: null },
+    { example: 'x'.repeat(301) }, { translation: 'x'.repeat(201) },
+  ]) {
+    const app = harness({ fetch: () => aiReply({ ...wordCard, ...change }) });
+    const response = await app.call('/books/define', wordInput, { env: aiEnv });
+    assert.equal(response.status, 502);
+    assert.equal((await response.json()).error, 'invalid_response');
+    assert.equal(app.calls.length, 1, 'invalid answers do not cause automatic extra requests');
+  }
+});
+
+test('word lookup still checks access and the exact tapped word before requesting AI', async () => {
+  for (const [body, expected] of [
+    [{ ...wordInput, initData: '' }, 403],
+    [{ ...wordInput, initData: signed({ id: 789 }) }, 403],
+    [{ ...wordInput, end: 12 }, 400],
+  ]) {
+    const app = harness();
+    assert.equal((await app.call('/books/define', body, { env: aiEnv })).status, expected);
+    assert.equal(app.calls.length, 0);
+  }
+});
+
 test('Books routes require a current, untampered Telegram signature before any storage access', async () => {
   for (const [route, body] of routes) {
     for (const initData of ['', 'hash=bad', signed().replace('123', '456'), signed({ id: 123 }, 1), signed() + '&user={}']) {

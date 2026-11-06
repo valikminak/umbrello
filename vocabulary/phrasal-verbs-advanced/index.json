@@ -1,0 +1,83 @@
+{
+  "book": "English Phrasal Verbs in Use · Advanced",
+  "groups": [
+    {"title": "Learning about phrasal verbs", "units": [
+      {"number": 1, "title": "Phrasal verbs: what are they and how are they used?"},
+      {"number": 2, "title": "Grammar of phrasal verbs"},
+      {"number": 3, "title": "Phrasal nouns"},
+      {"number": 4, "title": "Phrasal adjectives"}
+    ]},
+    {"title": "Interesting aspects of phrasal verbs", "units": [
+      {"number": 5, "title": "Collocation and phrasal verbs"},
+      {"number": 6, "title": "Register"},
+      {"number": 7, "title": "Meaning and metaphor"},
+      {"number": 8, "title": "Idioms using phrasal verbs"}
+    ]},
+    {"title": "Key particles", "units": [
+      {"number": 9, "title": "Around and about"},
+      {"number": 10, "title": "Down"},
+      {"number": 11, "title": "In"},
+      {"number": 12, "title": "Off"},
+      {"number": 13, "title": "On"},
+      {"number": 14, "title": "Out", "id": "unit-014"},
+      {"number": 15, "title": "Up"}
+    ]},
+    {"title": "Concepts", "units": [
+      {"number": 16, "title": "Time"},
+      {"number": 17, "title": "Cause and effect"},
+      {"number": 18, "title": "Memory"},
+      {"number": 19, "title": "Making progress", "id": "unit-019"},
+      {"number": 20, "title": "Conflict and violence"},
+      {"number": 21, "title": "Sound"}
+    ]},
+    {"title": "Functions", "units": [
+      {"number": 22, "title": "Supporting and opposing people or views"},
+      {"number": 23, "title": "Agreeing"},
+      {"number": 24, "title": "Understanding and having ideas"},
+      {"number": 25, "title": "Arranging things"},
+      {"number": 26, "title": "Talking about size and number"},
+      {"number": 27, "title": "Talking about success and failure"},
+      {"number": 28, "title": "Discussing problems", "id": "unit-028"},
+      {"number": 29, "title": "Deciding and influencing"},
+      {"number": 30, "title": "Exclamations and warnings"}
+    ]},
+    {"title": "Work, study and finance", "units": [
+      {"number": 31, "title": "Work"},
+      {"number": 32, "title": "Study"},
+      {"number": 33, "title": "Lectures and seminars"},
+      {"number": 34, "title": "Writing essays"},
+      {"number": 35, "title": "Business"},
+      {"number": 36, "title": "Money"}
+    ]},
+    {"title": "Personal life", "units": [
+      {"number": 37, "title": "At home"},
+      {"number": 38, "title": "Clothing and appearance"},
+      {"number": 39, "title": "Relationships"},
+      {"number": 40, "title": "Character and personal qualities"},
+      {"number": 41, "title": "Feelings"},
+      {"number": 42, "title": "Social life", "id": "unit-042"},
+      {"number": 43, "title": "Health and symptoms"},
+      {"number": 44, "title": "The body"},
+      {"number": 45, "title": "How people speak"},
+      {"number": 46, "title": "How people move"}
+    ]},
+    {"title": "The world around us", "units": [
+      {"number": 47, "title": "Nature"},
+      {"number": 48, "title": "Weather"},
+      {"number": 49, "title": "Places"},
+      {"number": 50, "title": "Transport"},
+      {"number": 51, "title": "The news"},
+      {"number": 52, "title": "Secrets and lies"},
+      {"number": 53, "title": "Rules and laws"},
+      {"number": 54, "title": "Technology"},
+      {"number": 55, "title": "Food and drink"}
+    ]},
+    {"title": "Key verbs", "units": [
+      {"number": 56, "title": "Come"},
+      {"number": 57, "title": "Get", "id": "unit-057"},
+      {"number": 58, "title": "Go"},
+      {"number": 59, "title": "Keep"},
+      {"number": 60, "title": "Take"}
+    ]}
+  ]
+}
