@@ -17,7 +17,8 @@
   const clean = value => value.trim();
   const oneGap = q => typeof q === "string" && q.split("___").length === 2;
 
-  // The shelf: vocabulary/index.json lists the books by level; each book lives in vocabulary/<id>/.
+  // The shelf: vocabulary/index.json lists the books by level, optionally in series blocks
+  // (Vocabulary, Collocations); each book lives in vocabulary/<id>/.
   function validateLibrary(data) {
     const fail = problem => { throw new Error(`Check vocabulary/index.json: ${problem}`); };
     if (!data || !Array.isArray(data.books) || !data.books.length) fail("add books.");
@@ -25,9 +26,10 @@
     return { books: data.books.map((book, i) => {
       if (!book || typeof book.id !== "string" || !BOOK_ID.test(book.id) || ids.has(book.id)) fail(`book ${i + 1} needs a unique id like elementary.`);
       if (!filled(book.level) || !filled(book.book)) fail(`book ${book.id} needs a level and the book's name.`);
-      for (const key of ["cefr", "about"]) if (book[key] !== undefined && !filled(book[key])) fail(`book ${book.id}: ${key} must be text.`);
+      for (const key of ["series", "cefr", "about"]) if (book[key] !== undefined && !filled(book[key])) fail(`book ${book.id}: ${key} must be text.`);
       ids.add(book.id);
-      return { id: book.id, level: clean(book.level), book: clean(book.book), cefr: book.cefr ? clean(book.cefr) : "", about: book.about ? clean(book.about) : "" };
+      return { id: book.id, series: book.series ? clean(book.series) : "", level: clean(book.level), book: clean(book.book),
+        cefr: book.cefr ? clean(book.cefr) : "", about: book.about ? clean(book.about) : "" };
     }) };
   }
 
@@ -266,7 +268,18 @@
     return { kind: "progress", text: `Step ${Math.min(open + 1, STEP_IDS.length)} of ${STEP_IDS.length}` };
   }
 
-  const api = { BOOK_ID, validateLibrary, WINDOW, STEP_IDS, progressOf, unlockedSteps, progressLabel, PASS, PRACTICE_OPTIONS, MIN_PRACTICE, STORY_MIN_PHRASES, UNIT_ID,
+  // Shelf blocks in the order their first book appears; books keep their order inside a block.
+  function shelfGroups(books) {
+    const groups = [];
+    for (const book of books) {
+      let group = groups.find(g => g.series === book.series);
+      if (!group) groups.push(group = { series: book.series, books: [] });
+      group.books.push(book);
+    }
+    return groups;
+  }
+
+  const api = { BOOK_ID, validateLibrary, shelfGroups, WINDOW, STEP_IDS, progressOf, unlockedSteps, progressLabel, PASS, PRACTICE_OPTIONS, MIN_PRACTICE, STORY_MIN_PHRASES, UNIT_ID,
     validateIndex, validateUnit, rating, passed, practiceDeck, requeue, normalize, distance, checkTyped, firstLetters,
     storyParts, storyIds, plainStory };
   if (typeof module !== "undefined" && module.exports) module.exports = api;

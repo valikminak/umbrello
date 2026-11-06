@@ -33,16 +33,18 @@
       const shelf = core.validateLibrary(await loadJSON("vocabulary/index.json"));
       const contents = await Promise.all(shelf.books.map(book =>
         loadJSON(contentsFile(book.id)).then(data => core.validateIndex(data, contentsFile(book.id))).catch(() => null)));
+      const card = (book, index) => {
+        const units = index ? index.groups.flatMap(group => group.units) : [];
+        const ready = index ? readyUnits(index) : [];
+        const done = ready.filter(unit => core.progressLabel(readProgress(book.id, unit.id)).kind === "done").length;
+        return `<a class="voc-book" href="${bookUrl(book.id)}"><span class="voc-book-head"><b>${esc(book.level)}</b>${book.cefr ? `<span class="voc-chip">${esc(book.cefr)}</span>` : ""}</span>
+          <span class="voc-book-about">${esc(book.book)}${book.about ? `. ${esc(book.about)}` : ""}</span>
+          <span class="voc-book-meta">${index ? `${ready.length} of ${units.length} units ready${done ? ` · ✓ ${done} done` : ""}` : "Contents could not be loaded"}</span></a>`;
+      };
+      const contentsOf = book => contents[shelf.books.indexOf(book)];
       host.innerHTML = `<h1>Vocabulary</h1><p class="sub">Choose your level.</p>
-        <div class="voc-books">${shelf.books.map((book, i) => {
-          const index = contents[i];
-          const units = index ? index.groups.flatMap(group => group.units) : [];
-          const ready = index ? readyUnits(index) : [];
-          const done = ready.filter(unit => core.progressLabel(readProgress(book.id, unit.id)).kind === "done").length;
-          return `<a class="voc-book" href="${bookUrl(book.id)}"><span class="voc-book-head"><b>${esc(book.level)}</b>${book.cefr ? `<span class="voc-chip">${esc(book.cefr)}</span>` : ""}</span>
-            <span class="voc-book-about">${esc(book.book)}${book.about ? `. ${esc(book.about)}` : ""}</span>
-            <span class="voc-book-meta">${index ? `${ready.length} of ${units.length} units ready${done ? ` · ✓ ${done} done` : ""}` : "Contents could not be loaded"}</span></a>`;
-        }).join("")}</div>`;
+        ${core.shelfGroups(shelf.books).map(group => `${group.series ? `<h2 class="voc-group">${esc(group.series)}</h2>` : ""}
+          <div class="voc-books">${group.books.map(book => card(book, contentsOf(book))).join("")}</div>`).join("")}`;
     } catch (error) { showError(host, error, showShelf); }
   }
 
@@ -59,7 +61,7 @@
       if (!book) return notFound("Level not found", shelfUrl, "All levels");
       const index = core.validateIndex(await loadJSON(contentsFile(bookId)), contentsFile(bookId));
       host.innerHTML = `<div class="voc-nav"><a class="voc-back" href="${shelfUrl}">‹ All levels</a></div>
-        <h1>${esc(book.level)}</h1><p class="sub">${esc(book.book)}${book.cefr ? ` · ${esc(book.cefr)}` : ""} · ${readyUnits(index).length} units ready</p>
+        ${book.series ? `<div class="voc-part-head">${esc(book.series)}</div>` : ""}<h1>${esc(book.level)}</h1><p class="sub">${esc(book.book)}${book.cefr ? ` · ${esc(book.cefr)}` : ""} · ${readyUnits(index).length} units ready</p>
         ${index.groups.map(group => `<h2 class="voc-group">${esc(group.title)}</h2><div class="voc-units">${group.units.map(unit => unit.id
           ? `<a class="voc-unit ready" href="${unitUrl(bookId, unit.id)}"><span class="n">${unit.number}</span><span class="t">${esc(unit.title)}</span>${statusChip(unit.id)}</a>`
           : `<div class="voc-unit"><span class="n">${unit.number}</span><span class="t">${esc(unit.title)}</span></div>`).join("")}</div>`).join("")}`;

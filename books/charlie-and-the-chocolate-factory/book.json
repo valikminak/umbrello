@@ -1,0 +1,1623 @@
+{
+  "formatVersion": 1,
+  "bookId": "8f7143b086b3c07e9180dc1d904ada8594217b7d05414ddddec3e7eaf68faa15",
+  "title": "Charlie and the Chocolate Factory",
+  "author": "Roald Dahl",
+  "chapters": [
+    {
+      "id": "c1",
+      "title": "The Bucket Family",
+      "paragraphs": [
+        {
+          "id": "c1.p1",
+          "sentences": [
+            {
+              "id": "c1.p1.s1",
+              "text": "This is a story about a boy called Charlie Bucket."
+            }
+          ]
+        },
+        {
+          "id": "c1.p2",
+          "sentences": [
+            {
+              "id": "c1.p2.s1",
+              "text": "There were six people in his family, but none of them were Charlie's brothers or sisters."
+            },
+            {
+              "id": "c1.p2.s2",
+              "text": "So who were they?"
+            }
+          ]
+        },
+        {
+          "id": "c1.p3",
+          "sentences": [
+            {
+              "id": "c1.p3.s1",
+              "text": "First, Mr and Mrs Bucket, Charlie's mother and father."
+            }
+          ]
+        },
+        {
+          "id": "c1.p4",
+          "sentences": [
+            {
+              "id": "c1.p4.s1",
+              "text": "The other four people were Charlie's grandparents."
+            },
+            {
+              "id": "c1.p4.s2",
+              "text": "They were so old they stayed in bed all day and never got up."
+            },
+            {
+              "id": "c1.p4.s3",
+              "text": "But they didn’t have much room because they slept in the SAME bed,"
+            }
+          ]
+        },
+        {
+          "id": "c1.p5",
+          "sentences": [
+            {
+              "id": "c1.p5.s1",
+              "text": "Grandpa Jo and Grandma Josephine at one end,"
+            }
+          ]
+        },
+        {
+          "id": "c1.p6",
+          "sentences": [
+            {
+              "id": "c1.p6.s1",
+              "text": "Grandpa George and Grandma Georgina at the other."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "c2",
+      "title": "Charlie's House",
+      "paragraphs": [
+        {
+          "id": "c2.p1",
+          "sentences": [
+            {
+              "id": "c2.p1.s1",
+              "text": "Charlie's family lived in a very small house."
+            },
+            {
+              "id": "c2.p1.s2",
+              "text": "It wasn’t easy for them, they were so poor."
+            },
+            {
+              "id": "c2.p1.s3",
+              "text": "His mother tried hard to make nice meals."
+            },
+            {
+              "id": "c2.p1.s4",
+              "text": "But it was always cabbage, or bread, or potatoes, or more cabbage."
+            },
+            {
+              "id": "c2.p1.s5",
+              "text": "Charlie dreamed of eating something else."
+            },
+            {
+              "id": "c2.p1.s6",
+              "text": "Most of all, he dreamed of CHOCOLATE!"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "c3",
+      "title": "The Chocolate Factory",
+      "paragraphs": [
+        {
+          "id": "c3.p1",
+          "sentences": [
+            {
+              "id": "c3.p1.s1",
+              "text": "In Charlie's town, near his house, there was a chocolate factory."
+            },
+            {
+              "id": "c3.p1.s2",
+              "text": "It was the biggest and most famous chocolate factory in the world."
+            },
+            {
+              "id": "c3.p1.s3",
+              "text": "All day long, he could smell that most delicious chocolate smell."
+            },
+            {
+              "id": "c3.p1.s4",
+              "text": "‘If I had just ONE wish,’ Charlie thought, ‘I would go inside that factory.’"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "c4",
+      "title": "The First Golden Ticket",
+      "paragraphs": [
+        {
+          "id": "c4.p1",
+          "sentences": [
+            {
+              "id": "c4.p1.s1",
+              "text": "One day, Grandpa Jo was reading the newspaper."
+            },
+            {
+              "id": "c4.p1.s2",
+              "text": "‘Charlie, listen. Five Golden Tickets, each in a bar of Wonka chocolate. Find one, and visit the chocolate factory!’"
+            }
+          ]
+        },
+        {
+          "id": "c4.p2",
+          "sentences": [
+            {
+              "id": "c4.p2.s1",
+              "text": "The next day, Augustus found the first ticket."
+            },
+            {
+              "id": "c4.p2.s2",
+              "text": "He was a greedy boy, and nobody liked him."
+            }
+          ]
+        },
+        {
+          "id": "c4.p3",
+          "sentences": [
+            {
+              "id": "c4.p3.s1",
+              "text": "Here is Augustus with his mother."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "c5",
+      "title": "The Second Golden Ticket",
+      "paragraphs": [
+        {
+          "id": "c5.p1",
+          "sentences": [
+            {
+              "id": "c5.p1.s1",
+              "text": "The next lucky child was Veruca."
+            },
+            {
+              "id": "c5.p1.s2",
+              "text": "Her parents bought her thousands of Wonka bars."
+            },
+            {
+              "id": "c5.p1.s3",
+              "text": "Veruca couldn't wait to open them."
+            },
+            {
+              "id": "c5.p1.s4",
+              "text": "She just lay on the floor, kicked her legs and shouted, ‘Where's my Golden Ticket! I want my Golden Ticket!’"
+            }
+          ]
+        },
+        {
+          "id": "c5.p2",
+          "sentences": [
+            {
+              "id": "c5.p2.s1",
+              "text": "When at last someone found one, she was happy."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "c6",
+      "title": "Charlie's Birthday",
+      "paragraphs": [
+        {
+          "id": "c6.p1",
+          "sentences": [
+            {
+              "id": "c6.p1.s1",
+              "text": "Three tickets left!"
+            },
+            {
+              "id": "c6.p1.s2",
+              "text": "Charlie hoped he would be lucky."
+            }
+          ]
+        },
+        {
+          "id": "c6.p2",
+          "sentences": [
+            {
+              "id": "c6.p2.s1",
+              "text": "Every year on his birthday, his family gave him a delicious bar of Wonka chocolate."
+            },
+            {
+              "id": "c6.p2.s2",
+              "text": "Perhaps this year it would have a Golden Ticket inside."
+            },
+            {
+              "id": "c6.p2.s3",
+              "text": "How happy Charlie would be!"
+            }
+          ]
+        },
+        {
+          "id": "c6.p3",
+          "sentences": [
+            {
+              "id": "c6.p3.s1",
+              "text": "Did he find a Golden Ticket?"
+            },
+            {
+              "id": "c6.p3.s2",
+              "text": "What do you think?"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "c7",
+      "title": "The Third Golden Ticket",
+      "paragraphs": [
+        {
+          "id": "c7.p1",
+          "sentences": [
+            {
+              "id": "c7.p1.s1",
+              "text": "Poor Charlie!"
+            },
+            {
+              "id": "c7.p1.s2",
+              "text": "But someone else was much happier."
+            },
+            {
+              "id": "c7.p1.s3",
+              "text": "It was Violet, who found the third ticket."
+            },
+            {
+              "id": "c7.p1.s4",
+              "text": "This girl loved chewing gum."
+            },
+            {
+              "id": "c7.p1.s5",
+              "text": "She always had some in her mouth."
+            },
+            {
+              "id": "c7.p1.s6",
+              "text": "If anyone found a piece of gum on their clothes, she just laughed."
+            },
+            {
+              "id": "c7.p1.s7",
+              "text": "Grandma Georgina thought she was a horrible child."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "c8",
+      "title": "The Fourth Golden Ticket",
+      "paragraphs": [
+        {
+          "id": "c8.p1",
+          "sentences": [
+            {
+              "id": "c8.p1.s1",
+              "text": "Soon after Charlie's birthday, Grandma Josephine was reading the newspaper."
+            }
+          ]
+        },
+        {
+          "id": "c8.p2",
+          "sentences": [
+            {
+              "id": "c8.p2.s1",
+              "text": "‘Listen, a horrible boy called Mike has found a Golden Ticket!’"
+            }
+          ]
+        },
+        {
+          "id": "c8.p3",
+          "sentences": [
+            {
+              "id": "c8.p3.s1",
+              "text": "Mike was crazy about television."
+            },
+            {
+              "id": "c8.p3.s2",
+              "text": "He watched it all the time."
+            },
+            {
+              "id": "c8.p3.s3",
+              "text": "If anyone tried to talk to him, he would shout, ‘Go away! Can’t you see I’m watching television?’"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "c9",
+      "title": "Charlie Finds Some Money",
+      "paragraphs": [
+        {
+          "id": "c9.p1",
+          "sentences": [
+            {
+              "id": "c9.p1.s1",
+              "text": "A few days later, Charlie was walking home from school."
+            },
+            {
+              "id": "c9.p1.s2",
+              "text": "It was a very cold day."
+            },
+            {
+              "id": "c9.p1.s3",
+              "text": "Suddenly, he saw something in the snow."
+            },
+            {
+              "id": "c9.p1.s4",
+              "text": "It was some money."
+            },
+            {
+              "id": "c9.p1.s5",
+              "text": "To Charlie this meant only one thing..."
+            },
+            {
+              "id": "c9.p1.s6",
+              "text": "FOOD."
+            }
+          ]
+        },
+        {
+          "id": "c9.p2",
+          "sentences": [
+            {
+              "id": "c9.p2.s1",
+              "text": "‘I must give it to my mum,’ he thought."
+            }
+          ]
+        },
+        {
+          "id": "c9.p3",
+          "sentences": [
+            {
+              "id": "c9.p3.s1",
+              "text": "‘But first, perhaps I'll...’"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "c10",
+      "title": "A Bar of Chocolate, Please",
+      "paragraphs": [
+        {
+          "id": "c10.p1",
+          "sentences": [
+            {
+              "id": "c10.p1.s1",
+              "text": "The kind of food Charlie was thinking about was chocolate."
+            },
+            {
+              "id": "c10.p1.s2",
+              "text": "In no time at all, he was inside a shop."
+            },
+            {
+              "id": "c10.p1.s3",
+              "text": "After buying a bar of Wonka chocolate he quickly pulled off the paper."
+            },
+            {
+              "id": "c10.p1.s4",
+              "text": "What a delicious smell!"
+            }
+          ]
+        },
+        {
+          "id": "c10.p2",
+          "sentences": [
+            {
+              "id": "c10.p2.s1",
+              "text": "Then Charlie saw something yellow under the chocolate."
+            },
+            {
+              "id": "c10.p2.s2",
+              "text": "He couldn't believe his eyes."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "c11",
+      "title": "The Fifth Golden Ticket",
+      "paragraphs": [
+        {
+          "id": "c11.p1",
+          "sentences": [
+            {
+              "id": "c11.p1.s1",
+              "text": "A few minutes later, Charlie arrived back home."
+            },
+            {
+              "id": "c11.p1.s2",
+              "text": "‘I've found it, I've found it!’ he shouted."
+            },
+            {
+              "id": "c11.p1.s3",
+              "text": "‘Found what?’ asked his grandparents."
+            },
+            {
+              "id": "c11.p1.s4",
+              "text": "‘A Golden Ticket!’ answered Charlie."
+            }
+          ]
+        },
+        {
+          "id": "c11.p2",
+          "sentences": [
+            {
+              "id": "c11.p2.s1",
+              "text": "‘Hooray!’ shouted Grandpa Jo, ‘Hooray!’"
+            }
+          ]
+        },
+        {
+          "id": "c11.p3",
+          "sentences": [
+            {
+              "id": "c11.p3.s1",
+              "text": "Then, forgetting where he was, he jumped high in the air."
+            },
+            {
+              "id": "c11.p3.s2",
+              "text": "His soup went all over Grandma Josephine!"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "c12",
+      "title": "The Big Day",
+      "paragraphs": [
+        {
+          "id": "c12.p1",
+          "sentences": [
+            {
+              "id": "c12.p1.s1",
+              "text": "At last the day arrived."
+            },
+            {
+              "id": "c12.p1.s2",
+              "text": "It was a lovely sunny morning."
+            },
+            {
+              "id": "c12.p1.s3",
+              "text": "Hundreds of people were standing outside the famous factory."
+            },
+            {
+              "id": "c12.p1.s4",
+              "text": "They were waiting to see the children who were going inside for the day."
+            }
+          ]
+        },
+        {
+          "id": "c12.p2",
+          "sentences": [
+            {
+              "id": "c12.p2.s1",
+              "text": "‘Stand back!"
+            },
+            {
+              "id": "c12.p2.s2",
+              "text": "Stand back!’ said a policeman as a line of people walked past."
+            }
+          ]
+        },
+        {
+          "id": "c12.p3",
+          "sentences": [
+            {
+              "id": "c12.p3.s1",
+              "text": "Veruca came first, wearing an expensive skirt and jacket."
+            },
+            {
+              "id": "c12.p3.s2",
+              "text": "Next came Mike, dressed like someone in a TV film."
+            },
+            {
+              "id": "c12.p3.s3",
+              "text": "Then came Augustus and Violet."
+            },
+            {
+              "id": "c12.p3.s4",
+              "text": "All these children had their parents with them."
+            },
+            {
+              "id": "c12.p3.s5",
+              "text": "But not Charlie, who was last in the line."
+            },
+            {
+              "id": "c12.p3.s6",
+              "text": "He had Grandpa Jo."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "c13",
+      "title": "Meet Mr Willy Wonka",
+      "paragraphs": [
+        {
+          "id": "c13.p1",
+          "sentences": [
+            {
+              "id": "c13.p1.s1",
+              "text": "Ten o'clock."
+            },
+            {
+              "id": "c13.p1.s2",
+              "text": "Time to begin."
+            },
+            {
+              "id": "c13.p1.s3",
+              "text": "But where was Mr Willy Wonka?"
+            }
+          ]
+        },
+        {
+          "id": "c13.p2",
+          "sentences": [
+            {
+              "id": "c13.p2.s1",
+              "text": "Then someone shouted, ‘That's him!’ And so it was!"
+            },
+            {
+              "id": "c13.p2.s2",
+              "text": "All eyes turned towards the funny little man with his pointed beard."
+            }
+          ]
+        },
+        {
+          "id": "c13.p3",
+          "sentences": [
+            {
+              "id": "c13.p3.s1",
+              "text": "‘My dear children,’ he said, ‘How do you do? And these are your parents? How nice! Come in!’"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "c14",
+      "title": "Happy Workers",
+      "paragraphs": [
+        {
+          "id": "c14.p1",
+          "sentences": [
+            {
+              "id": "c14.p1.s1",
+              "text": "What an amazing place!"
+            },
+            {
+              "id": "c14.p1.s2",
+              "text": "Inside the factory there were beautiful green fields, trees, flowers, and a brown river."
+            }
+          ]
+        },
+        {
+          "id": "c14.p2",
+          "sentences": [
+            {
+              "id": "c14.p2.s1",
+              "text": "‘Look!"
+            },
+            {
+              "id": "c14.p2.s2",
+              "text": "Near the waterfall!’ said Veruca."
+            }
+          ]
+        },
+        {
+          "id": "c14.p3",
+          "sentences": [
+            {
+              "id": "c14.p3.s1",
+              "text": "‘Lots of little dolls!"
+            },
+            {
+              "id": "c14.p3.s2",
+              "text": "Are they people?’"
+            }
+          ]
+        },
+        {
+          "id": "c14.p4",
+          "sentences": [
+            {
+              "id": "c14.p4.s1",
+              "text": "‘Why, yes they are,’ said Mr Wonka."
+            },
+            {
+              "id": "c14.p4.s2",
+              "text": "‘They're Oompa-Loompas. Famous for working, dancing and singing.’"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "c15",
+      "title": "Augustus Falls in the River",
+      "paragraphs": [
+        {
+          "id": "c15.p1",
+          "sentences": [
+            {
+              "id": "c15.p1.s1",
+              "text": "While the Oompa-Loompas sang, Augustus walked down to the river."
+            }
+          ]
+        },
+        {
+          "id": "c15.p2",
+          "sentences": [
+            {
+              "id": "c15.p2.s1",
+              "text": "‘It must be full of chocolate,’ he thought."
+            },
+            {
+              "id": "c15.p2.s2",
+              "text": "He lay on his stomach to taste it."
+            },
+            {
+              "id": "c15.p2.s3",
+              "text": "Delicious!"
+            }
+          ]
+        },
+        {
+          "id": "c15.p3",
+          "sentences": [
+            {
+              "id": "c15.p3.s1",
+              "text": "‘Be careful!"
+            },
+            {
+              "id": "c15.p3.s2",
+              "text": "You'll fall in!’ shouted Mr Wonka."
+            }
+          ]
+        },
+        {
+          "id": "c15.p4",
+          "sentences": [
+            {
+              "id": "c15.p4.s1",
+              "text": "SPLASH!"
+            },
+            {
+              "id": "c15.p4.s2",
+              "text": "Too late."
+            },
+            {
+              "id": "c15.p4.s3",
+              "text": "Augustus was in the river."
+            },
+            {
+              "id": "c15.p4.s4",
+              "text": "Then suddenly, he was gone."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "c16",
+      "title": "Down the Chocolate River",
+      "paragraphs": [
+        {
+          "id": "c16.p1",
+          "sentences": [
+            {
+              "id": "c16.p1.s1",
+              "text": "‘Augustus!"
+            },
+            {
+              "id": "c16.p1.s2",
+              "text": "Where's Augustus?"
+            },
+            {
+              "id": "c16.p1.s3",
+              "text": "I'll never see him again!’ cried his mother."
+            }
+          ]
+        },
+        {
+          "id": "c16.p2",
+          "sentences": [
+            {
+              "id": "c16.p2.s1",
+              "text": "‘Yes, you will,’ answered Mr Wonka."
+            },
+            {
+              "id": "c16.p2.s2",
+              "text": "‘But not now. What a bad boy!’"
+            }
+          ]
+        },
+        {
+          "id": "c16.p3",
+          "sentences": [
+            {
+              "id": "c16.p3.s1",
+              "text": "It was time to sail down the chocolate river."
+            },
+            {
+              "id": "c16.p3.s2",
+              "text": "Charlie looked around."
+            },
+            {
+              "id": "c16.p3.s3",
+              "text": "Everything in this amazing world was made of sugar."
+            },
+            {
+              "id": "c16.p3.s4",
+              "text": "The pink boat was sugar!"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "c17",
+      "title": "The Magic Room",
+      "paragraphs": [
+        {
+          "id": "c17.p1",
+          "sentences": [
+            {
+              "id": "c17.p1.s1",
+              "text": "The Oompa-Loompas rowed the boat down a long tunnel."
+            },
+            {
+              "id": "c17.p1.s2",
+              "text": "They stopped opposite a door in the wall."
+            }
+          ]
+        },
+        {
+          "id": "c17.p2",
+          "sentences": [
+            {
+              "id": "c17.p2.s1",
+              "text": "‘This is the most important room in the factory,’ said Mr Wonka."
+            },
+            {
+              "id": "c17.p2.s2",
+              "text": "‘Come inside!’"
+            }
+          ]
+        },
+        {
+          "id": "c17.p3",
+          "sentences": [
+            {
+              "id": "c17.p3.s1",
+              "text": "What a place!"
+            },
+            {
+              "id": "c17.p3.s2",
+              "text": "Magic sweets of every kind!"
+            },
+            {
+              "id": "c17.p3.s3",
+              "text": "Like green Gobstoppers that never got any smaller in your mouth."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "c18",
+      "title": "The Great Gum Machine",
+      "paragraphs": [
+        {
+          "id": "c18.p1",
+          "sentences": [
+            {
+              "id": "c18.p1.s1",
+              "text": "In the middle of the room was a great big metal machine."
+            },
+            {
+              "id": "c18.p1.s2",
+              "text": "It moved up and down, making a very loud noise."
+            }
+          ]
+        },
+        {
+          "id": "c18.p2",
+          "sentences": [
+            {
+              "id": "c18.p2.s1",
+              "text": "CLONK, CLATTER, BANG!"
+            }
+          ]
+        },
+        {
+          "id": "c18.p3",
+          "sentences": [
+            {
+              "id": "c18.p3.s1",
+              "text": "Suddenly, out came something small, and flat."
+            }
+          ]
+        },
+        {
+          "id": "c18.p4",
+          "sentences": [
+            {
+              "id": "c18.p4.s1",
+              "text": "‘It's chewing gum!’ Violet shouted."
+            },
+            {
+              "id": "c18.p4.s2",
+              "text": "‘That's right,’ said Mr Wonka."
+            },
+            {
+              "id": "c18.p4.s3",
+              "text": "‘The most amazing gum in the world!’"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "c19",
+      "title": "Goodbye, Violet",
+      "paragraphs": [
+        {
+          "id": "c19.p1",
+          "sentences": [
+            {
+              "id": "c19.p1.s1",
+              "text": "‘It’s magic gum, you see,’ said Mr Wonka."
+            },
+            {
+              "id": "c19.p1.s2",
+              "text": "‘This piece tastes of soup, meat, and blueberry pie.’ Violet put the gum in her mouth."
+            },
+            {
+              "id": "c19.p1.s3",
+              "text": "Mmm!"
+            },
+            {
+              "id": "c19.p1.s4",
+              "text": "Delicious!"
+            }
+          ]
+        },
+        {
+          "id": "c19.p2",
+          "sentences": [
+            {
+              "id": "c19.p2.s1",
+              "text": "‘Help!’ cried her mother."
+            },
+            {
+              "id": "c19.p2.s2",
+              "text": "‘She's turning purple and...’"
+            }
+          ]
+        },
+        {
+          "id": "c19.p3",
+          "sentences": [
+            {
+              "id": "c19.p3.s1",
+              "text": "‘...Round,’ said Mr Wonka."
+            },
+            {
+              "id": "c19.p3.s2",
+              "text": "‘Like a blueberry! Oompa-Loompas, take her away! Get the juice out!’"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "c20",
+      "title": "The Nut Room",
+      "paragraphs": [
+        {
+          "id": "c20.p1",
+          "sentences": [
+            {
+              "id": "c20.p1.s1",
+              "text": "The next stop was the Nut Room where hundreds of little animals were opening nuts."
+            }
+          ]
+        },
+        {
+          "id": "c20.p2",
+          "sentences": [
+            {
+              "id": "c20.p2.s1",
+              "text": "‘I want a little animal!’ shouted Veruca, trying hard to catch one."
+            }
+          ]
+        },
+        {
+          "id": "c20.p3",
+          "sentences": [
+            {
+              "id": "c20.p3.s1",
+              "text": "But the animals caught her and pushed her down with the rubbish."
+            },
+            {
+              "id": "c20.p3.s2",
+              "text": "Then down went Veruca’s mother."
+            }
+          ]
+        },
+        {
+          "id": "c20.p4",
+          "sentences": [
+            {
+              "id": "c20.p4.s1",
+              "text": "And what happened to her father?"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "c21",
+      "title": "The Great Glass Lift",
+      "paragraphs": [
+        {
+          "id": "c21.p1",
+          "sentences": [
+            {
+              "id": "c21.p1.s1",
+              "text": "There were only five visitors left now."
+            },
+            {
+              "id": "c21.p1.s2",
+              "text": "They were all feeling tired."
+            },
+            {
+              "id": "c21.p1.s3",
+              "text": "‘I want to watch television,’ said Mike."
+            },
+            {
+              "id": "c21.p1.s4",
+              "text": "‘Fine,’ said Mr Wonka."
+            },
+            {
+              "id": "c21.p1.s5",
+              "text": "‘We'll take the lift.’ The machine was as fast as a rocket."
+            },
+            {
+              "id": "c21.p1.s6",
+              "text": "It could go up and down, and round corners."
+            },
+            {
+              "id": "c21.p1.s7",
+              "text": "It was crazy!"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "c22",
+      "title": "The Television Chocolate Room",
+      "paragraphs": [
+        {
+          "id": "c22.p1",
+          "sentences": [
+            {
+              "id": "c22.p1.s1",
+              "text": "The visitors stepped out of the lift into a brilliant white room."
+            },
+            {
+              "id": "c22.p1.s2",
+              "text": "Then they put on dark glasses."
+            }
+          ]
+        },
+        {
+          "id": "c22.p2",
+          "sentences": [
+            {
+              "id": "c22.p2.s1",
+              "text": "‘This is where we test our Television Chocolate,’ said Mr Wonka."
+            }
+          ]
+        },
+        {
+          "id": "c22.p3",
+          "sentences": [
+            {
+              "id": "c22.p3.s1",
+              "text": "‘What do you mean?’ asked Mike."
+            }
+          ]
+        },
+        {
+          "id": "c22.p4",
+          "sentences": [
+            {
+              "id": "c22.p4.s1",
+              "text": "‘Well, with a TV camera we send it to another place."
+            },
+            {
+              "id": "c22.p4.s2",
+              "text": "It goes by television.’"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "c23",
+      "title": "Mike, is That You?",
+      "paragraphs": [
+        {
+          "id": "c23.p1",
+          "sentences": [
+            {
+              "id": "c23.p1.s1",
+              "text": "‘It arrives much smaller."
+            },
+            {
+              "id": "c23.p1.s2",
+              "text": "Watch this!’"
+            }
+          ]
+        },
+        {
+          "id": "c23.p2",
+          "sentences": [
+            {
+              "id": "c23.p2.s1",
+              "text": "Six Oompa-Loompas put a BIG piece of chocolate under the camera."
+            },
+            {
+              "id": "c23.p2.s2",
+              "text": "Suddenly it was in the TV!"
+            }
+          ]
+        },
+        {
+          "id": "c23.p3",
+          "sentences": [
+            {
+              "id": "c23.p3.s1",
+              "text": "Mike went under the camera."
+            }
+          ]
+        },
+        {
+          "id": "c23.p4",
+          "sentences": [
+            {
+              "id": "c23.p4.s1",
+              "text": "‘He's so small,’ cried Mike's mum."
+            },
+            {
+              "id": "c23.p4.s2",
+              "text": "‘It’s all right,’ said Mr Wonka."
+            }
+          ]
+        },
+        {
+          "id": "c23.p5",
+          "sentences": [
+            {
+              "id": "c23.p5.s1",
+              "text": "‘The Oompa-Loompas will make him big again.’"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "c24",
+      "title": "Where Next?",
+      "paragraphs": [
+        {
+          "id": "c24.p1",
+          "sentences": [
+            {
+              "id": "c24.p1.s1",
+              "text": "Then Mr Wonka turned to Charlie and said, ‘My dear boy, you are the only boy left. Well done! You've won! Step into the lift. Here we go!’"
+            }
+          ]
+        },
+        {
+          "id": "c24.p2",
+          "sentences": [
+            {
+              "id": "c24.p2.s1",
+              "text": "Charlie was very surprised."
+            },
+            {
+              "id": "c24.p2.s2",
+              "text": "‘What have I won?’ he thought."
+            },
+            {
+              "id": "c24.p2.s3",
+              "text": "‘Where are we going?’"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "c25",
+      "title": "The Other Children Go Home",
+      "paragraphs": [
+        {
+          "id": "c25.p1",
+          "sentences": [
+            {
+              "id": "c25.p1.s1",
+              "text": "The lift flew up into the sky."
+            },
+            {
+              "id": "c25.p1.s2",
+              "text": "The people below looked very small."
+            }
+          ]
+        },
+        {
+          "id": "c25.p2",
+          "sentences": [
+            {
+              "id": "c25.p2.s1",
+              "text": "‘Look!’ said Mr Wonka, ‘The other children! Augustus at the front, Mike at the back. I’m going to give them sweets to take home. But for you, Charlie, something else!’"
+            }
+          ]
+        },
+        {
+          "id": "c25.p3",
+          "sentences": [
+            {
+              "id": "c25.p3.s1",
+              "text": "The lift was right above Charlie’s house."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "c26",
+      "title": "A Big Surprise",
+      "paragraphs": [
+        {
+          "id": "c26.p1",
+          "sentences": [
+            {
+              "id": "c26.p1.s1",
+              "text": "‘Charlie,’ said Mr Wonka, ‘you've won my factory! It's YOURS!’ Charlie couldn’t think."
+            },
+            {
+              "id": "c26.p1.s2",
+              "text": "The lift was falling."
+            }
+          ]
+        },
+        {
+          "id": "c26.p2",
+          "sentences": [
+            {
+              "id": "c26.p2.s1",
+              "text": "CRASH!"
+            },
+            {
+              "id": "c26.p2.s2",
+              "text": "‘HELP!’ cried Grandma Josephine."
+            },
+            {
+              "id": "c26.p2.s3",
+              "text": "‘The end of the world!’"
+            }
+          ]
+        },
+        {
+          "id": "c26.p3",
+          "sentences": [
+            {
+              "id": "c26.p3.s1",
+              "text": "But it was just the beginning."
+            },
+            {
+              "id": "c26.p3.s2",
+              "text": "‘We're going to live in Charlie’s chocolate factory,’ said Grandpa Joe."
+            },
+            {
+              "id": "c26.p3.s3",
+              "text": "‘We'll never be hungry again!’"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "pages": [
+    {
+      "number": 1,
+      "chapterId": "c1",
+      "words": 89,
+      "sentenceIds": [
+        "c1.p1.s1",
+        "c1.p2.s1",
+        "c1.p2.s2",
+        "c1.p3.s1",
+        "c1.p4.s1",
+        "c1.p4.s2",
+        "c1.p4.s3",
+        "c1.p5.s1",
+        "c1.p6.s1"
+      ]
+    },
+    {
+      "number": 2,
+      "chapterId": "c2",
+      "words": 50,
+      "sentenceIds": [
+        "c2.p1.s1",
+        "c2.p1.s2",
+        "c2.p1.s3",
+        "c2.p1.s4",
+        "c2.p1.s5",
+        "c2.p1.s6"
+      ]
+    },
+    {
+      "number": 3,
+      "chapterId": "c3",
+      "words": 48,
+      "sentenceIds": [
+        "c3.p1.s1",
+        "c3.p1.s2",
+        "c3.p1.s3",
+        "c3.p1.s4"
+      ]
+    },
+    {
+      "number": 4,
+      "chapterId": "c4",
+      "words": 50,
+      "sentenceIds": [
+        "c4.p1.s1",
+        "c4.p1.s2",
+        "c4.p2.s1",
+        "c4.p2.s2",
+        "c4.p3.s1"
+      ]
+    },
+    {
+      "number": 5,
+      "chapterId": "c5",
+      "words": 49,
+      "sentenceIds": [
+        "c5.p1.s1",
+        "c5.p1.s2",
+        "c5.p1.s3",
+        "c5.p1.s4",
+        "c5.p2.s1"
+      ]
+    },
+    {
+      "number": 6,
+      "chapterId": "c6",
+      "words": 49,
+      "sentenceIds": [
+        "c6.p1.s1",
+        "c6.p1.s2",
+        "c6.p2.s1",
+        "c6.p2.s2",
+        "c6.p2.s3",
+        "c6.p3.s1",
+        "c6.p3.s2"
+      ]
+    },
+    {
+      "number": 7,
+      "chapterId": "c7",
+      "words": 49,
+      "sentenceIds": [
+        "c7.p1.s1",
+        "c7.p1.s2",
+        "c7.p1.s3",
+        "c7.p1.s4",
+        "c7.p1.s5",
+        "c7.p1.s6",
+        "c7.p1.s7"
+      ]
+    },
+    {
+      "number": 8,
+      "chapterId": "c8",
+      "words": 50,
+      "sentenceIds": [
+        "c8.p1.s1",
+        "c8.p2.s1",
+        "c8.p3.s1",
+        "c8.p3.s2",
+        "c8.p3.s3"
+      ]
+    },
+    {
+      "number": 9,
+      "chapterId": "c9",
+      "words": 48,
+      "sentenceIds": [
+        "c9.p1.s1",
+        "c9.p1.s2",
+        "c9.p1.s3",
+        "c9.p1.s4",
+        "c9.p1.s5",
+        "c9.p1.s6",
+        "c9.p2.s1",
+        "c9.p3.s1"
+      ]
+    },
+    {
+      "number": 10,
+      "chapterId": "c10",
+      "words": 50,
+      "sentenceIds": [
+        "c10.p1.s1",
+        "c10.p1.s2",
+        "c10.p1.s3",
+        "c10.p1.s4",
+        "c10.p2.s1",
+        "c10.p2.s2"
+      ]
+    },
+    {
+      "number": 11,
+      "chapterId": "c11",
+      "words": 49,
+      "sentenceIds": [
+        "c11.p1.s1",
+        "c11.p1.s2",
+        "c11.p1.s3",
+        "c11.p1.s4",
+        "c11.p2.s1",
+        "c11.p3.s1",
+        "c11.p3.s2"
+      ]
+    },
+    {
+      "number": 12,
+      "chapterId": "c12",
+      "words": 93,
+      "sentenceIds": [
+        "c12.p1.s1",
+        "c12.p1.s2",
+        "c12.p1.s3",
+        "c12.p1.s4",
+        "c12.p2.s1",
+        "c12.p2.s2",
+        "c12.p3.s1",
+        "c12.p3.s2",
+        "c12.p3.s3",
+        "c12.p3.s4",
+        "c12.p3.s5",
+        "c12.p3.s6"
+      ]
+    },
+    {
+      "number": 13,
+      "chapterId": "c13",
+      "words": 50,
+      "sentenceIds": [
+        "c13.p1.s1",
+        "c13.p1.s2",
+        "c13.p1.s3",
+        "c13.p2.s1",
+        "c13.p2.s2",
+        "c13.p3.s1"
+      ]
+    },
+    {
+      "number": 14,
+      "chapterId": "c14",
+      "words": 47,
+      "sentenceIds": [
+        "c14.p1.s1",
+        "c14.p1.s2",
+        "c14.p2.s1",
+        "c14.p2.s2",
+        "c14.p3.s1",
+        "c14.p3.s2",
+        "c14.p4.s1",
+        "c14.p4.s2"
+      ]
+    },
+    {
+      "number": 15,
+      "chapterId": "c15",
+      "words": 49,
+      "sentenceIds": [
+        "c15.p1.s1",
+        "c15.p2.s1",
+        "c15.p2.s2",
+        "c15.p2.s3",
+        "c15.p3.s1",
+        "c15.p3.s2",
+        "c15.p4.s1",
+        "c15.p4.s2",
+        "c15.p4.s3",
+        "c15.p4.s4"
+      ]
+    },
+    {
+      "number": 16,
+      "chapterId": "c16",
+      "words": 50,
+      "sentenceIds": [
+        "c16.p1.s1",
+        "c16.p1.s2",
+        "c16.p1.s3",
+        "c16.p2.s1",
+        "c16.p2.s2",
+        "c16.p3.s1",
+        "c16.p3.s2",
+        "c16.p3.s3",
+        "c16.p3.s4"
+      ]
+    },
+    {
+      "number": 17,
+      "chapterId": "c17",
+      "words": 51,
+      "sentenceIds": [
+        "c17.p1.s1",
+        "c17.p1.s2",
+        "c17.p2.s1",
+        "c17.p2.s2",
+        "c17.p3.s1",
+        "c17.p3.s2",
+        "c17.p3.s3"
+      ]
+    },
+    {
+      "number": 18,
+      "chapterId": "c18",
+      "words": 49,
+      "sentenceIds": [
+        "c18.p1.s1",
+        "c18.p1.s2",
+        "c18.p2.s1",
+        "c18.p3.s1",
+        "c18.p4.s1",
+        "c18.p4.s2",
+        "c18.p4.s3"
+      ]
+    },
+    {
+      "number": 19,
+      "chapterId": "c19",
+      "words": 50,
+      "sentenceIds": [
+        "c19.p1.s1",
+        "c19.p1.s2",
+        "c19.p1.s3",
+        "c19.p1.s4",
+        "c19.p2.s1",
+        "c19.p2.s2",
+        "c19.p3.s1",
+        "c19.p3.s2"
+      ]
+    },
+    {
+      "number": 20,
+      "chapterId": "c20",
+      "words": 50,
+      "sentenceIds": [
+        "c20.p1.s1",
+        "c20.p2.s1",
+        "c20.p3.s1",
+        "c20.p3.s2",
+        "c20.p4.s1"
+      ]
+    },
+    {
+      "number": 21,
+      "chapterId": "c21",
+      "words": 47,
+      "sentenceIds": [
+        "c21.p1.s1",
+        "c21.p1.s2",
+        "c21.p1.s3",
+        "c21.p1.s4",
+        "c21.p1.s5",
+        "c21.p1.s6",
+        "c21.p1.s7"
+      ]
+    },
+    {
+      "number": 22,
+      "chapterId": "c22",
+      "words": 50,
+      "sentenceIds": [
+        "c22.p1.s1",
+        "c22.p1.s2",
+        "c22.p2.s1",
+        "c22.p3.s1",
+        "c22.p4.s1",
+        "c22.p4.s2"
+      ]
+    },
+    {
+      "number": 23,
+      "chapterId": "c23",
+      "words": 49,
+      "sentenceIds": [
+        "c23.p1.s1",
+        "c23.p1.s2",
+        "c23.p2.s1",
+        "c23.p2.s2",
+        "c23.p3.s1",
+        "c23.p4.s1",
+        "c23.p4.s2",
+        "c23.p5.s1"
+      ]
+    },
+    {
+      "number": 24,
+      "chapterId": "c24",
+      "words": 42,
+      "sentenceIds": [
+        "c24.p1.s1",
+        "c24.p2.s1",
+        "c24.p2.s2",
+        "c24.p2.s3"
+      ]
+    },
+    {
+      "number": 25,
+      "chapterId": "c25",
+      "words": 50,
+      "sentenceIds": [
+        "c25.p1.s1",
+        "c25.p1.s2",
+        "c25.p2.s1",
+        "c25.p3.s1"
+      ]
+    },
+    {
+      "number": 26,
+      "chapterId": "c26",
+      "words": 49,
+      "sentenceIds": [
+        "c26.p1.s1",
+        "c26.p1.s2",
+        "c26.p2.s1",
+        "c26.p2.s2",
+        "c26.p2.s3",
+        "c26.p3.s1",
+        "c26.p3.s2",
+        "c26.p3.s3"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,85 @@
+{
+  "book": "English Collocations in Use · Intermediate",
+  "groups": [
+    {"title": "Learning about collocations", "units": [
+      {"number": 1, "title": "What is a collocation?"},
+      {"number": 2, "title": "Finding, recording and learning collocations"},
+      {"number": 3, "title": "Using your dictionary"},
+      {"number": 4, "title": "Types of collocation"},
+      {"number": 5, "title": "Register"}
+    ]},
+    {"title": "Grammatical aspects of collocations", "units": [
+      {"number": 6, "title": "Intensifying adverbs", "id": "unit-006"},
+      {"number": 7, "title": "Everyday verbs 1"},
+      {"number": 8, "title": "Everyday verbs 2"},
+      {"number": 9, "title": "Everyday verbs 3", "id": "unit-009"}
+    ]},
+    {"title": "Special aspects of collocation", "units": [
+      {"number": 10, "title": "Synonyms and confusable words 1"},
+      {"number": 11, "title": "Synonyms and confusable words 2"},
+      {"number": 12, "title": "Metaphor", "id": "unit-012"}
+    ]},
+    {"title": "Topics: Travel and the environment", "units": [
+      {"number": 13, "title": "Weather"},
+      {"number": 14, "title": "Travel"},
+      {"number": 15, "title": "Countryside"},
+      {"number": 16, "title": "Towns and cities"}
+    ]},
+    {"title": "Topics: People and relationships", "units": [
+      {"number": 17, "title": "People: character and behaviour"},
+      {"number": 18, "title": "People: physical appearance"},
+      {"number": 19, "title": "Families"},
+      {"number": 20, "title": "Relationships"}
+    ]},
+    {"title": "Topics: Leisure and lifestyle", "units": [
+      {"number": 21, "title": "Houses, flats and rooms"},
+      {"number": 22, "title": "Eating and drinking"},
+      {"number": 23, "title": "Films and books"},
+      {"number": 24, "title": "Music"},
+      {"number": 25, "title": "Sport"},
+      {"number": 26, "title": "Health and illness", "id": "unit-026"}
+    ]},
+    {"title": "Topics: Work and study", "units": [
+      {"number": 27, "title": "Using the Internet"},
+      {"number": 28, "title": "Study and learning"},
+      {"number": 29, "title": "Presentations"},
+      {"number": 30, "title": "Work"},
+      {"number": 31, "title": "Business"},
+      {"number": 32, "title": "Academic writing 1: giving opinions"},
+      {"number": 33, "title": "Academic writing 2: structuring an argument"}
+    ]},
+    {"title": "Topics: Society and institutions", "units": [
+      {"number": 34, "title": "Laws and punishments"},
+      {"number": 35, "title": "Crime"},
+      {"number": 36, "title": "News"},
+      {"number": 37, "title": "Money"},
+      {"number": 38, "title": "War and peace"},
+      {"number": 39, "title": "Global problems"}
+    ]},
+    {"title": "Basic concepts", "units": [
+      {"number": 40, "title": "Time"},
+      {"number": 41, "title": "Sound"},
+      {"number": 42, "title": "Distance and size"},
+      {"number": 43, "title": "Colour and light"},
+      {"number": 44, "title": "Texture"},
+      {"number": 45, "title": "Taste and smell"},
+      {"number": 46, "title": "Number and frequency"},
+      {"number": 47, "title": "Movement and speed"},
+      {"number": 48, "title": "Change"},
+      {"number": 49, "title": "Ways of speaking"},
+      {"number": 50, "title": "Ways of walking"}
+    ]},
+    {"title": "Functions", "units": [
+      {"number": 51, "title": "Starting and finishing"},
+      {"number": 52, "title": "Talking about success and failure"},
+      {"number": 53, "title": "Talking about cause and effect"},
+      {"number": 54, "title": "Remembering and sensing"},
+      {"number": 55, "title": "Agreeing and disagreeing"},
+      {"number": 56, "title": "Talking about beliefs and opinions"},
+      {"number": 57, "title": "Deciding and choosing", "id": "unit-057"},
+      {"number": 58, "title": "Claiming and denying"},
+      {"number": 59, "title": "Liking and disliking"},
+      {"number": 60, "title": "Praising and criticising"}
+    ]}
+  ]
+}

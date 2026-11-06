@@ -44,7 +44,11 @@ test('the shelf lists each book once; every book has contents and every listed u
   assert.ok(upper.ready.some(unit => unit.id === 'unit-012'));
   const elementary = books.find(b => b.book.id === 'elementary');
   assert.deepEqual(elementary.contents.groups.flatMap(group => group.units).map(unit => unit.number), Array.from({ length: 60 }, (_, i) => i + 1));
-  assert.deepEqual(books.map(b => b.book.id), ['elementary', 'upper-intermediate'], 'easiest level first');
+  const collocations = books.find(b => b.book.id === 'collocations-intermediate');
+  assert.deepEqual(collocations.contents.groups.flatMap(group => group.units).map(unit => unit.number), Array.from({ length: 60 }, (_, i) => i + 1));
+  assert.deepEqual(books.map(b => b.book.id), ['elementary', 'upper-intermediate', 'collocations-intermediate'], 'easiest level first in each block');
+  assert.deepEqual(core.shelfGroups(books.map(b => b.book)).map(group => [group.series, group.books.map(book => book.id)]),
+    [['Vocabulary', ['elementary', 'upper-intermediate']], ['Collocations', ['collocations-intermediate']]]);
   for (const { book, ready } of books) {
     for (const unit of ready) {
       const data = core.validateUnit(read(`vocabulary/${book.id}/${unit.id}.json`));
@@ -82,12 +86,19 @@ test('every prepared unit trains each phrase at least twice in practice and once
 test('the shelf rejects repeated or unsafe ids and levels without a name or book', () => {
   const books = list => ({ books: list });
   const ok = core.validateLibrary(books([{ id: 'pre-intermediate', level: 'Pre-intermediate', book: 'B' }])).books[0];
-  assert.deepEqual([ok.cefr, ok.about], ['', '']);
+  assert.deepEqual([ok.series, ok.cefr, ok.about], ['', '', '']);
+  assert.throws(() => core.validateLibrary(books([{ id: 'a', level: 'L', book: 'B', series: ' ' }])), /series must be text/);
   assert.throws(() => core.validateLibrary(books([])), /add books/);
   assert.throws(() => core.validateLibrary(books([{ id: '../x', level: 'L', book: 'B' }])), /unique id/);
   assert.throws(() => core.validateLibrary(books([{ id: 'a', level: 'L', book: 'B' }, { id: 'a', level: 'M', book: 'B' }])), /unique id/);
   assert.throws(() => core.validateLibrary(books([{ id: 'a', level: 'L' }])), /level and the book's name/);
   assert.throws(() => core.validateLibrary(books([{ id: 'a', level: 'L', book: 'B', cefr: '' }])), /cefr must be text/);
+});
+
+test('shelf blocks keep the order of their first book and the order of books inside a block', () => {
+  const list = [{ id: 'a', series: 'X' }, { id: 'b', series: 'Y' }, { id: 'c', series: 'X' }, { id: 'd', series: '' }];
+  assert.deepEqual(core.shelfGroups(list).map(group => [group.series, group.books.map(book => book.id)]),
+    [['X', ['a', 'c']], ['Y', ['b']], ['', ['d']]]);
 });
 
 test('Unit 12 trains every phrase in practice and in the final mix, with Ukrainian notes', () => {

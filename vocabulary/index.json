@@ -1,6 +1,7 @@
 {
   "books": [
-    {"id": "elementary", "level": "Elementary", "cefr": "A1–A2", "book": "English Vocabulary in Use Elementary", "about": "First everyday words: family, home, food, clothes, feelings, basic verbs and linking words."},
-    {"id": "upper-intermediate", "level": "Upper-intermediate", "cefr": "B2", "book": "English Vocabulary in Use Upper-intermediate", "about": "Everyday topics, feelings, linking words, word formation, phrasal verbs and styles."}
+    {"id": "elementary", "series": "Vocabulary", "level": "Elementary", "cefr": "A1–A2", "book": "English Vocabulary in Use Elementary", "about": "First everyday words: family, home, food, clothes, feelings, basic verbs and linking words."},
+    {"id": "upper-intermediate", "series": "Vocabulary", "level": "Upper-intermediate", "cefr": "B2", "book": "English Vocabulary in Use Upper-intermediate", "about": "Everyday topics, feelings, linking words, word formation, phrasal verbs and styles."},
+    {"id": "collocations-intermediate", "series": "Collocations", "level": "Intermediate", "cefr": "B1–B2", "book": "English Collocations in Use Intermediate", "about": "Which words go together: heavy rain, take action, utterly ridiculous."}
   ]
 }

@@ -176,13 +176,16 @@ test('Vocabulary is shared: the shelf of levels opens without a profile and link
     const app = await page('vocabulary', search);
     assert.deepEqual(app.errors, [], search);
     assert.equal(app.context.location.redirect, undefined, search);
-    assert.deepEqual(app.requested, ['vocabulary/index.json', 'vocabulary/elementary/index.json', `vocabulary/${VOC_BOOK}/index.json`], search);
+    assert.deepEqual(app.requested, ['vocabulary/index.json', 'vocabulary/elementary/index.json', `vocabulary/${VOC_BOOK}/index.json`,
+      'vocabulary/collocations-intermediate/index.json'], search);
     const html = app.node('app').innerHTML;
     assert.match(html, /<h1>Vocabulary<\/h1>/, search);
     assert.match(html, new RegExp(`href="vocabulary\\.html\\?v=10&book=${VOC_BOOK}"`), search);
     assert.match(html, /<b>Elementary<\/b><span class="voc-chip">A1–A2<\/span>/, search);
     assert.match(html, /<b>Upper-intermediate<\/b><span class="voc-chip">B2<\/span>/, search);
     assert.ok(html.indexOf('Elementary') < html.indexOf('Upper-intermediate'), 'easiest level first');
+    assert.match(html, /<h2 class="voc-group">Vocabulary<\/h2>[\s\S]*Upper-intermediate[\s\S]*<h2 class="voc-group">Collocations<\/h2>[\s\S]*<b>Intermediate<\/b>/, search);
+    assert.match(html, /href="vocabulary\.html\?v=10&book=collocations-intermediate"/, search);
     assert.match(html, /6 of 101 units ready/, search);
     assert.doesNotMatch(html, /user=/, search);
     assert.deepEqual(app.backs, ['index.html?v=10'], search);
@@ -200,10 +203,13 @@ test('a Vocabulary level shows its book contents; prepared units link through th
   assert.deepEqual(app.requested, ['vocabulary/index.json', `vocabulary/${VOC_BOOK}/index.json`]);
   assert.deepEqual(app.backs, ['vocabulary.html?v=10']);
   const html = app.node('app').innerHTML;
-  assert.match(html, /<h1>Upper-intermediate<\/h1>/);
+  assert.match(html, /<div class="voc-part-head">Vocabulary<\/div><h1>Upper-intermediate<\/h1>/);
   assert.match(html, /English Vocabulary in Use Upper-intermediate · B2 · 6 units ready/);
   assert.match(html, new RegExp(`href="vocabulary\\.html\\?v=10&book=${VOC_BOOK}&unit=unit-012"`));
   assert.match(html, /‹ All levels/);
+  const collocations = await page('vocabulary', '?book=collocations-intermediate');
+  assert.deepEqual(collocations.errors, []);
+  assert.match(collocations.node('app').innerHTML, /<div class="voc-part-head">Collocations<\/div><h1>Intermediate<\/h1>/);
   for (const search of ['?book=../users', '?book=Upper']) {
     const bad = await page('vocabulary', search);
     assert.deepEqual(bad.requested, [], search);
