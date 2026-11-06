@@ -9,6 +9,7 @@
   const MIN_PRACTICE = 20;
   const STORY_MIN_PHRASES = 5;
   const UNIT_ID = /^unit-\d{3}$/;
+  const BOOK_ID = /^[a-z0-9][a-z0-9-]{0,39}$/;
   const STEP_IDS = ["warm", "learn", "practice", "story", "mix"];
   const MARK = /\[\[([^\]|]+)\|([a-z0-9]+)\]\]/g;
 
@@ -16,9 +17,23 @@
   const clean = value => value.trim();
   const oneGap = q => typeof q === "string" && q.split("___").length === 2;
 
-  // Book contents for the unit list. A unit with an id has a file in vocabulary/ and opens.
-  function validateIndex(data) {
+  // The shelf: vocabulary/index.json lists the books by level; each book lives in vocabulary/<id>/.
+  function validateLibrary(data) {
     const fail = problem => { throw new Error(`Check vocabulary/index.json: ${problem}`); };
+    if (!data || !Array.isArray(data.books) || !data.books.length) fail("add books.");
+    const ids = new Set();
+    return { books: data.books.map((book, i) => {
+      if (!book || typeof book.id !== "string" || !BOOK_ID.test(book.id) || ids.has(book.id)) fail(`book ${i + 1} needs a unique id like elementary.`);
+      if (!filled(book.level) || !filled(book.book)) fail(`book ${book.id} needs a level and the book's name.`);
+      for (const key of ["cefr", "about"]) if (book[key] !== undefined && !filled(book[key])) fail(`book ${book.id}: ${key} must be text.`);
+      ids.add(book.id);
+      return { id: book.id, level: clean(book.level), book: clean(book.book), cefr: book.cefr ? clean(book.cefr) : "", about: book.about ? clean(book.about) : "" };
+    }) };
+  }
+
+  // Book contents for the unit list. A unit with an id has a file next to the contents and opens.
+  function validateIndex(data, where = "the book contents") {
+    const fail = problem => { throw new Error(`Check ${where}: ${problem}`); };
     if (!data || !filled(data.book) || !Array.isArray(data.groups) || !data.groups.length) fail("add book and groups.");
     const numbers = new Set(), ids = new Set();
     const groups = data.groups.map((group, g) => {
@@ -251,7 +266,7 @@
     return { kind: "progress", text: `Step ${Math.min(open + 1, STEP_IDS.length)} of ${STEP_IDS.length}` };
   }
 
-  const api = { WINDOW, STEP_IDS, progressOf, unlockedSteps, progressLabel, PASS, PRACTICE_OPTIONS, MIN_PRACTICE, STORY_MIN_PHRASES, UNIT_ID,
+  const api = { BOOK_ID, validateLibrary, WINDOW, STEP_IDS, progressOf, unlockedSteps, progressLabel, PASS, PRACTICE_OPTIONS, MIN_PRACTICE, STORY_MIN_PHRASES, UNIT_ID,
     validateIndex, validateUnit, rating, passed, practiceDeck, requeue, normalize, distance, checkTyped, firstLetters,
     storyParts, storyIds, plainStory };
   if (typeof module !== "undefined" && module.exports) module.exports = api;

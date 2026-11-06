@@ -1,16 +1,36 @@
-# Vocabulary: юниты English Vocabulary in Use
+# Vocabulary: уровни, юнит за юнитом
 
 Общий раздел: открыт всем разрешённым аккаунтам с главного экрана, профиль
-не нужен. Материал — English Vocabulary in Use Upper-intermediate, юнит за юнитом.
+не нужен. Каждый уровень — одна книга серии English Vocabulary in Use,
+юнит за юнитом. Сейчас уровни Elementary (A1–A2) и Upper-intermediate (B2).
 Каждый юнит самостоятельный, связей с другими разделами нет. Минимальный
 прогресс сохраняется на устройстве (см. «Прогресс на устройстве»).
 
 ## Как устроен раздел
 
-- `vocabulary.html` без параметров показывает оглавление книги из
-  `vocabulary/index.json`. Открываются только юниты, у которых указан `id`.
-- `vocabulary.html?v=10&unit=unit-012` открывает юнит из `vocabulary/unit-012.json`.
-  Кнопка «Назад» Telegram ведёт из юнита к оглавлению, из оглавления — в меню.
+- `vocabulary.html` без параметров показывает список уровней из
+  `vocabulary/index.json`: уровень, CEFR, книга, сколько юнитов готово и пройдено.
+  Уровни идут в порядке списка — от лёгкого к сложному.
+- `vocabulary.html?v=10&book=upper-intermediate` показывает оглавление уровня
+  из `vocabulary/upper-intermediate/index.json`. Открываются только юниты,
+  у которых указан `id`. Оглавление запрашивается, только если уровень есть в списке.
+- `…&book=upper-intermediate&unit=unit-012` открывает юнит из
+  `vocabulary/upper-intermediate/unit-012.json`. Файл юнита запрашивается,
+  только если оглавление отмечает его готовым.
+- Кнопка «Назад» Telegram ведёт из юнита к оглавлению уровня, из оглавления —
+  к списку уровней, оттуда — в меню.
+
+```text
+vocabulary/
+├── index.json                    ← уровни
+├── elementary/
+│   ├── index.json                ← оглавление книги уровня
+│   └── unit-004.json …
+└── upper-intermediate/
+    ├── index.json
+    ├── unit-006.json
+    └── unit-012.json …
+```
 
 Юнит начинается с короткого описания: о чём он, части A, B, C и пять шагов.
 Шаги открываются по очереди, следующий — только после предыдущего:
@@ -40,7 +60,7 @@
 ## Прогресс на устройстве
 
 Как в Books: `localStorage`, отдельно для каждого Telegram-аккаунта, подтверждённого
-Worker, и каждого юнита — ключ `umbrello.vocabulary.v1.<userId>.unit-NNN`.
+Worker, каждого уровня и юнита — ключ `umbrello.vocabulary.v1.<userId>.<level>.unit-NNN`.
 На сервер ничего не уходит, на другом телефоне прогресса не будет.
 
 Хранится только:
@@ -60,7 +80,7 @@ Worker, и каждого юнита — ключ `umbrello.vocabulary.v1.<userI
 
 ## Файл юнита
 
-`vocabulary/unit-NNN.json`, проверяется `VocabularyCore.validateUnit`
+`vocabulary/<book>/unit-NNN.json`, проверяется `VocabularyCore.validateUnit`
 (`assets/js/vocabulary-core.js`). Если что-то не так, страница показывает
 «Could not load» и место, которое нужно исправить, например
 `Check practice[3]: give one right and 5 different wrong answers.`
@@ -101,21 +121,40 @@ Worker, и каждого юнита — ключ `umbrello.vocabulary.v1.<userI
 
 ## Как добавить юнит
 
-1. Положи `vocabulary/unit-NNN.json` (номер из трёх цифр).
-2. В `vocabulary/index.json` добавь этому юниту `"id": "unit-NNN"`.
-3. Запусти `node --test tests/vocabulary.test.cjs`: тест проверяет все юниты
-   из оглавления.
+1. Положи `vocabulary/<book>/unit-NNN.json` (номер из трёх цифр).
+2. В `vocabulary/<book>/index.json` добавь этому юниту `"id": "unit-NNN"`.
+3. Запусти `node --test tests/vocabulary.test.cjs`: тест проверяет все книги
+   и все юниты из их оглавлений.
 
 Новый юнит не требует новой версии `?v=`: JSON загружается без кэша.
 
+## Как добавить уровень
+
+1. `id` уровня — строчные латинские буквы, цифры и дефисы, по названию уровня,
+   например `pre-intermediate`.
+2. Создай папку `vocabulary/<id>/` с `index.json` — оглавлением, в том же формате,
+   что у Upper-intermediate: `book` (название с уровнем, оно же уходит в запрос
+   истории) и `groups` с юнитами.
+3. Добавь уровень в `vocabulary/index.json`: `id`, `level` (название уровня,
+   оно же заголовок), `book` (название книги), по желанию `cefr` (`A2–B1`)
+   и `about` — одна строка о содержании. Ставь его по сложности: список
+   показывается в том же порядке.
+4. Добавляй юниты, как описано выше.
+
+Уровень важен для Story: Worker просит модель держать остальную лексику
+и грамматику на уровне книги, а для Elementary и Pre-intermediate писать
+историю короче (70–90 слов) и простыми предложениями.
+
 ## История через Worker
 
-`POST /vocabulary/story` — `initData`, `unit` (до 120 символов), `topic` (до 200)
-и `phrases`: 5–60 фраз юнита с `id`, `phrase`, `pattern`, `meaning`.
+`POST /vocabulary/story` — `initData`, `book` (название и уровень книги, до 120
+символов), `unit` (до 120), `topic` (до 200) и `phrases`: 5–60 фраз юнита
+с `id`, `phrase`, `pattern`, `meaning`. Без `book` (страница старой версии)
+Worker считает книгу Upper-intermediate.
 Ответ: `{ "title", "uk", "en" }`.
 
 - Запрос проходит ту же проверку Telegram-подписи и `ALLOWED_USER_IDS`, что Write.
-- В OpenAI уходят только `unit`, `topic` и `phrases`. Ответ строится по JSON-схеме
+- В OpenAI уходят только `book`, `unit`, `topic` и `phrases`. Ответ строится по JSON-схеме
   (`text.format`, `strict: true`), `store: false`.
 - Worker проверяет ответ: украинский текст без английской разметки, в английском
   не меньше 5 размеченных фраз юнита. Метки с чужим `id` превращаются в обычный текст.

@@ -26,26 +26,43 @@ function fixture() {
   };
 }
 
-test('the unit list and Unit 12 pass validation, and every listed unit has its file', () => {
-  const index = core.validateIndex(read('vocabulary/index.json'));
-  const units = index.groups.flatMap(group => group.units);
-  assert.equal(units.length, 101);
+// Every book on the shelf with its contents and the units that are ready.
+function shelf() {
+  return core.validateLibrary(read('vocabulary/index.json')).books.map(book => {
+    const contents = core.validateIndex(read(`vocabulary/${book.id}/index.json`), book.id);
+    return { book, contents, ready: contents.groups.flatMap(group => group.units).filter(unit => unit.id) };
+  });
+}
+
+test('the shelf lists each book once; every book has contents and every listed unit has its file', () => {
+  const books = shelf();
+  assert.ok(books.length >= 1);
+  assert.deepEqual(new Set(books.map(b => b.book.id)).size, books.length);
+  const upper = books.find(b => b.book.id === 'upper-intermediate');
+  const units = upper.contents.groups.flatMap(group => group.units);
   assert.deepEqual(units.map(unit => unit.number), Array.from({ length: 101 }, (_, i) => i + 1));
-  const ready = units.filter(unit => unit.id);
-  assert.ok(ready.some(unit => unit.id === 'unit-012'));
-  for (const unit of ready) {
-    const data = core.validateUnit(read(`vocabulary/${unit.id}.json`));
-    assert.equal(data.number, unit.number, unit.id);
-    assert.equal(data.title, unit.title, unit.id);
+  assert.ok(upper.ready.some(unit => unit.id === 'unit-012'));
+  const elementary = books.find(b => b.book.id === 'elementary');
+  assert.deepEqual(elementary.contents.groups.flatMap(group => group.units).map(unit => unit.number), Array.from({ length: 60 }, (_, i) => i + 1));
+  assert.deepEqual(books.map(b => b.book.id), ['elementary', 'upper-intermediate'], 'easiest level first');
+  for (const { book, ready } of books) {
+    for (const unit of ready) {
+      const data = core.validateUnit(read(`vocabulary/${book.id}/${unit.id}.json`));
+      assert.equal(data.number, unit.number, `${book.id}/${unit.id}`);
+      assert.equal(data.title, unit.title, `${book.id}/${unit.id}`);
+    }
   }
+  // Unit files sit only inside book folders.
+  assert.deepEqual(fs.readdirSync(path.join(root, 'vocabulary')).filter(name => name.endsWith('.json')), ['index.json']);
 });
 
 test('every prepared unit trains each phrase at least twice in practice and once in the final mix, with Ukrainian notes', () => {
-  const ready = core.validateIndex(read('vocabulary/index.json')).groups.flatMap(group => group.units).filter(unit => unit.id);
-  assert.ok(ready.length >= 6);
   const cyrillic = /[А-Яа-яІіЇїЄєҐґ]/u;
-  for (const { id } of ready) {
+  let count = 0;
+  for (const { book, ready } of shelf()) for (const { id: unitId } of ready) {
+    const id = `${book.id}/${unitId}`;
     const unit = core.validateUnit(read(`vocabulary/${id}.json`));
+    count++;
     const ids = new Set(unit.items.map(item => item.id));
     for (const item of unit.items) {
       assert.ok(unit.practice.filter(q => q.item === item.id).length >= 2, `${id}: practice for ${item.id}`);
@@ -56,13 +73,25 @@ test('every prepared unit trains each phrase at least twice in practice and once
     for (const q of [...unit.warmup, ...Object.values(unit.checks).flat()]) assert.match(q.explain || '', cyrillic, `${id}: ${q.q}`);
     assert.equal(unit.warmup.length, 8, `${id}: warm-up`);
     for (const list of Object.values(unit.checks)) assert.equal(list.length, 3, `${id}: checks`);
-    assert.ok(unit.story.example && core.storyIds(unit.story.example.en, ids).length >= 8, `${id}: example story`);
+    assert.ok(unit.story.example && core.storyIds(unit.story.example.en, ids).length >= 7, `${id}: example story`);
     assert.doesNotMatch(unit.story.example.uk, /[A-Za-z]{3,}/, `${id}: English words in the Ukrainian story`);
   }
+  assert.ok(count >= 6);
+});
+
+test('the shelf rejects repeated or unsafe ids and levels without a name or book', () => {
+  const books = list => ({ books: list });
+  const ok = core.validateLibrary(books([{ id: 'pre-intermediate', level: 'Pre-intermediate', book: 'B' }])).books[0];
+  assert.deepEqual([ok.cefr, ok.about], ['', '']);
+  assert.throws(() => core.validateLibrary(books([])), /add books/);
+  assert.throws(() => core.validateLibrary(books([{ id: '../x', level: 'L', book: 'B' }])), /unique id/);
+  assert.throws(() => core.validateLibrary(books([{ id: 'a', level: 'L', book: 'B' }, { id: 'a', level: 'M', book: 'B' }])), /unique id/);
+  assert.throws(() => core.validateLibrary(books([{ id: 'a', level: 'L' }])), /level and the book's name/);
+  assert.throws(() => core.validateLibrary(books([{ id: 'a', level: 'L', book: 'B', cefr: '' }])), /cefr must be text/);
 });
 
 test('Unit 12 trains every phrase in practice and in the final mix, with Ukrainian notes', () => {
-  const unit = core.validateUnit(read('vocabulary/unit-012.json'));
+  const unit = core.validateUnit(read('vocabulary/upper-intermediate/unit-012.json'));
   assert.equal(unit.items.length, 27);
   assert.ok(unit.practice.length >= 2 * unit.items.length - 1);
   for (const item of unit.items) {

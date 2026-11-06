@@ -6,9 +6,12 @@ package installation or build step is needed.
 
 ## Playback
 
-1. Press Play once. The video starts at the beginning and shuffled words appear immediately.
-2. At each unfinished phrase's `end`, playback pauses. Words and any partial answer stay visible.
-3. Click the words in the order heard, during playback or while paused. Each
+1. Press Play once. The video starts at the beginning and words appear in the
+   correct order to read while listening. They cannot be selected yet.
+2. At each unfinished phrase's `end`, playback pauses and the words shuffle.
+   Pressing Pause early also shuffles them immediately. Play continues with the
+   exercise visible; only Repeat reveals the current phrase in order again.
+3. Click the words in the order heard. Each
    correct word glides to the next slot at the front of the row, turns green and
    ignores further taps. The words it passes shift along without changing their
    order. A wrong word shakes and stays where it is. With reduced motion enabled
@@ -20,14 +23,22 @@ package installation or build step is needed.
 5. Instrumental passages and the outro play in full. The lesson finishes when
    the video itself ends.
 
-Enable the **показати переклад** switch to show a Ukrainian hint above the words while
-arranging a phrase. The switch stays visible in every playback state and sticks
-to the top when scrolling. It is off by default; the browser remembers your choice
-when local storage is available. Switching it does not reset your answer.
+The compact **спочатку текст** switch is on by default. Turn it off to show shuffled
+words immediately and allow answering during playback, as well as while paused.
+Turning it off updates the words immediately without losing a partial answer.
+After any pause, switching it on applies to Repeat and the next phrase;
+the current exercise stays visible, including after Play resumes.
+
+Enable the **переклад** switch to show a Ukrainian hint above the words while
+listening or arranging a phrase. It is off by default. Both switches stay visible
+in every playback state and stick to the top when scrolling. The browser remembers
+each choice independently when local storage is available. Switching translation does not reset your answer.
 Phrases without a translation simply show no hint.
 
 Repeat is the only phrase-level action that rewinds: it returns to that phrase's
-`start`, preserving the placed words, word order and translation.
+`start`. With **спочатку текст** enabled it shows the phrase in order again, then
+restores the exercise with its placed words and remaining word order intact.
+With it disabled, the exercise stays visible throughout Repeat. Translation is preserved.
 Leaving the app pauses playback; returning
 shows a Play button. If a browser rejects playback, Play retries without losing
 the current position. Progress is kept only in the current page.
@@ -102,7 +113,7 @@ Telegram as well. Opening the page as `file://` does not support loading JSON.
 
 ## Updating the Telegram mini app
 
-The Listen controller and styles currently use `v=11`. When publishing a new release,
+The Listen controller and styles currently use `v=12`. When publishing a new release,
 bump them together with the page: an old cached HTML page can still request old scripts.
 If Telegram keeps the old entry page after deployment, update the bot's mini-app
 launch URL to `index.html?v=10` (or append `&v=10` if it already has a query).

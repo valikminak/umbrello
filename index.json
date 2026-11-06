@@ -6,6 +6,12 @@
       "title": "The Woman in the Dunes",
       "author": "Kobo Abe",
       "path": "books/the-woman-in-the-dunes/book.json"
+    },
+    {
+      "bookId": "8f7143b086b3c07e9180dc1d904ada8594217b7d05414ddddec3e7eaf68faa15",
+      "title": "Charlie and the Chocolate Factory",
+      "author": "Roald Dahl",
+      "path": "books/charlie-and-the-chocolate-factory/book.json"
     }
   ]
 }

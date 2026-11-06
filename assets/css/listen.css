@@ -4,13 +4,14 @@
 .listen-nav .listen-back{display:grid;place-items:center;width:44px;height:44px;margin:0;border-radius:50%;background:var(--card);font-size:24px;padding:0}
 .listen-player{width:100%;aspect-ratio:16/9;background:#111;border-radius:16px;overflow:hidden;margin-bottom:20px}
 .listen-player video{display:block;width:100%;height:100%;border:0;object-fit:contain;cursor:pointer}
-.listen-translation-toggle{position:sticky;top:env(safe-area-inset-top,0px);z-index:2;display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:52px;flex-shrink:0;margin:-8px 0 12px;padding:8px 0;background:var(--bg);font-size:16px;cursor:pointer}
-.listen-translation-toggle input{appearance:none;-webkit-appearance:none;position:relative;flex-shrink:0;width:48px;height:28px;margin:0;border:0;border-radius:999px;background:var(--hint);cursor:pointer;transition:background .18s}
-.listen-translation-toggle input::before{content:"";position:absolute;top:3px;left:3px;width:22px;height:22px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.2);transition:transform .18s}
-.listen-translation-toggle input:checked{background:var(--accent)}
-.listen-translation-toggle input:checked::before{transform:translateX(20px)}
-.listen-translation-toggle input:focus-visible{outline:3px solid var(--accent);outline-offset:3px}
-@media (prefers-reduced-motion:reduce){.listen-translation-toggle input,.listen-translation-toggle input::before{transition:none}}
+.listen-toggles{position:sticky;top:env(safe-area-inset-top,0px);z-index:2;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;column-gap:20px;flex-shrink:0;margin:-8px 0 12px;background:var(--bg)}
+.listen-toggle{display:flex;align-items:center;gap:8px;min-height:44px;padding:8px 0;font-size:14px;line-height:1.3;cursor:pointer}
+.listen-toggle input{appearance:none;-webkit-appearance:none;position:relative;flex-shrink:0;width:36px;height:22px;margin:0;border:0;border-radius:999px;background:var(--hint);cursor:pointer;transition:background .18s}
+.listen-toggle input::before{content:"";position:absolute;top:3px;left:3px;width:16px;height:16px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.2);transition:transform .18s}
+.listen-toggle input:checked{background:var(--accent)}
+.listen-toggle input:checked::before{transform:translateX(14px)}
+.listen-toggle input:focus-visible{outline:3px solid var(--accent);outline-offset:3px}
+@media (prefers-reduced-motion:reduce){.listen-toggle input,.listen-toggle input::before{transition:none}}
 .listen-translation{margin:0 0 14px;padding:2px 0 2px 12px;border-left:3px solid var(--accent);font-size:17px;line-height:1.5;overflow-wrap:anywhere}
 .listen-actions{display:flex;gap:10px}
 .listen-actions .btn{flex:1}
@@ -18,6 +19,7 @@
 .listen-words{display:flex;flex-wrap:wrap;gap:9px;margin-bottom:16px}
 .listen-word{font:inherit;font-weight:600;font-size:18px;line-height:1.3;min-height:46px;border:1px solid var(--line);border-radius:12px;padding:10px 15px;background:var(--card);color:var(--text);cursor:pointer;overflow-wrap:anywhere;max-width:100%;transition:background-color .2s,border-color .2s,color .2s}
 .listen-word:disabled{z-index:1;border-color:var(--ok);background:linear-gradient(var(--ok-soft),var(--ok-soft)) var(--card);color:var(--ok);opacity:1;cursor:default}
+.listen-preview .listen-word{cursor:default}
 .listen-word.wrong{border-color:var(--bad);background:var(--bad-soft);animation:shake .3s}
 .listen-word:focus-visible,.btn:focus-visible,.listen-back:focus-visible,.listen-player video:focus-visible{outline:3px solid var(--accent);outline-offset:3px}
 .listen-status{min-height:0;margin:0 0 12px;font-size:14px}

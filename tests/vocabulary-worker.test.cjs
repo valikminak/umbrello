@@ -8,7 +8,7 @@ const source = fs.readFileSync(path.join(__dirname, '../worker/cf_worker.js'), '
 const env = { BOT_TOKEN: 'test-only-token', CHAT_ID: 'test-chat', ALLOWED_USER_IDS: '123', OPENAI_API_KEY: 'test-only-key', OPENAI_MODEL: 'test-model' };
 
 const phrases = ['a4', 'b4', 'c2', 'c7', 'c8', 'c9', 'a7'].map(id => ({ id, phrase: `phrase ${id}`, pattern: `pattern ${id}`, meaning: `meaning ${id}` }));
-const request = { unit: 'Everyday minor problems', topic: 'a Monday morning', phrases };
+const request = { book: 'English Vocabulary in Use · Pre-intermediate', unit: 'Everyday minor problems', topic: 'a Monday morning', phrases };
 const story = {
   title: 'A Monday to forget',
   uk: 'Сіли батарейки.\n\nЯ спіткнувся об сумку і пролив каву. Машина не заводилася.',
@@ -59,9 +59,18 @@ test('a signed story request returns the Ukrainian text and the marked English s
   assert.match(sent.instructions, /\[\[exact words used\|id\]\]/);
 });
 
+test('a page published before the book list sends no book; the Upper-intermediate book is assumed', async () => {
+  const app = harness();
+  const { book, ...older } = request;
+  assert.equal((await app.call(older)).status, 200);
+  assert.equal(JSON.parse(app.calls[0].body.input[0].content).book, 'English Vocabulary in Use · Upper-intermediate');
+});
+
 test('malformed story requests are refused before calling the model', async () => {
   for (const body of [
     { ...request, topic: '' },
+    { ...request, book: '' },
+    { ...request, book: 'x'.repeat(121) },
     { ...request, unit: 'x'.repeat(121) },
     { ...request, phrases: phrases.slice(0, 4) },
     { ...request, phrases: [...phrases, phrases[0]] },

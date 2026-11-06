@@ -126,3 +126,11 @@
 .voc-chips{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 12px}
 .voc-row{display:flex;gap:10px;margin-top:12px}
 .voc-row .btn{flex:1}
+
+/* shelf of books */
+.voc-books{display:flex;flex-direction:column;gap:10px}
+.voc-book{display:flex;flex-direction:column;gap:6px;padding:16px;border-radius:18px;background:var(--card);color:var(--text);text-decoration:none}
+.voc-book-head{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.voc-book-head b{font-size:18px}
+.voc-book-about{color:var(--hint);font-size:14.5px;line-height:1.4}
+.voc-book-meta{font-size:14px;font-weight:600;color:var(--accent)}

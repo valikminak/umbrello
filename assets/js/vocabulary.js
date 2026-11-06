@@ -3,54 +3,88 @@
   const host = document.getElementById("app");
   if (!await Profiles.shared(host)) return;
   const core = VocabularyCore;
-  const listUrl = Profiles.url("vocabulary.html");
-  const unitUrl = id => `${listUrl}&unit=${encodeURIComponent(id)}`;
-  const unitId = new URLSearchParams(location.search).get("unit");
+  const params = new URLSearchParams(location.search);
+  const bookId = params.get("book"), unitId = params.get("unit");
+  const shelfUrl = Profiles.url("vocabulary.html");
+  const bookUrl = id => `${shelfUrl}&book=${encodeURIComponent(id)}`;
+  const unitUrl = (book, id) => `${bookUrl(book)}&unit=${encodeURIComponent(id)}`;
+  const listUrl = bookId ? bookUrl(bookId) : shelfUrl;
 
-  // Progress lives on this device only, per verified Telegram account and unit (like Books).
-  const storeKey = id => `umbrello.vocabulary.v1.${Profiles.userId}.${id}`;
-  function readProgress(id) {
+  // Progress lives on this device only, per verified Telegram account, book and unit (like Books).
+  const storeKey = (book, id) => `umbrello.vocabulary.v1.${Profiles.userId}.${book}.${id}`;
+  function readProgress(book, id) {
     if (!Profiles.userId) return core.progressOf(null);
-    try { return core.progressOf(JSON.parse(localStorage.getItem(storeKey(id)) ?? "null")); } catch (_) { return core.progressOf(null); }
+    try { return core.progressOf(JSON.parse(localStorage.getItem(storeKey(book, id)) ?? "null")); } catch (_) { return core.progressOf(null); }
   }
-  function writeProgress(id, value) {
+  function writeProgress(book, id, value) {
     if (!Profiles.userId) return;
-    try { localStorage.setItem(storeKey(id), JSON.stringify(value)); } catch (_) {}
+    try { localStorage.setItem(storeKey(book, id), JSON.stringify(value)); } catch (_) {}
+  }
+  const contentsFile = book => `vocabulary/${book}/index.json`;
+  const readyUnits = index => index.groups.flatMap(group => group.units).filter(unit => unit.id);
+  function notFound(title, href, label) {
+    host.innerHTML = `<div class="center"><h1>${title}</h1><p class="sub">Choose from the list.</p><a class="btn" href="${href}">${label}</a></div>`;
   }
 
-  // ---------- Unit list: the book's contents, prepared units open ----------
+  // ---------- Shelf: every book with how many units are ready and finished ----------
+  async function showShelf() {
+    backTo(Profiles.url("index.html"));
+    try {
+      const shelf = core.validateLibrary(await loadJSON("vocabulary/index.json"));
+      const contents = await Promise.all(shelf.books.map(book =>
+        loadJSON(contentsFile(book.id)).then(data => core.validateIndex(data, contentsFile(book.id))).catch(() => null)));
+      host.innerHTML = `<h1>Vocabulary</h1><p class="sub">Choose your level.</p>
+        <div class="voc-books">${shelf.books.map((book, i) => {
+          const index = contents[i];
+          const units = index ? index.groups.flatMap(group => group.units) : [];
+          const ready = index ? readyUnits(index) : [];
+          const done = ready.filter(unit => core.progressLabel(readProgress(book.id, unit.id)).kind === "done").length;
+          return `<a class="voc-book" href="${bookUrl(book.id)}"><span class="voc-book-head"><b>${esc(book.level)}</b>${book.cefr ? `<span class="voc-chip">${esc(book.cefr)}</span>` : ""}</span>
+            <span class="voc-book-about">${esc(book.book)}${book.about ? `. ${esc(book.about)}` : ""}</span>
+            <span class="voc-book-meta">${index ? `${ready.length} of ${units.length} units ready${done ? ` · ✓ ${done} done` : ""}` : "Contents could not be loaded"}</span></a>`;
+        }).join("")}</div>`;
+    } catch (error) { showError(host, error, showShelf); }
+  }
+
+  // ---------- One level: the book's contents; prepared units open ----------
   function statusChip(id) {
-    const label = core.progressLabel(readProgress(id));
+    const label = core.progressLabel(readProgress(bookId, id));
     return `<span class="voc-chip ${label.kind}">${label.kind === "done" ? "✓ " : ""}${esc(label.text)}</span>`;
   }
   async function showList() {
-    backTo(Profiles.url("index.html"));
+    backTo(shelfUrl);
     try {
-      const index = core.validateIndex(await loadJSON("vocabulary/index.json"));
-      host.innerHTML = `<h1>Vocabulary</h1><p class="sub">${esc(index.book)}</p>
+      // Only levels on the shelf are requested.
+      const book = core.validateLibrary(await loadJSON("vocabulary/index.json")).books.find(item => item.id === bookId);
+      if (!book) return notFound("Level not found", shelfUrl, "All levels");
+      const index = core.validateIndex(await loadJSON(contentsFile(bookId)), contentsFile(bookId));
+      host.innerHTML = `<div class="voc-nav"><a class="voc-back" href="${shelfUrl}">‹ All levels</a></div>
+        <h1>${esc(book.level)}</h1><p class="sub">${esc(book.book)}${book.cefr ? ` · ${esc(book.cefr)}` : ""} · ${readyUnits(index).length} units ready</p>
         ${index.groups.map(group => `<h2 class="voc-group">${esc(group.title)}</h2><div class="voc-units">${group.units.map(unit => unit.id
-          ? `<a class="voc-unit ready" href="${unitUrl(unit.id)}"><span class="n">${unit.number}</span><span class="t">${esc(unit.title)}</span>${statusChip(unit.id)}</a>`
+          ? `<a class="voc-unit ready" href="${unitUrl(bookId, unit.id)}"><span class="n">${unit.number}</span><span class="t">${esc(unit.title)}</span>${statusChip(unit.id)}</a>`
           : `<div class="voc-unit"><span class="n">${unit.number}</span><span class="t">${esc(unit.title)}</span></div>`).join("")}</div>`).join("")}`;
     } catch (error) { showError(host, error, showList); }
   }
 
+  if (!bookId) return showShelf();
+  if (!core.BOOK_ID.test(bookId)) { backTo(shelfUrl); return notFound("Level not found", shelfUrl, "All levels"); }
   if (!unitId) return showList();
   backTo(listUrl);
-  if (!core.UNIT_ID.test(unitId)) {
-    host.innerHTML = `<div class="center"><h1>Unit not found</h1><p class="sub">Choose a unit from the list.</p>
-      <a class="btn" href="${listUrl}">All units</a></div>`;
-    return;
-  }
+  if (!core.UNIT_ID.test(unitId)) return notFound("Unit not found", listUrl, "All units");
 
-  let unit;
+  let unit, bookTitle;
   async function loadUnit() {
     try {
-      unit = core.validateUnit(await loadJSON(`vocabulary/${unitId}.json`));
+      // Only units the contents mark as ready are requested.
+      const contents = core.validateIndex(await loadJSON(contentsFile(bookId)), contentsFile(bookId));
+      if (!readyUnits(contents).some(item => item.id === unitId)) return notFound("Unit not found", listUrl, "All units");
+      bookTitle = contents.book;
+      unit = core.validateUnit(await loadJSON(`vocabulary/${bookId}/${unitId}.json`));
       start();
     } catch (error) { showError(host, error, loadUnit); }
   }
 
-  // ---------- One unit: five steps, one after another. Nothing is saved. ----------
+  // ---------- One unit: five steps, one after another; finished steps are saved on the device ----------
   const STEPS = [
     { id: "warm", short: "Warm-up", title: "Warm-up", how: "Guess the English phrase before you learn it. Wrong guesses are fine." },
     { id: "learn", short: "Learn", title: "Learn", how: "Read each part, then answer three quick questions about it." },
@@ -73,7 +107,7 @@
   let S, pracTimer = null, storyCtl = null;
 
   function start(over = false) {
-    const saved = readProgress(unitId);
+    const saved = readProgress(bookId, unitId);
     if (over) Object.assign(saved, { done: [], scores: {}, practice: null });
     S = { view: "intro", done: new Set(saved.done), unlocked: core.unlockedSteps(saved.done), learnPart: unit.parts[0].id, learnReached: 0,
       run: null, prac: null, savedPractice: saved.practice, finishedAt: saved.finishedAt, confirmReset: false,
@@ -83,7 +117,7 @@
   }
   function save() {
     const p = S.prac;
-    writeProgress(unitId, { done: [...S.done], scores: S.scores, finishedAt: S.finishedAt,
+    writeProgress(bookId, unitId, { done: [...S.done], scores: S.scores, finishedAt: S.finishedAt,
       practice: p ? { history: p.history.slice(-core.WINDOW), right: p.right, wrong: p.wrong } : S.savedPractice });
   }
   function today() {
@@ -349,7 +383,7 @@
     try {
       const response = await fetch(new URL("/vocabulary/story", WORKER_URL), {
         method: "POST", headers: { "Content-Type": "application/json" }, cache: "no-store", signal: storyCtl.signal,
-        body: JSON.stringify({ initData: tg.initData, unit: unit.title, topic,
+        body: JSON.stringify({ initData: tg.initData, book: bookTitle, unit: unit.title, topic,
           phrases: unit.items.map(({ id, phrase, pattern, meaning }) => ({ id, phrase, pattern, meaning })) }),
       });
       let data;

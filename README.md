@@ -32,8 +32,10 @@ listen/
 grammar/
   level-test.json        — вопросы теста уровня грамматики (A1–C2)
 vocabulary/
-  index.json             — оглавление English Vocabulary in Use, готовые юниты с id
-  unit-012.json          — файлы юнитов
+  index.json             — уровни Vocabulary (по одной книге на уровень)
+  elementary/, upper-intermediate/
+    index.json           — оглавление книги уровня, готовые юниты с id
+    unit-012.json        — файлы юнитов
 tools/
   listen-time-getter.html — инструмент разметки видео
   book-preparer.html      — локальный EPUB → JSON v2 с ID слов и копированием фрагмента
@@ -75,8 +77,9 @@ Write и отправкой отчётов. Полный список
 - **Grammar (общий):** вопросы теста уровня лежат в `grammar/level-test.json`,
   по 8 на каждый уровень A1–C2. Формат — [docs/GRAMMAR.md](docs/GRAMMAR.md).
   Материалов для вкладки Learn пока нет, они тоже будут в `grammar/`.
-- **Vocabulary (общий):** юнит — файл `vocabulary/unit-NNN.json`, в оглавлении
-  `vocabulary/index.json` ему добавляется `"id": "unit-NNN"`. Формат —
+- **Vocabulary (общий):** каждый уровень — папка `vocabulary/<level>/` с оглавлением
+  книги `index.json`; юнит — файл `unit-NNN.json` в ней, в оглавлении ему добавляется
+  `"id": "unit-NNN"`. Новый уровень добавляется ещё и в список `vocabulary/index.json`. Формат —
   [docs/VOCABULARY.md](docs/VOCABULARY.md).
 
 ## Как добавить пользователя
@@ -118,8 +121,9 @@ Test — тест уровня грамматики, от A1 до C2. На ка�
 
 ## Vocabulary
 
-Юниты English Vocabulary in Use Upper-intermediate. Раздел общий, открывается
-с главного экрана без профиля: оглавление книги, готовые юниты открываются.
+Книги English Vocabulary in Use по уровням, юнит за юнитом: сейчас Elementary
+и Upper-intermediate. Раздел общий, открывается с главного экрана без профиля:
+уровни → оглавление уровня → готовый юнит.
 Юнит начинается с описания и проходит пять шагов по очереди: Warm-up (угадать
 фразы до объяснений), Learn (части A, B, C с проверкой после каждой), Practice
 (выбор из шести вариантов, дальше — только при рейтинге 4.5 по последним

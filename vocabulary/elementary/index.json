@@ -1,0 +1,81 @@
+{
+  "book": "English Vocabulary in Use · Elementary",
+  "groups": [
+    {"title": "People", "units": [
+      {"number": 1, "title": "The family"},
+      {"number": 2, "title": "Birth, marriage and death"},
+      {"number": 3, "title": "Parts of the body"},
+      {"number": 4, "title": "Clothes", "id": "unit-004"},
+      {"number": 5, "title": "Describing people"},
+      {"number": 6, "title": "Health and illness"},
+      {"number": 7, "title": "Feelings", "id": "unit-007"},
+      {"number": 8, "title": "Conversations 1: Greetings and wishes"},
+      {"number": 9, "title": "Conversations 2: Useful words and expressions"}
+    ]},
+    {"title": "At home", "units": [
+      {"number": 10, "title": "Food and drink"},
+      {"number": 11, "title": "In the kitchen"},
+      {"number": 12, "title": "In the bedroom and bathroom"},
+      {"number": 13, "title": "In the living room"}
+    ]},
+    {"title": "School and workplace", "units": [
+      {"number": 14, "title": "Jobs"},
+      {"number": 15, "title": "At school and university"},
+      {"number": 16, "title": "Communications"},
+      {"number": 17, "title": "Your phone"}
+    ]},
+    {"title": "Leisure", "units": [
+      {"number": 18, "title": "Holidays"},
+      {"number": 19, "title": "Shops and shopping"},
+      {"number": 20, "title": "Online shopping"},
+      {"number": 21, "title": "In a hotel"},
+      {"number": 22, "title": "Eating out"},
+      {"number": 23, "title": "Sports"},
+      {"number": 24, "title": "Cinema"},
+      {"number": 25, "title": "Free time at home"},
+      {"number": 26, "title": "Music and musical instruments"}
+    ]},
+    {"title": "The world", "units": [
+      {"number": 27, "title": "Countries and nationalities"},
+      {"number": 28, "title": "Weather"},
+      {"number": 29, "title": "In the town"},
+      {"number": 30, "title": "In the countryside"},
+      {"number": 31, "title": "Animals"},
+      {"number": 32, "title": "Travelling"},
+      {"number": 33, "title": "UK culture"}
+    ]},
+    {"title": "Social issues", "units": [
+      {"number": 34, "title": "Crime"},
+      {"number": 35, "title": "The media"},
+      {"number": 36, "title": "Problems at home and work"},
+      {"number": 37, "title": "Global problems"}
+    ]},
+    {"title": "Everyday verbs", "units": [
+      {"number": 38, "title": "Have / had / had"},
+      {"number": 39, "title": "Go / went / gone"},
+      {"number": 40, "title": "Do / did / done"},
+      {"number": 41, "title": "Make / made / made", "id": "unit-041"},
+      {"number": 42, "title": "Come / came / come"},
+      {"number": 43, "title": "Take / took / taken"},
+      {"number": 44, "title": "Bring / brought / brought"},
+      {"number": 45, "title": "Get / got / got"},
+      {"number": 46, "title": "Phrasal verbs", "id": "unit-046"},
+      {"number": 47, "title": "Everyday things"},
+      {"number": 48, "title": "Talking"},
+      {"number": 49, "title": "Moving"}
+    ]},
+    {"title": "Words and grammar", "units": [
+      {"number": 50, "title": "Conjunctions and connecting words", "id": "unit-050"},
+      {"number": 51, "title": "Days, months, seasons"},
+      {"number": 52, "title": "Time words"},
+      {"number": 53, "title": "Places"},
+      {"number": 54, "title": "Manner"},
+      {"number": 55, "title": "Common uncountable nouns"},
+      {"number": 56, "title": "Common adjectives: Good and bad things"},
+      {"number": 57, "title": "Words and prepositions"},
+      {"number": 58, "title": "Prefixes"},
+      {"number": 59, "title": "Suffixes"},
+      {"number": 60, "title": "Words you may confuse"}
+    ]}
+  ]
+}

@@ -12,7 +12,9 @@
   const menuUrl = Profiles.url("index.html");
   backTo(lessonId ? lessonListUrl : menuUrl);
   let lesson, video, ui, index = 0, phase = "ready", shown = null, placed = 0, solvedTimer = 0, frame = 0, playRequest = 0;
+  let previewAllowed = true;
   const translationKey = "listen.translationUk";
+  const previewKey = "listen.previewWords";
   const reduceMotion = window.matchMedia?.("(prefers-reduced-motion: reduce)");
 
   function updateTranslation() {
@@ -46,6 +48,7 @@
     shown = null;
     placed = 0;
     ui.bank.replaceChildren();
+    ui.preview.replaceChildren();
     ui.translation.textContent = "";
     ui.translation.hidden = true;
     ui.puzzle.hidden = true;
@@ -80,16 +83,36 @@
   }
 
   function showWords() {
-    if (!ui.puzzle.hidden || index >= lesson.segments.length) return;
+    if (index >= lesson.segments.length) return;
     const segment = lesson.segments[index];
-    shown = segment;
+    if (ui.puzzle.hidden) {
+      shown = segment;
+      ui.puzzle.hidden = false;
+      updateTranslation();
+    }
+    if (shown !== segment) return; // Keep the just-solved phrase until its timer finishes.
+    const preview = ui.previewToggle.checked && previewAllowed && phase === "playing" && video.currentTime < segment.end;
+    ui.preview.hidden = !preview;
+    ui.bank.hidden = preview;
+    if (preview) {
+      if (!ui.preview.children.length) segment.words.forEach(word => {
+        const item = document.createElement("span");
+        item.className = "listen-word";
+        item.textContent = word;
+        ui.preview.append(item);
+      });
+      return;
+    }
+    // Build the exercise only after listening. Repeat temporarily hides it,
+    // so switching modes or replaying never loses a partial answer.
+    if (ui.bank.children.length) return;
     ListenCore.shuffledTokens(segment.words).forEach(token => {
       const button = document.createElement("button");
       button.type = "button";
       button.className = "listen-word";
       button.textContent = token.word;
       button.onclick = () => {
-        if (!["playing", "paused", "answer"].includes(phase) || button.disabled) return;
+        if (!["playing", "paused", "answer"].includes(phase) || ui.bank.hidden || button.disabled) return;
         if (ListenCore.normalize(token.word) !== ListenCore.normalize(segment.words[placed])) {
           button.classList.remove("wrong");
           void button.offsetWidth;
@@ -102,6 +125,7 @@
         if (placed === segment.words.length) {
           vibrate("success");
           index++;
+          previewAllowed = true;
           // The assembled phrase stays for a moment, then the next words replace it.
           solvedTimer = setTimeout(() => {
             clearAnswer();
@@ -114,12 +138,11 @@
       };
       ui.bank.append(button);
     });
-    ui.puzzle.hidden = false;
-    updateTranslation();
   }
 
   function waitForAnswer() {
     phase = "answer";
+    previewAllowed = false;
     stopFrames();
     video.pause();
     if (solvedTimer) clearAnswer(); // The next phrase is due now, so its words cannot wait.
@@ -150,7 +173,9 @@
     if (result) result.catch(() => {
       if (request !== playRequest || phase !== "playing") return;
       phase = "paused";
+      previewAllowed = false;
       stopFrames();
+      showWords();
       controls();
       message("Tap Play to continue.");
     });
@@ -160,8 +185,10 @@
     if (phase !== "playing") return;
     ++playRequest;
     phase = "paused";
+    previewAllowed = false;
     stopFrames();
     video.pause();
+    showWords();
     controls();
     message();
   }
@@ -172,6 +199,7 @@
     if (phase === "error") { location.reload(); return; }
     if (phase === "complete") {
       index = 0;
+      previewAllowed = true;
       clearAnswer();
       video.currentTime = 0;
     }
@@ -185,12 +213,19 @@
         <span class="counter" id="counter"></span>
       </nav>
       <div class="listen-player"><video id="lessonVideo" playsinline preload="auto" tabindex="0" aria-label="Play video"></video></div>
-      <label class="listen-translation-toggle" lang="uk">
-        <span>показати переклад</span>
-        <input type="checkbox" role="switch" id="translationToggle" aria-controls="phraseTranslation">
-      </label>
+      <div class="listen-toggles" lang="uk">
+        <label class="listen-toggle">
+          <span>переклад</span>
+          <input type="checkbox" role="switch" id="translationToggle" aria-label="Показати переклад українською" aria-controls="phraseTranslation">
+        </label>
+        <label class="listen-toggle" title="Спочатку слова по порядку, після прослуховування — перемішані">
+          <span>спочатку текст</span>
+          <input type="checkbox" role="switch" id="previewToggle" aria-label="Показувати слова по порядку під час прослуховування" aria-controls="wordPreview wordBank">
+        </label>
+      </div>
       <section id="puzzle" aria-label="Arrange the words" hidden>
         <p class="listen-translation" id="phraseTranslation" lang="uk" aria-live="polite" hidden></p>
+        <div class="listen-words listen-preview" id="wordPreview" role="group" aria-label="Read while listening" hidden></div>
         <div class="listen-words" id="wordBank"></div>
       </section>
       <div class="listen-actions">
@@ -201,12 +236,19 @@
     const el = id => document.getElementById(id);
     video = el("lessonVideo");
     ui = { counter: el("counter"), play: el("playPhrase"), repeat: el("repeatPhrase"),
-      puzzle: el("puzzle"), bank: el("wordBank"), status: el("listenStatus"),
+      puzzle: el("puzzle"), bank: el("wordBank"), preview: el("wordPreview"), status: el("listenStatus"),
+      previewToggle: el("previewToggle"),
       translationToggle: el("translationToggle"), translation: el("phraseTranslation") };
     try { ui.translationToggle.checked = localStorage.getItem(translationKey) === "true"; } catch (_) {}
     ui.translationToggle.onchange = () => {
       updateTranslation();
       try { localStorage.setItem(translationKey, String(ui.translationToggle.checked)); } catch (_) {}
+    };
+    ui.previewToggle.checked = true;
+    try { ui.previewToggle.checked = localStorage.getItem(previewKey) !== "false"; } catch (_) {}
+    ui.previewToggle.onchange = () => {
+      if (shown) showWords();
+      try { localStorage.setItem(previewKey, String(ui.previewToggle.checked)); } catch (_) {}
     };
     ui.play.onclick = toggle;
     video.onclick = toggle;
@@ -221,6 +263,8 @@
       video.pause();
       // Rewinding is only performed when explicitly requested with Repeat.
       video.currentTime = lesson.segments[index].start;
+      if (solvedTimer) clearAnswer();
+      previewAllowed = true;
       resume();
     };
     video.addEventListener("loadedmetadata", () => {

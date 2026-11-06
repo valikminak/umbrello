@@ -169,16 +169,21 @@ test('Listen is shared: opens without a profile, ignores ?user and filters the c
   assert.match(bogus.node('listenApp').innerHTML, /Count on Me[\s\S]*Counting Stars[\s\S]*Row Your Boat/);
 });
 
-test('Vocabulary is shared: the book list opens without a profile and links to prepared units', async () => {
+const VOC_BOOK = 'upper-intermediate';
+
+test('Vocabulary is shared: the shelf of levels opens without a profile and links to each level', async () => {
   for (const search of ['', '?user=sophia']) {
     const app = await page('vocabulary', search);
     assert.deepEqual(app.errors, [], search);
     assert.equal(app.context.location.redirect, undefined, search);
-    assert.deepEqual(app.requested, ['vocabulary/index.json'], search);
+    assert.deepEqual(app.requested, ['vocabulary/index.json', 'vocabulary/elementary/index.json', `vocabulary/${VOC_BOOK}/index.json`], search);
     const html = app.node('app').innerHTML;
     assert.match(html, /<h1>Vocabulary<\/h1>/, search);
-    assert.match(html, /href="vocabulary\.html\?v=10&unit=unit-012"/, search);
-    assert.match(html, /Everyday minor problems/, search);
+    assert.match(html, new RegExp(`href="vocabulary\\.html\\?v=10&book=${VOC_BOOK}"`), search);
+    assert.match(html, /<b>Elementary<\/b><span class="voc-chip">A1–A2<\/span>/, search);
+    assert.match(html, /<b>Upper-intermediate<\/b><span class="voc-chip">B2<\/span>/, search);
+    assert.ok(html.indexOf('Elementary') < html.indexOf('Upper-intermediate'), 'easiest level first');
+    assert.match(html, /6 of 101 units ready/, search);
     assert.doesNotMatch(html, /user=/, search);
     assert.deepEqual(app.backs, ['index.html?v=10'], search);
     assert.match(app.node('profileNav').innerHTML, /← Menu/);
@@ -189,37 +194,63 @@ test('Vocabulary is shared: the book list opens without a profile and links to p
   assert.deepEqual(refused.requested, []);
 });
 
-test('a Vocabulary unit opens on its intro with only the first step available; bad unit links load nothing', async () => {
-  const app = await page('vocabulary', '?unit=unit-012');
+test('a Vocabulary level shows its book contents; prepared units link through the level; bad links load nothing', async () => {
+  const app = await page('vocabulary', `?book=${VOC_BOOK}`);
   assert.deepEqual(app.errors, []);
-  assert.deepEqual(app.requested, ['vocabulary/unit-012.json']);
+  assert.deepEqual(app.requested, ['vocabulary/index.json', `vocabulary/${VOC_BOOK}/index.json`]);
   assert.deepEqual(app.backs, ['vocabulary.html?v=10']);
+  const html = app.node('app').innerHTML;
+  assert.match(html, /<h1>Upper-intermediate<\/h1>/);
+  assert.match(html, /English Vocabulary in Use Upper-intermediate · B2 · 6 units ready/);
+  assert.match(html, new RegExp(`href="vocabulary\\.html\\?v=10&book=${VOC_BOOK}&unit=unit-012"`));
+  assert.match(html, /‹ All levels/);
+  for (const search of ['?book=../users', '?book=Upper']) {
+    const bad = await page('vocabulary', search);
+    assert.deepEqual(bad.requested, [], search);
+    assert.match(bad.node('app').innerHTML, /Level not found/, search);
+  }
+  const unknown = await page('vocabulary', '?book=advanced');
+  assert.deepEqual(unknown.requested, ['vocabulary/index.json'], 'a level that is not on the shelf is not requested');
+  assert.match(unknown.node('app').innerHTML, /Level not found/);
+});
+
+test('a Vocabulary unit opens on its intro with only the first step available; bad unit links load nothing', async () => {
+  const app = await page('vocabulary', `?book=${VOC_BOOK}&unit=unit-012`);
+  assert.deepEqual(app.errors, []);
+  assert.deepEqual(app.requested, [`vocabulary/${VOC_BOOK}/index.json`, `vocabulary/${VOC_BOOK}/unit-012.json`]);
+  assert.deepEqual(app.backs, [`vocabulary.html?v=10&book=${VOC_BOOK}`]);
   const html = app.node('app').innerHTML;
   assert.match(html, /<h1>Unit 12 · Everyday minor problems<\/h1>/);
   assert.equal((html.match(/data-act="open" data-id="(?:learn|practice|story|mix)" disabled/g) || []).length, 4);
   assert.match(html, />Start</);
-  for (const search of ['?unit=../users/me/test', '?unit=unit-12']) {
+  for (const search of [`?book=${VOC_BOOK}&unit=../users/me/test`, `?book=${VOC_BOOK}&unit=unit-12`]) {
     const bad = await page('vocabulary', search);
     assert.deepEqual(bad.requested, [], search);
     assert.match(bad.node('app').innerHTML, /Unit not found/, search);
   }
+  const unlisted = await page('vocabulary', `?book=${VOC_BOOK}&unit=unit-013`);
+  assert.deepEqual(unlisted.requested, [`vocabulary/${VOC_BOOK}/index.json`], 'a unit that is not ready is not requested');
+  assert.match(unlisted.node('app').innerHTML, /Unit not found/);
 });
 
-test('Vocabulary progress is read per account: the list shows the next step and the unit continues there', async () => {
-  const key = 'umbrello.vocabulary.v1.123.unit-012';
+test('Vocabulary progress is read per account and book: the lists show progress and the unit continues there', async () => {
+  const key = `umbrello.vocabulary.v1.123.${VOC_BOOK}.unit-012`;
   const storage = { [key]: JSON.stringify({ done: ['warm', 'learn'], scores: { warm: '6 / 8' }, practice: { history: [true, false], right: 1, wrong: 1 } }),
-    'umbrello.vocabulary.v1.999.unit-012': JSON.stringify({ finishedAt: '2026-11-01' }) };
-  const list = await page('vocabulary', '', undefined, { storage });
+    [`umbrello.vocabulary.v1.999.${VOC_BOOK}.unit-006`]: JSON.stringify({ finishedAt: '2026-11-01' }),
+    [`umbrello.vocabulary.v1.123.${VOC_BOOK}.unit-043`]: JSON.stringify({ finishedAt: '2026-11-02' }) };
+  const shelfPage = await page('vocabulary', '', undefined, { storage });
+  assert.match(shelfPage.node('app').innerHTML, /6 of 101 units ready · ✓ 1 done/);
+  const list = await page('vocabulary', `?book=${VOC_BOOK}`, undefined, { storage });
   assert.match(list.node('app').innerHTML, /<span class="voc-chip progress">Step 3 of 5<\/span>/);
-  assert.doesNotMatch(list.node('app').innerHTML, /Done/, 'another account\'s progress is not shown');
-  const unit = await page('vocabulary', '?unit=unit-012', undefined, { storage });
+  assert.equal((list.node('app').innerHTML.match(/✓ Done/g) || []).length, 1, 'only this account\'s finished unit');
+  const unit = await page('vocabulary', `?book=${VOC_BOOK}&unit=unit-012`, undefined, { storage });
   const html = unit.node('app').innerHTML;
   assert.match(html, />Continue: Practice</);
   assert.match(html, /data-act="open" data-id="practice">/, 'Practice is open');
   assert.match(html, /data-act="open" data-id="story" disabled/);
   assert.match(html, /Start the unit over/);
   assert.match(html, /Progress is saved on this device/);
-  const fresh = await page('vocabulary', '?unit=unit-012', undefined, { storage: {} });
+  const fresh = await page('vocabulary', `?book=${VOC_BOOK}&unit=unit-012`, undefined, { storage: {} });
   assert.match(fresh.node('app').innerHTML, />Start</);
   assert.doesNotMatch(fresh.node('app').innerHTML, /Start the unit over/);
 });
