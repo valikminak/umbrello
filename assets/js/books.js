@@ -81,26 +81,24 @@
     const saved = readStore(bookId, "position");
     return saved && PART.test(saved.chapterId) && PART.test(saved.sentenceId) && Number.isInteger(saved.offset) && saved.offset >= 0 ? saved : null;
   }
-  function savedDefinitions(bookId) {
-    const saved = readStore(bookId, "definitions");
-    const definitions = new Map();
-    if (saved && typeof saved === "object" && !Array.isArray(saved)) {
-      for (const [key, entry] of Object.entries(saved)) {
-        if (typeof entry?.term === "string" && typeof entry?.definition === "string") {
-          definitions.set(key, { term: entry.term, definition: entry.definition,
-            example: typeof entry.example === "string" ? entry.example : "",
-            translation: typeof entry.translation === "string" ? entry.translation : "" });
-        }
+  // Reopening the same book while a lookup runs must share its pending saves and deletions.
+  const booksWithLookups = new Map();
+  function startSession(book) {
+    if (booksWithLookups.has(book.bookId)) return booksWithLookups.get(book.bookId);
+    const legacy = new Map(), byWord = new Map();
+    for (const [key, card] of Object.entries(readStore(book.bookId, "definitions") || {})) {
+      if (typeof card?.term !== "string" || typeof card.definition !== "string") continue;
+      if (!key.startsWith("@")) {
+        legacy.set(key, card);
+        continue;
+      }
+      const ids = card.wordIds;
+      const sentenceId = book.words.get(ids?.[0])?.sentenceId;
+      if (sentenceId && Array.isArray(ids) && ids.every(id => book.words.get(id)?.sentenceId === sentenceId)) {
+        for (const id of ids) byWord.set(id, card);
       }
     }
-    return definitions;
-  }
-
-  // Everything that belongs to the open book. A late answer for a book that was closed
-  // is still stored for that book, but never touches the screen of another one.
-  function startSession(book) {
-    const definitions = savedDefinitions(book.bookId);
-    return { book, definitions, definedKeys: new Set(definitions.keys()), pending: new Map(), warned: false };
+    return { book, legacy, byWord, pending: new Map(), warned: false };
   }
   function warnStorage(current) {
     if (current.warned || current !== session) return;
@@ -113,7 +111,10 @@
     if (!writeStore(current.book.bookId, "position", { chapterId, sentenceId, wordId, offset, savedAt: Date.now() })) warnStorage(current);
   }
   function persistDefinitions(current) {
-    if (!writeStore(current.book.bookId, "definitions", Object.fromEntries(current.definitions))) warnStorage(current);
+    const cards = new Map(current.legacy);
+    for (const card of new Set(current.byWord.values())) cards.set("@" + card.wordIds[0], card);
+    if (!writeStore(current.book.bookId, "definitions", Object.fromEntries(cards))) warnStorage(current);
+    if (current === session) reader?.refreshUnderlines();
   }
 
   /* ---------- library ---------- */
@@ -199,7 +200,7 @@
       view = "reader";
       const active = session = startSession(loaded);
       reader = new BookReader({ host, book: loaded, telegram: tg, onBack: showLibrary,
-        position: savedPosition(loaded.bookId), definedKeys: active.definedKeys,
+        position: savedPosition(loaded.bookId), isDefined: (id, key) => active.byWord.has(id) || active.legacy.has(key),
         onPosition: anchor => savePosition(active, anchor),
         onWord: word => openDefinition(active, word) });
     } catch (error) {
@@ -300,72 +301,86 @@
     reader?.setBlocked(false);
   }
 
-  // What the AI receives: the whole sentence and which occurrence of the word was tapped.
-  function wordContext(book, word) {
-    const sentence = book.sentences.get(word.sentenceId), entry = book.words.get(word.wordId);
-    if (!sentence || !entry || entry.sentenceId !== sentence.id) return null;
-    const same = (sentence.words || []).filter(item => item.key === entry.key);
-    return { sentence: sentence.text, word: sentence.text.slice(entry.start, entry.end), start: entry.start, end: entry.end,
-      occurrence: same.findIndex(item => item.id === entry.id) + 1, occurrences: same.length };
-  }
-
   function openDefinition(current, word) {
     if (current !== session || !reader) return;
-    const context = wordContext(current.book, word);
-    if (!context) return;
-    const key = word.key;
-    const ui = popupUI();
-    ui.remove.onclick = () => deleteDefinition(current, key);
-    openPopup(key);
-    const saved = current.definitions.get(key);
-    if (saved?.example?.trim() && saved?.translation?.trim()) renderPopup({ ...saved, saved: true });
-    else lookup(current, key, context);
-  }
-
-  const showing = (current, key) => popup.open && popup.key === key && current === session;
-
-  function lookup(current, key, context) {
-    // Older cached definitions are kept visible while one request fills in both new fields.
-    const saved = current.definitions.get(key);
-    renderPopup({ term: context.word, ...saved, saved: Boolean(saved), pending: true,
-      status: saved ? "Updating…" : "Looking up…" });
-    let entry = current.pending.get(key);
-    if (!entry) {
-      // One request per word at a time: another tap during the request waits for the same answer.
-      entry = { cancelled: false };
-      entry.promise = request("define", context).then(result => {
-        if (!["term", "definition", "example", "translation"].every(field => typeof result?.[field] === "string" && result[field].trim())) {
-          throw new BooksError("The word details could not be read. Close this card and tap the word again.");
-        }
-        const definition = { term: result.term.trim().slice(0, 80), definition: result.definition.trim().slice(0, 300),
-          example: result.example.trim().slice(0, 300), translation: result.translation.trim().slice(0, 200) };
-        // A deletion during the request wins: the late answer is not written back.
-        if (!entry.cancelled) {
-          current.definitions.set(key, definition);
-          current.definedKeys.add(key);
-          persistDefinitions(current);
-          if (current === session) reader?.refreshWord(key);
-        }
-        return definition;
-      }).finally(() => { if (current.pending.get(key) === entry) current.pending.delete(key); });
-      current.pending.set(key, entry);
+    const entry = current.book.words.get(word.wordId);
+    if (!entry || entry.sentenceId !== word.sentenceId) return;
+    popupUI().remove.onclick = () => deleteDefinition(current, entry);
+    openPopup(entry.id);
+    const saved = current.byWord.get(entry.id);
+    if (saved) {
+      renderPopup({ ...saved, saved: true });
+      return;
     }
-    entry.promise.then(definition => {
-      if (!entry.cancelled && showing(current, key)) renderPopup({ ...definition, saved: current.definitions.get(key) === definition });
-    }, error => {
-      // Errors are never stored; an older saved definition survives a failed upgrade.
-      if (!entry.cancelled && showing(current, key)) renderPopup({ term: context.word, ...saved,
-        saved: Boolean(saved), status: error.message, error: true });
-    });
+    lookup(current, entry);
   }
 
-  function deleteDefinition(current, key) {
-    const entry = current.pending.get(key);
-    if (entry) { entry.cancelled = true; current.pending.delete(key); }
-    current.definitions.delete(key);
-    current.definedKeys.delete(key);
+  const showing = (current, id) => popup.open && popup.key === id && current === session;
+
+  function unlinkCard(current, card) {
+    if (card) for (const id of card.wordIds) current.byWord.delete(id);
+  }
+
+  async function lookup(current, word) {
+    const sentence = current.book.sentences.get(word.sentenceId);
+    const term = sentence.text.slice(word.start, word.end);
+    const saved = current.legacy.get(word.key);
+    renderPopup({ term, ...saved, saved: Boolean(saved), pending: true, status: saved ? "Updating…" : "Looking up…" });
+    if (current.pending.has(word.id)) return;
+    const ticket = {};
+    current.pending.set(word.id, ticket);
+    booksWithLookups.set(current.book.bookId, current);
+    try {
+      const same = sentence.words.filter(item => item.key === word.key);
+      const result = await request("define", { sentence: sentence.text, word: term, start: word.start, end: word.end,
+        occurrence: same.findIndex(item => item.id === word.id) + 1, occurrences: same.length,
+        wordRanges: sentence.words.map(item => [item.start, item.end]) });
+      if (current.pending.get(word.id) !== ticket) return;
+      if (!["term", "definition"].every(field => typeof result?.[field] === "string" && result[field].trim())) {
+        throw new BooksError("The word details could not be read. Close this card and tap the word again.");
+      }
+      // During a staggered deployment an older Worker can still supply a readable definition.
+      if (result.wordIndexes === undefined) {
+        if (showing(current, word.id)) renderPopup({ ...saved, term: result.term, definition: result.definition,
+          example: result.example || saved?.example, translation: result.translation || saved?.translation,
+          saved: Boolean(saved), status: "Update the Books Worker to enable phrase underlining." });
+        return;
+      }
+      const indexes = result.wordIndexes;
+      if (!["example", "translation"].every(field => typeof result[field] === "string" && result[field].trim()) ||
+          !Array.isArray(indexes) || !indexes.every((n, i) => Number.isInteger(n) && n >= 0 && n < sentence.words.length &&
+            (i === 0 || n > indexes[i - 1])) || !indexes.some(n => sentence.words[n].id === word.id)) {
+        throw new BooksError("The word details could not be read. Close this card and tap the word again.");
+      }
+      const wordIds = indexes.map(n => sentence.words[n].id);
+      const card = { term: result.term.trim(), definition: result.definition.trim(), example: result.example.trim(),
+        translation: result.translation.trim(), wordIds };
+      for (const id of wordIds) unlinkCard(current, current.byWord.get(id));
+      for (const id of wordIds) {
+        current.byWord.set(id, card);
+        current.pending.delete(id);
+        const key = current.book.words.get(id).key;
+        if (current.legacy.get(key)?.term === card.term) current.legacy.delete(key);
+      }
+      current.legacy.delete(word.key);
+      persistDefinitions(current);
+      if (wordIds.some(id => showing(current, id))) renderPopup({ ...card, saved: true });
+    } catch (error) {
+      if (current.pending.get(word.id) === ticket && showing(current, word.id)) {
+        renderPopup({ term, ...saved, saved: Boolean(saved), status: error.message, error: true });
+      }
+    } finally {
+      if (current.pending.get(word.id) === ticket) current.pending.delete(word.id);
+      if (!current.pending.size && booksWithLookups.get(current.book.bookId) === current) booksWithLookups.delete(current.book.bookId);
+    }
+  }
+
+  function deleteDefinition(current, word) {
+    current.pending.delete(word.id);
+    const card = current.byWord.get(word.id);
+    if (card) unlinkCard(current, card);
+    else current.legacy.delete(word.key);
     persistDefinitions(current);
-    if (current === session) reader?.refreshWord(key);
     closePopup();
   }
 

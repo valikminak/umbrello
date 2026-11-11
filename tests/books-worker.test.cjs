@@ -43,8 +43,9 @@ function harness(options = {}) {
 }
 const routes = [['/books/list', {}], ['/books/book', { bookId: ID_A }]];
 
-const wordInput = { sentence: 'Please give up smoking.', word: 'give', start: 7, end: 11, occurrence: 1, occurrences: 1 };
-const wordCard = { term: 'give up', definition: 'To stop doing something.', example: 'She gave up eating sweets.', translation: 'покинути, відмовитися від' };
+const wordInput = { sentence: 'Please give up smoking.', word: 'give', start: 7, end: 11, occurrence: 1, occurrences: 1,
+  wordRanges: [[0, 6], [7, 11], [12, 14], [15, 22]] };
+const wordCard = { wordIndexes: [1, 2], term: 'give up', definition: 'To stop doing something.', example: 'She gave up eating sweets.', translation: 'покинути, відмовитися від' };
 const aiEnv = { OPENAI_API_KEY: 'test-ai-key', OPENAI_MODEL: 'gpt-5-mini' };
 const aiReply = value => Response.json({ status: 'completed', output: [
   { type: 'message', content: [{ type: 'output_text', text: JSON.stringify(value) }] },
@@ -58,16 +59,28 @@ test('one definition request returns the definition, English example and Ukraini
   assert.equal(app.calls.length, 1);
   assert.equal(app.calls[0].url, 'https://api.openai.com/v1/responses');
   const payload = JSON.parse(app.calls[0].config.body);
-  assert.deepEqual(payload.text.format.schema.required, ['term', 'definition', 'example', 'translation']);
+  assert.deepEqual(payload.text.format.schema.required, ['term', 'definition', 'example', 'translation', 'wordIndexes']);
   assert.equal(payload.text.format.strict, true);
   assert.match(payload.instructions, /Ukrainian/);
-  assert.deepEqual(JSON.parse(payload.input[0].content), wordInput);
+  const { wordRanges, ...context } = wordInput;
+  assert.deepEqual(JSON.parse(payload.input[0].content), { ...context, tappedIndex: 1,
+    words: { 0: 'Please', 1: 'give', 2: 'up', 3: 'smoking' } });
+});
+
+test('older readers can still request a definition with just the tapped range', async () => {
+  const result = { ...wordCard, wordIndexes: [0] };
+  const app = harness({ fetch: () => aiReply(result) });
+  const { wordRanges, ...legacyInput } = wordInput;
+  const response = await app.call('/books/define', legacyInput, { env: aiEnv });
+  assert.equal(response.status, 200);
+  assert.deepEqual(await response.json(), result);
 });
 
 test('incomplete or oversized word cards are rejected instead of silently dropping fields', async () => {
   for (const change of [
     { example: undefined }, { translation: undefined }, { example: ' ' }, { translation: null },
-    { example: 'x'.repeat(301) }, { translation: 'x'.repeat(201) },
+    { wordIndexes: [2] }, { wordIndexes: [1, 4] }, { wordIndexes: [1, 1] }, { wordIndexes: [2, 1] },
+    { wordIndexes: [1, 2.5] }, { wordIndexes: undefined }, { example: 'x'.repeat(301) }, { translation: 'x'.repeat(201) },
   ]) {
     const app = harness({ fetch: () => aiReply({ ...wordCard, ...change }) });
     const response = await app.call('/books/define', wordInput, { env: aiEnv });
@@ -81,7 +94,8 @@ test('word lookup still checks access and the exact tapped word before requestin
   for (const [body, expected] of [
     [{ ...wordInput, initData: '' }, 403],
     [{ ...wordInput, initData: signed({ id: 789 }) }, 403],
-    [{ ...wordInput, end: 12 }, 400],
+    [{ ...wordInput, end: 12 }, 400], [{ ...wordInput, wordRanges: [[0, 6]] }, 400],
+    [{ ...wordInput, wordRanges: [[7, 11], [9, 15]] }, 400],
   ]) {
     const app = harness();
     assert.equal((await app.call('/books/define', body, { env: aiEnv })).status, expected);

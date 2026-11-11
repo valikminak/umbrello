@@ -4,13 +4,13 @@
   "use strict";
 
   class BookReader {
-    constructor({ host, book, telegram, onBack, onWord, onPosition, position, definedKeys }) {
+    constructor({ host, book, telegram, onBack, onWord, onPosition, position, isDefined }) {
       this.host = host;
       this.book = book;
       this.telegram = telegram;
       this.onWord = onWord;
       this.onPosition = onPosition;
-      this.definedKeys = definedKeys || new Set();
+      this.isDefined = isDefined;
       this.chapterIndex = 0;
       this.page = 0;
       this.pageCount = 1;
@@ -124,7 +124,7 @@
             token.className = "book-word";
             token.dataset.wordId = word.id;
             token.dataset.wordKey = word.key;
-            if (this.definedKeys.has(word.key)) token.classList.add("defined");
+            if (this.isDefined(word.id, word.key)) token.classList.add("defined");
             appendText(token, word.start, word.end, word.id);
             span.append(token);
             cursor = word.end;
@@ -144,10 +144,9 @@
     }
 
     // Underlines follow the saved definitions; they never change the text layout.
-    refreshWord(key) {
-      const defined = this.definedKeys.has(key);
+    refreshUnderlines() {
       this.flow.querySelectorAll(".book-word").forEach(token => {
-        if (token.dataset.wordKey === key) token.classList.toggle("defined", defined);
+        token.classList.toggle("defined", this.isDefined(token.dataset.wordId, token.dataset.wordKey));
       });
     }
 

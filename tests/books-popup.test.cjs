@@ -8,15 +8,20 @@ const source = fs.readFileSync(path.join(__dirname, '../assets/js/books.js'), 'u
 const ID = 'a'.repeat(64);
 const storageKey = `umbrello.books.v1.123.${ID}.definitions`;
 const card = { term: 'book', definition: 'A set of pages to read.', example: 'I read a book every week.', translation: 'книга' };
+const response = { ...card, wordIndexes: [0] };
+const storedCard = { ...card, wordIds: ['w1'] };
 const tick = () => new Promise(resolve => setImmediate(resolve));
 const fixture = () => ({ formatVersion: 2, bookId: ID, title: 'Test Book', author: 'Writer', processing: { offsetUnit: 'utf16' },
   chapters: [{ id: 'c1', title: 'One', paragraphs: [{ id: 'p1', sentences: [
+    { id: 's2', text: 'I got up and got it back.', words: [
+      ['I', 0], ['got', 2], ['up', 6], ['and', 9], ['got', 13], ['it', 17], ['back', 20],
+    ].map(([key, start], i) => ({ id: 'v' + i, key, start, end: start + key.length })) },
     { id: 's1', text: 'Read a book.', words: [{ id: 'w1', key: 'book', start: 7, end: 11 }] },
   ] }] }],
 });
 
 // Exercise the real page controller, requests and persistence; layout is supplied by a reader stub.
-async function page({ storage = {}, answer = () => card } = {}) {
+async function page({ storage = {}, answer = () => response } = {}) {
   const nodes = new Map();
   class Element {
     constructor() { this.children = []; this.attrs = {}; this.dataset = {}; this.hidden = false; this.disabled = false; }
@@ -48,7 +53,7 @@ async function page({ storage = {}, answer = () => card } = {}) {
     BookReader: class {
       constructor(options) { Object.assign(this, options); readers.push(this); }
       setBlocked(value) { this.blocked = value; }
-      refreshWord(key) { this.refreshed = key; }
+      refreshUnderlines() {}
       destroy() {} note() {}
     },
     fetch: async (url, config) => {
@@ -64,7 +69,7 @@ async function page({ storage = {}, answer = () => card } = {}) {
   await tick();
   nodes.get('#bookList').children[0].children[0].click();
   await tick();
-  const tap = () => readers.at(-1).onWord({ wordId: 'w1', key: 'book', sentenceId: 's1' });
+  const tap = (wordId = 'w1', sentenceId = 's1') => readers.at(-1).onWord({ wordId, sentenceId });
   return { node: id => nodes.get('#' + id), tap, storage, readers, requests,
     lookups: () => requests.filter(r => r.action === 'define') };
 }
@@ -86,7 +91,7 @@ test('one lookup supplies both toggles, persists all fields and reopens offline 
   app.node('defineTranslation').click();
   assert.equal(app.node('defineDetail').hidden, true);
   assert.equal(app.lookups().length, 1);
-  assert.deepEqual(JSON.parse(app.storage[storageKey]).book, card);
+  assert.deepEqual(JSON.parse(app.storage[storageKey])['@w1'], storedCard);
   const reopened = await page({ storage: app.storage, answer: () => { throw Error('offline'); } });
   reopened.tap(); await tick();
   reopened.node('defineTranslation').click();
@@ -105,8 +110,8 @@ test('old definitions remain visible and are upgraded in one request without tou
   assert.equal(app.node('defineExample').disabled, true);
   app.node('defineClose').click(); app.tap();
   assert.equal(app.lookups().length, 1, 'reopening while pending shares the request');
-  resolve(card); await tick();
-  assert.deepEqual(JSON.parse(storage[storageKey]).book, card);
+  resolve(response); await tick();
+  assert.deepEqual(JSON.parse(storage[storageKey])['@w1'], storedCard);
   assert.equal(storage[`umbrello.books.v1.123.${ID}.position`], original);
 });
 
@@ -117,21 +122,21 @@ test('deleting a pending word cancels its save and an old answer cannot replace 
   app.node('defineDelete').click();
   app.tap();
   assert.equal(app.lookups().length, 2);
-  replies[0]({ ...card, definition: 'Old answer' }); await tick();
-  assert.equal(JSON.parse(app.storage[storageKey]).book, undefined);
+  replies[0]({ ...response, definition: 'Old answer' }); await tick();
+  assert.deepEqual(JSON.parse(app.storage[storageKey]), {});
   assert.equal(app.node('defineStatus').textContent, 'Looking up…');
-  replies[1](card); await tick();
+  replies[1](response); await tick();
   assert.equal(app.node('defineText').textContent, card.definition);
   app.node('defineDelete').click();
-  assert.equal(JSON.parse(app.storage[storageKey]).book, undefined);
-  assert.equal(app.readers.at(-1).definedKeys.has('book'), false);
+  assert.deepEqual(JSON.parse(app.storage[storageKey]), {});
+  assert.equal(app.readers.at(-1).isDefined('w1', 'book'), false);
 });
 
 test('failed upgrades keep old definitions; closing and tapping again retries with no retry button', async () => {
   let attempts = 0;
   const legacy = { term: card.term, definition: card.definition };
   const app = await page({ storage: { [storageKey]: JSON.stringify({ book: legacy }) },
-    answer: () => { if (!attempts++) throw Error('Temporary failure'); return card; } });
+    answer: () => { if (!attempts++) throw Error('Temporary failure'); return response; } });
   app.tap(); await tick();
   assert.equal(app.node('defineText').textContent, legacy.definition);
   assert.equal(app.node('defineStatus').textContent, 'Temporary failure');
@@ -145,7 +150,48 @@ test('failed upgrades keep old definitions; closing and tapping again retries wi
 test('missing new fields are not saved as a complete card', async () => {
   const app = await page({ answer: () => ({ term: card.term, definition: card.definition }) });
   app.tap(); await tick();
-  assert.match(app.node('defineStatus').textContent, /could not be read/);
+  assert.match(app.node('defineStatus').textContent, /Update the Books Worker/);
+  assert.equal(app.node('defineText').textContent, card.definition);
   assert.equal(app.storage[storageKey], undefined);
   assert.equal(app.lookups().length, 1);
+});
+
+test('adjacent and separated phrases use exact occurrences and share a card across their parts', async () => {
+  const app = await page({ answer: body => body.start === 13
+    ? { ...card, term: 'get back', wordIndexes: [4, 6] } : { ...card, term: 'get up', wordIndexes: [1, 2] } });
+  app.tap('v4', 's2'); await tick();
+  const marked = app => Array.from({ length: 7 }, (_, i) => app.readers.at(-1).isDefined('v' + i, ''));
+  assert.deepEqual(marked(app), [false, false, false, false, true, false, true]);
+  app.node('defineClose').click(); app.tap('v1', 's2'); await tick();
+  assert.deepEqual(marked(app), [false, true, true, false, true, false, true]);
+  const reopened = await page({ storage: app.storage });
+  reopened.tap('v6', 's2');
+  assert.equal(reopened.node('defineTerm').textContent, 'get back');
+  reopened.node('defineDelete').click();
+  assert.deepEqual(marked(reopened), [false, true, true, false, false, false, false]);
+  reopened.tap('v2', 's2');
+  assert.equal(reopened.node('defineTerm').textContent, 'get up');
+  assert.equal(reopened.lookups().length, 0);
+});
+
+test('a complete legacy phrase card upgrades on tap and drops the book-wide highlight', async () => {
+  const app = await page({ storage: { [storageKey]: JSON.stringify({ got: { ...card, term: 'got up' } }) },
+    answer: () => ({ ...card, term: 'got up', wordIndexes: [1, 2] }) });
+  app.tap('v1', 's2'); await tick();
+  assert.equal(app.readers.at(-1).isDefined('v4', 'got'), false);
+  assert.equal(app.readers.at(-1).isDefined('v2', 'up'), true);
+  assert.equal(JSON.parse(app.storage[storageKey]).got, undefined);
+});
+
+test('overlapping lookups from either half of a phrase cannot resurrect a deleted card', async () => {
+  const replies = [];
+  const app = await page({ answer: () => new Promise(resolve => replies.push(resolve)) });
+  app.tap('v2', 's2'); app.node('defineClose').click(); app.tap('v1', 's2');
+  assert.equal(app.lookups().length, 2);
+  const result = { ...card, term: 'get up', wordIndexes: [1, 2] };
+  replies[0](result); await tick();
+  assert.equal(app.node('defineTerm').textContent, 'get up');
+  app.node('defineDelete').click();
+  replies[1](result); await tick();
+  assert.deepEqual(JSON.parse(app.storage[storageKey]), {});
 });
