@@ -13,6 +13,7 @@ async function page(script, search = '', failFile, options = {}) {
     if (!nodes.has(id)) nodes.set(id, {
       innerHTML: '', textContent: '', style: {}, attrs: {},
       setAttribute(key, value) { this.attrs[key] = value; }, insertAdjacentHTML() {}, before() {}, remove() {},
+      removeAttribute(key) { delete this.attrs[key]; }, setPointerCapture() {},
       addEventListener(key, listener) { this['on' + key] = listener; },
       querySelector: key => node(key), querySelectorAll: () => [],
       classList: { add() {}, remove() {} }
@@ -38,6 +39,7 @@ async function page(script, search = '', failFile, options = {}) {
       requested.push(file);
       if (file === failFile) throw new Error('Unavailable');
       if (file === 'users/index.json' && options.profiles) return options.profiles;
+      if (file === 'users/sophia/cards.json' && options.cards) return options.cards;
       return JSON.parse(fs.readFileSync(path.join(root, file), 'utf8'));
     },
     showError: (_, e) => errors.push(e.message),
@@ -176,6 +178,38 @@ test('Cards loads Sophia’s deck after access and reveals the translation separ
   flip.onclick();
   flip.onclick();
   assert.equal(translation.hidden, true);
+});
+
+test('a horizontal swipe flips a single card and moves between cards in a longer deck', async () => {
+  const solo = await page('cards', '?user=sophia');
+  const deck = await page('cards', '?user=sophia', undefined, { cards: [
+    { word: 'bird', definition: 'An animal with feathers.', translation: 'птах' },
+    { word: 'grow', definition: 'To get bigger.', translation: 'рости' }
+  ] });
+  function swipe(app, dx, dy) {
+    const surface = app.node('.word-card');
+    surface.onpointerdown({ isPrimary: true, button: 0, pointerId: 1,
+      clientX: 120, clientY: 120, target: { closest: () => null } });
+    surface.onpointerup({ pointerId: 1, clientX: 120 + dx, clientY: 120 + dy });
+  }
+  swipe(solo, -85, 4);
+  assert.equal(solo.node('.card-back').hidden, false);
+  swipe(solo, 8, 85);
+  assert.equal(solo.node('.card-back').hidden, false);
+  swipe(solo, 85, 4);
+  assert.equal(solo.node('.card-back').hidden, true);
+
+  assert.deepEqual(deck.errors, []);
+  deck.node('.card-flip').onclick();
+  deck.node('.card-reveal').onclick();
+  swipe(deck, -85, 4);
+  assert.equal(deck.node('.card-front').textContent, 'grow');
+  assert.equal(deck.node('.card-front').hidden, false);
+  assert.equal(deck.node('#card-translation').hidden, true);
+  swipe(deck, -85, 4);
+  assert.equal(deck.node('.card-front').textContent, 'grow');
+  swipe(deck, 85, 4);
+  assert.equal(deck.node('.card-front').textContent, 'bird');
 });
 
 test('Listen is shared: opens without a profile, ignores ?user and filters the catalog by level', async () => {

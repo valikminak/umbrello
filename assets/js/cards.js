@@ -27,7 +27,7 @@
       <article class="word-card" aria-label="Картка" aria-live="polite">
         <div class="card-front" lang="en"></div>
         <div class="card-back" id="card-back" hidden>
-          <img class="card-picture" alt="" referrerpolicy="no-referrer" hidden>
+          <img class="card-picture" alt="" referrerpolicy="no-referrer" draggable="false" hidden>
           <p class="card-definition" lang="en"></p>
           <div class="card-meaning">
             <button class="card-reveal" type="button" aria-expanded="false" aria-controls="card-translation">Показати переклад</button>
@@ -41,6 +41,7 @@
         <button class="btn ghost" type="button" id="card-next">Наступна</button>
       </nav>` : ""}`;
 
+    const surface = host.querySelector(".word-card");
     const front = host.querySelector(".card-front");
     const back = host.querySelector(".card-back");
     const picture = host.querySelector(".card-picture");
@@ -51,6 +52,7 @@
     const prev = host.querySelector("#card-prev");
     const next = host.querySelector("#card-next");
     let index = 0;
+    let swipeStart = null;
 
     function showTranslation(visible) {
       translation.hidden = !visible;
@@ -81,13 +83,42 @@
       if (next) next.disabled = index === cards.length - 1;
     }
 
+    function step(direction) {
+      const target = index + direction;
+      if (target < 0 || target >= cards.length) return;
+      index = target;
+      showCard();
+    }
+
     picture.addEventListener("error", () => { picture.hidden = true; });
     flip.onclick = () => showBack(back.hidden);
     reveal.onclick = () => showTranslation(translation.hidden);
     if (prev && next) {
-      prev.onclick = () => { if (index > 0) { index--; showCard(); } };
-      next.onclick = () => { if (index < cards.length - 1) { index++; showCard(); } };
+      prev.onclick = () => step(-1);
+      next.onclick = () => step(1);
     }
+
+    surface.addEventListener("pointerdown", event => {
+      if (!event.isPrimary) {
+        swipeStart = null;
+        return;
+      }
+      if (event.button !== 0 || event.target.closest("button")) return;
+      swipeStart = { id: event.pointerId, x: event.clientX, y: event.clientY };
+      surface.setPointerCapture(event.pointerId);
+    });
+    surface.addEventListener("lostpointercapture", event => {
+      if (swipeStart?.id === event.pointerId) swipeStart = null;
+    });
+    surface.addEventListener("pointerup", event => {
+      if (swipeStart?.id !== event.pointerId) return;
+      const dx = event.clientX - swipeStart.x;
+      const dy = event.clientY - swipeStart.y;
+      swipeStart = null;
+      if (Math.abs(dx) < 40 || Math.abs(dx) <= Math.abs(dy) * 1.5) return;
+      if (cards.length === 1) showBack(back.hidden);
+      else step(dx < 0 ? 1 : -1);
+    });
     showCard();
   }
 

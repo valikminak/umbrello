@@ -13,6 +13,9 @@
   border: 1px solid var(--line);
   border-radius: 18px;
   background: var(--card);
+  touch-action: pan-y pinch-zoom;
+  -webkit-user-select: none;
+  user-select: none;
 }
 
 .card-front {
