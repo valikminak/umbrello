@@ -13,6 +13,7 @@ async function page(script, search = '', failFile, options = {}) {
     if (!nodes.has(id)) nodes.set(id, {
       innerHTML: '', textContent: '', style: {}, attrs: {},
       setAttribute(key, value) { this.attrs[key] = value; }, insertAdjacentHTML() {}, before() {}, remove() {},
+      addEventListener(key, listener) { this['on' + key] = listener; },
       querySelector: key => node(key), querySelectorAll: () => [],
       classList: { add() {}, remove() {} }
     });
@@ -23,7 +24,7 @@ async function page(script, search = '', failFile, options = {}) {
     URL, URLSearchParams, Date, console, AbortController,
     setTimeout: options.holdTimers ? (fn, ms) => timers.push({ fn, ms }) : setTimeout,
     clearTimeout: options.holdTimers ? id => { timers[id - 1] = null; } : clearTimeout,
-    location: { search, replace(url) { this.redirect = url; }, reload() {} },
+    location: { search, href: 'https://example.test/umbrello/' + script + '.html' + search, replace(url) { this.redirect = url; }, reload() {} },
     document: { getElementById: node, createElement: () => node('new'),
       body: { prepend() {}, classList: { add: c => locks.add(c), remove: c => locks.delete(c) } }, addEventListener() {}, querySelectorAll: () => [] },
     esc: s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c])),
@@ -132,16 +133,49 @@ test('entry page offers both names and the shared sections without choosing a de
   assert.deepEqual(app.requested, ['users/index.json']);
 });
 
-test('profile menus offer only Test and Write and keep the chosen profile', async () => {
+test('profile menus keep the chosen profile and offer Cards only to Sophia', async () => {
   for (const id of ['sophia', 'me']) {
     const app = await page('home', `?user=${id}`);
     assert.deepEqual(app.errors, []);
     const html = app.node('app').innerHTML;
     for (const section of ['test', 'write']) assert.ok(html.includes(`${section}.html?v=10&user=${id}`), section);
+    assert.equal(html.includes('cards.html?v=10&user=sophia'), id === 'sophia');
     assert.doesNotMatch(html, /listen\.html|books\.html|grammar\.html|vocabulary\.html|read\.html/);
     assert.match(app.node('profileNav').innerHTML, /Switch profile/);
     assert.equal(app.context.Profiles.current.id, id);
   }
+});
+
+test('Cards loads Sophia’s deck after access and reveals the translation separately', async () => {
+  const blocked = await page('cards', '?user=sophia', undefined, { tg: null });
+  assert.deepEqual(blocked.requested, []);
+  const other = await page('cards', '?user=me');
+  assert.equal(other.context.location.redirect, 'index.html?v=10&user=me');
+  assert.deepEqual(other.requested, ['users/index.json']);
+
+  const app = await page('cards', '?user=sophia');
+  assert.deepEqual(app.errors, []);
+  assert.deepEqual(app.requested, ['users/index.json', 'users/sophia/cards.json']);
+  const [front, back, picture, translation, flip, reveal] = [
+    '.card-front', '.card-back', '.card-picture', '#card-translation', '.card-flip', '.card-reveal'
+  ].map(app.node);
+  assert.equal(front.textContent, 'bird');
+  assert.equal(picture.src, 'https://example.test/umbrello/users/sophia/cards/bird.svg');
+  assert.doesNotMatch(app.node('app').innerHTML, /id="card-(prev|next)"/);
+  assert.equal(back.hidden, true);
+  flip.onclick();
+  assert.equal(front.hidden, true);
+  assert.equal(back.hidden, false);
+  assert.match(app.node('.card-definition').textContent, /feathers/);
+  assert.equal(translation.hidden, true);
+  reveal.onclick();
+  assert.equal(translation.hidden, false);
+  assert.equal(translation.textContent, 'птах');
+  picture.onerror();
+  assert.equal(picture.hidden, true);
+  flip.onclick();
+  flip.onclick();
+  assert.equal(translation.hidden, true);
 });
 
 test('Listen is shared: opens without a profile, ignores ?user and filters the catalog by level', async () => {

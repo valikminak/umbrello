@@ -4,7 +4,7 @@
 Worker проверяет Telegram-аккаунт по `ALLOWED_USER_IDS`. После разрешения входа
 главный экран показывает имена учеников и общие разделы **Listen**, **Books**,
 **Grammar** и **Vocabulary**, открытые всем разрешённым аккаунтам. В профиле ученика остаются
-личные задания **Test** и **Write**. Профиль сохраняется в ссылке (`?user=sophia`
+личные задания **Test** и **Write**, а у Sophia есть ещё **Cards**. Профиль сохраняется в ссылке (`?user=sophia`
 или `?user=me`), поэтому обновление страницы и переходы между разделами
 не меняют ученика. Кнопка **Switch profile** открывает выбор имени.
 Разрешённый Telegram-аккаунт может выбрать любое имя учебного профиля.
@@ -15,7 +15,7 @@ Worker проверяет Telegram-аккаунт по `ALLOWED_USER_IDS`. По�
 ## Папки
 
 ```text
-index.html, test.html, write.html, listen.html, books.html, grammar.html,
+index.html, test.html, write.html, cards.html, listen.html, books.html, grammar.html,
 vocabulary.html          — страницы приложения
 assets/
   js/                    — логика страниц, профилей и настройки
@@ -24,6 +24,7 @@ users/
   index.json             — список пользователей
   sophia/
     test.json            — существующие тесты Sophia
+    cards.json           — карточки со словами Sophia
   me/
     test.json            — задания на лексику C1–C2
 listen/
@@ -67,6 +68,11 @@ Write и отправкой отчётов. Полный список
   `{"q":"Question?","right":"Correct answer","wrong":["A","B","C"]}`.
   Пустой раздел: `[]`.
 - **Write:** материалов нет, текст генерирует ИИ по запросу ученика.
+- **Cards (Sophia):** добавляй или удаляй записи в `users/sophia/cards.json`.
+  Обязательные поля: `word` (слово), `definition` (объяснение на английском)
+  и `translation` (скрытый перевод). Необязательное поле `image` принимает путь
+  относительно JSON или прямую HTTPS-ссылку на картинку. Описание картинки
+  для экранного диктора можно задать в `imageAlt`.
 - **Listen (общий):** положи JSON урока в `listen/` и добавь запись
   в `listen/index.json`:
   `{"id":"my-song","title":"My song","file":"my-song.json","level":"B1"}`.

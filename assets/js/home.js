@@ -32,6 +32,7 @@
     host.innerHTML = `<h1>Hi, ${esc(profile.name)}!</h1><p class="sub">What would you like to practise today?</p>
       <div class="menu">${[
         ["test", "✅", "Test", "Words and grammar, four options"],
+        ...(profile.id === "sophia" ? [["cards", "🗂️", "Cards", "Browse word cards"]] : []),
         ["write", "✍️", "Write", "Translate a short text and get feedback"],
       ].map(([page, icon, title, description]) => tile(page, icon, title, description, profile)).join("")}</div>`;
   } catch (error) {

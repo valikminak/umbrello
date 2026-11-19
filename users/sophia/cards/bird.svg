@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 138">
+  <style>
+    .sky { fill: #e0eee8; }
+    .sun { fill: #fdf3cd; }
+    @media (prefers-color-scheme: dark) {
+      .sky { fill: #293c37; }
+      .sun { fill: #9d8154; }
+    }
+  </style>
+  <path class="sky" d="M0 0h300v138H0z"/>
+  <g transform="translate(42 5)">
+    <circle class="sun" cx="170" cy="33" r="22"/>
+    <path fill="none" stroke="#a17c55" stroke-width="4" stroke-linecap="round" d="M17 118q93-17 183-19m-31 1 19-12M95 92l-5 13h9m9-13-5 12h9"/>
+    <path fill="#78a58b" d="M183 91q7-14 24-11-7 13-24 11Zm-12 6q-15 0-18-12 15 0 18 12Z"/>
+    <path fill="#315e65" d="M87 83 28 61Q35 77 51 86l23 8Z"/>
+    <path fill="#efbd68" d="M62 78q7-24 40-33 30-7 35 17 4 25-23 34-36 12-52-18Z"/>
+    <path fill="#315e65" d="M102 53q-5-13 4-22 9-10 24-4 14 6 13 23-1 13-18 17Z"/>
+    <path fill="#244950" d="M59 82q15-34 50-34 15 0 13 10-8 23-36 28-15 3-27-4Z"/>
+    <path fill="none" stroke="#6c9da0" stroke-width="2" stroke-linecap="round" d="M76 77q20-3 31-14"/>
+    <path fill="#efbd68" d="m140 42 17 4-16 7Z"/>
+    <circle fill="#142e32" cx="131" cy="40" r="3.8"/>
+    <circle fill="#fdf3cd" cx="130" cy="39" r="1.2"/>
+  </g>
+</svg>

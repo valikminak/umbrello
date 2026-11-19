@@ -1,0 +1,79 @@
+.cards-app {
+  width: 100%;
+  max-width: 366px;
+  padding-top: 18px;
+}
+
+.cards-app h1 { margin: 0 0 14px; }
+.cards-app [hidden] { display: none !important; }
+
+.word-card {
+  display: grid;
+  min-height: 300px;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: var(--card);
+}
+
+.card-front {
+  display: grid;
+  place-items: center;
+  padding: 18px;
+  overflow-wrap: anywhere;
+  text-align: center;
+  font-size: clamp(40px, 12vw, 56px);
+  font-weight: 650;
+  letter-spacing: -.055em;
+  line-height: 1.1;
+}
+
+.card-back {
+  display: flex;
+  flex-direction: column;
+  padding: 12px;
+  text-align: center;
+}
+
+.card-picture {
+  display: block;
+  width: 100%;
+  height: 138px;
+  border-radius: 12px;
+  object-fit: cover;
+}
+
+.card-definition {
+  margin: auto 6px 2px;
+  font-size: 16px;
+  font-weight: 550;
+  line-height: 1.4;
+  text-wrap: balance;
+}
+
+.card-picture:not([hidden]) + .card-definition { margin-top: 12px; }
+.card-meaning { min-height: 71px; }
+.card-meaning p { margin: 0; font-weight: 600; }
+
+.card-reveal {
+  min-height: 44px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--accent);
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+.cards-app .btn {
+  min-height: 44px;
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.cards-app .card-flip { margin-top: 12px; }
+.card-nav { display: flex; gap: 10px; margin-top: 10px; }
