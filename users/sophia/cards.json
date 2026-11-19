@@ -5,5 +5,396 @@
     "translation": "птах",
     "image": "cards/bird.svg",
     "imageAlt": "Невеликий птах сидить на гілці"
+  },
+  {
+    "word": "grow",
+    "definition": "To get bigger or taller over time.",
+    "translation": "рости, виростати",
+    "image": "cards/grow.svg",
+    "imageAlt": "Три рослини на різних етапах росту"
+  },
+  {
+    "word": "important",
+    "definition": "Something that matters and needs your attention.",
+    "translation": "важливий",
+    "emoji": "⭐ ❗"
+  },
+  {
+    "word": "advice",
+    "definition": "An idea about what you should do.",
+    "translation": "порада",
+    "emoji": "💬 💡"
+  },
+  {
+    "word": "agree",
+    "definition": "To have the same opinion as someone else.",
+    "translation": "погоджуватися",
+    "emoji": "🤝"
+  },
+  {
+    "word": "try",
+    "definition": "To make an effort to do something.",
+    "translation": "намагатися, пробувати",
+    "emoji": "🎯 🏹"
+  },
+  {
+    "word": "solution",
+    "definition": "A way to solve a problem.",
+    "translation": "розв’язання, рішення",
+    "emoji": "🧩 ✅"
+  },
+  {
+    "word": "enjoy",
+    "definition": "To like doing something or get pleasure from it.",
+    "translation": "отримувати задоволення від",
+    "emoji": "😊 🎨"
+  },
+  {
+    "word": "climb",
+    "definition": "To go up something, often using your hands and feet.",
+    "translation": "лізти, підніматися",
+    "emoji": "🧗"
+  },
+  {
+    "word": "right",
+    "definition": "1. Correct.\n2. On or toward the side opposite the left.",
+    "translation": "1. Правильно. 2. Праворуч.",
+    "emoji": "✅ ➡️"
+  },
+  {
+    "word": "move",
+    "definition": "To change position or put something in a different place.",
+    "translation": "рухатися, пересувати",
+    "emoji": "🪑 ➡️"
+  },
+  {
+    "word": "mouth",
+    "definition": "The part of your face you use to eat and speak.",
+    "translation": "рот",
+    "emoji": "👄"
+  },
+  {
+    "word": "wrong",
+    "definition": "Not correct.",
+    "translation": "неправильний, неправильно",
+    "emoji": "❌"
+  },
+  {
+    "word": "back",
+    "definition": "To the place where you were before.",
+    "translation": "назад",
+    "emoji": "↩️"
+  },
+  {
+    "word": "smoke",
+    "definition": "The cloud you see when something burns.",
+    "translation": "дим",
+    "emoji": "🔥 💨"
+  },
+  {
+    "word": "listen",
+    "definition": "To pay attention to a sound or to what someone says.",
+    "translation": "слухати",
+    "emoji": "🎧"
+  },
+  {
+    "word": "close",
+    "definition": "To shut something, such as a door or a book.",
+    "translation": "зачиняти, закривати",
+    "emoji": "🚪"
+  },
+  {
+    "word": "list",
+    "definition": "A number of things written one after another.",
+    "translation": "список",
+    "emoji": "📋"
+  },
+  {
+    "word": "below",
+    "definition": "In a lower place than something else.",
+    "translation": "нижче, під",
+    "emoji": "🪟 ⬇️ 🐦"
+  },
+  {
+    "word": "find",
+    "definition": "To see or get something you were looking for.",
+    "translation": "знаходити",
+    "emoji": "🔍 🔑"
+  },
+  {
+    "word": "mistake",
+    "definition": "Something you do or say that is not correct.",
+    "translation": "помилка",
+    "emoji": "📝 ❌"
+  },
+  {
+    "word": "far away",
+    "definition": "A long way from here or from another place.",
+    "translation": "далеко",
+    "emoji": "🔭 🏔️"
+  },
+  {
+    "word": "take",
+    "definition": "To pick something up or carry it with you.",
+    "translation": "брати, взяти",
+    "emoji": "🤲 📕"
+  },
+  {
+    "word": "let’s",
+    "definition": "Use this to suggest doing something together.",
+    "translation": "давай, давайте",
+    "emoji": "💬 🤝"
+  },
+  {
+    "word": "of course",
+    "definition": "Use this to say yes or show that something is clear.",
+    "translation": "звісно, авжеж",
+    "emoji": "💬 👍"
+  },
+  {
+    "word": "clever",
+    "definition": "Quick to learn or good at finding answers to problems.",
+    "translation": "розумний, кмітливий",
+    "emoji": "🧠 💡"
+  },
+  {
+    "word": "hear",
+    "definition": "To notice a sound with your ears.",
+    "translation": "чути",
+    "emoji": "👂 🎵"
+  },
+  {
+    "word": "noise",
+    "definition": "A sound, often one that is loud or unpleasant.",
+    "translation": "шум",
+    "emoji": "📣"
+  },
+  {
+    "word": "break",
+    "definition": "To damage something so it is in pieces or stops working.",
+    "translation": "ламати, розбивати",
+    "emoji": "💥 🪟"
+  },
+  {
+    "word": "cut",
+    "definition": "To separate something with a knife or scissors.",
+    "translation": "різати",
+    "emoji": "✂️ 📄"
+  },
+  {
+    "word": "send",
+    "definition": "To make a message or thing go to another person or place.",
+    "translation": "надсилати",
+    "emoji": "✉️ 📬"
+  },
+  {
+    "word": "feed",
+    "definition": "To give food to a person or animal.",
+    "translation": "годувати",
+    "emoji": "🥣 🐕"
+  },
+  {
+    "word": "later",
+    "definition": "At a time after now or after the time you are talking about.",
+    "translation": "пізніше",
+    "emoji": "🕒 ➡️ 🕔"
+  },
+  {
+    "word": "wait",
+    "definition": "To stay until someone comes or something happens.",
+    "translation": "чекати",
+    "emoji": "⏳"
+  },
+  {
+    "word": "bring",
+    "definition": "To carry someone or something to a place or person.",
+    "translation": "приносити, приводити",
+    "emoji": "🚶 🎁"
+  },
+  {
+    "word": "only",
+    "definition": "Use this to show that there is nothing or no one more.",
+    "translation": "тільки, лише",
+    "emoji": "1️⃣ 🍎"
+  },
+  {
+    "word": "quiet",
+    "definition": "Making very little noise.",
+    "translation": "тихий",
+    "emoji": "🤫"
+  },
+  {
+    "word": "across",
+    "definition": "From one side to the other side.",
+    "translation": "через, з одного боку на інший",
+    "emoji": "🌉 🚶"
+  },
+  {
+    "word": "walk",
+    "definition": "To move on foot without running.",
+    "translation": "ходити пішки",
+    "emoji": "🚶"
+  },
+  {
+    "word": "language",
+    "definition": "The words people use to speak and write to each other.",
+    "translation": "мова",
+    "emoji": "💬 🌍"
+  },
+  {
+    "word": "hungry",
+    "definition": "Wanting or needing food.",
+    "translation": "голодний",
+    "emoji": "🍽️ 🍲"
+  },
+  {
+    "word": "scared",
+    "definition": "Feeling afraid.",
+    "translation": "наляканий",
+    "emoji": "😨"
+  },
+  {
+    "word": "cheap",
+    "definition": "Costing little money.",
+    "translation": "дешевий",
+    "emoji": "🏷️ 🪙"
+  },
+  {
+    "word": "expensive",
+    "definition": "Costing a lot of money.",
+    "translation": "дорогий",
+    "emoji": "🏷️ 💰"
+  },
+  {
+    "word": "decide",
+    "definition": "To choose what you will do.",
+    "translation": "вирішувати",
+    "emoji": "🤔 ✅"
+  },
+  {
+    "word": "sure",
+    "definition": "Knowing or believing something is true without any doubt.",
+    "translation": "упевнений, певний",
+    "emoji": "🙋 ✅"
+  },
+  {
+    "word": "guess",
+    "definition": "To give an answer when you do not know if it is right.",
+    "translation": "здогадуватися, вгадувати",
+    "emoji": "🤔 ❓"
+  },
+  {
+    "word": "laugh",
+    "definition": "To make a happy sound when something is funny.",
+    "translation": "сміятися",
+    "emoji": "😂"
+  },
+  {
+    "word": "if",
+    "definition": "Use this to say what happens when something else is true.",
+    "translation": "якщо",
+    "emoji": "🌧️ ➡️ ☂️"
+  },
+  {
+    "word": "use",
+    "definition": "To do something with a tool or object to get a result.",
+    "translation": "користуватися, використовувати",
+    "emoji": "🔑 🔓"
+  },
+  {
+    "word": "recipe",
+    "definition": "Instructions that tell you how to make a dish.",
+    "translation": "рецепт",
+    "emoji": "📖 🍲"
+  },
+  {
+    "word": "other",
+    "definition": "Different from the person or thing you already talked about.",
+    "translation": "інший",
+    "emoji": "🍎 🍐"
+  },
+  {
+    "word": "difficult",
+    "definition": "Hard to do or understand.",
+    "translation": "складний, важкий",
+    "emoji": "🧩 🤔"
+  },
+  {
+    "word": "simple",
+    "definition": "Easy to do or understand.",
+    "translation": "простий",
+    "emoji": "🧩 👍"
+  },
+  {
+    "word": "include",
+    "definition": "To have someone or something as part of a group or whole.",
+    "translation": "включати, містити",
+    "emoji": "🎁 🧸"
+  },
+  {
+    "word": "rich",
+    "definition": "Having a lot of money.",
+    "translation": "багатий",
+    "emoji": "💰"
+  },
+  {
+    "word": "poor",
+    "definition": "Having very little money.",
+    "translation": "бідний",
+    "emoji": "🪙"
+  },
+  {
+    "word": "become",
+    "definition": "To start to be something different.",
+    "translation": "ставати",
+    "emoji": "🐛 ➡️ 🦋"
+  },
+  {
+    "word": "leave",
+    "definition": "To go away from a place.",
+    "translation": "йти, залишати місце",
+    "emoji": "🚪 🚶"
+  },
+  {
+    "word": "journey",
+    "definition": "A trip from one place to another.",
+    "translation": "подорож",
+    "emoji": "🚆 🗺️"
+  },
+  {
+    "word": "dangerous",
+    "definition": "Able to hurt someone or cause harm.",
+    "translation": "небезпечний",
+    "emoji": "⚠️"
+  },
+  {
+    "word": "arrive",
+    "definition": "To reach a place after travelling.",
+    "translation": "прибувати",
+    "emoji": "🚆 📍"
+  },
+  {
+    "word": "return",
+    "definition": "To go back to a place where you were before.",
+    "translation": "повертатися",
+    "emoji": "↩️ 🏠"
+  },
+  {
+    "word": "way",
+    "definition": "A road or path you can follow to get somewhere.",
+    "translation": "шлях, дорога",
+    "emoji": "🛤️ 🏠"
+  },
+  {
+    "word": "valuable",
+    "definition": "Worth a lot of money or very important to you.",
+    "translation": "цінний",
+    "emoji": "💎"
+  },
+  {
+    "word": "just",
+    "definition": "Only, as in “just one apple.”",
+    "translation": "лише, тільки",
+    "emoji": "🍎 1️⃣"
   }
 ]

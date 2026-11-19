@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 138">
+  <style>
+    .sky { fill: #e0eee8; }
+    .sun { fill: #fdf3cd; }
+    @media (prefers-color-scheme: dark) {
+      .sky { fill: #293c37; }
+      .sun { fill: #9d8154; }
+    }
+  </style>
+  <path class="sky" d="M0 0h300v138H0z"/>
+  <circle class="sun" cx="211" cy="35" r="23"/>
+  <path d="M48 115q37-9 69-3 46 7 87-1 26-5 48 3" fill="none" stroke="#a17c55" stroke-width="4" stroke-linecap="round"/>
+  <g fill="none" stroke="#315e65" stroke-width="4" stroke-linecap="round">
+    <path d="M83 111v-15m67 19V76m68 34V48"/>
+  </g>
+  <g fill="#78a58b">
+    <path d="M83 101q-16-1-19-15 15-2 19 15Zm0-4q1-14 15-15 1 14-15 15Z"/>
+    <path d="M150 97Q123 92 121 73q21 1 29 24Zm0-7q5-22 28-25-2 20-28 25Zm0-10q-16-9-12-24 16 7 12 24Z"/>
+    <path d="M218 86q-29-3-34-23 23 1 34 23Zm0-12q7-25 33-28-4 24-33 28Zm0-15q-23-12-17-31 22 10 17 31Z"/>
+  </g>
+  <circle cx="219" cy="41" r="8" fill="#efbd68"/>
+</svg>

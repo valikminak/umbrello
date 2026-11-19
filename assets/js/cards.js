@@ -27,7 +27,10 @@
       <article class="word-card" aria-label="Картка" aria-live="polite">
         <div class="card-front" lang="en"></div>
         <div class="card-back" id="card-back" hidden>
-          <img class="card-picture" alt="" referrerpolicy="no-referrer" draggable="false" hidden>
+          <div class="card-art" hidden>
+            <img class="card-picture" alt="" referrerpolicy="no-referrer" draggable="false" hidden>
+            <span class="card-emoji" aria-hidden="true" hidden></span>
+          </div>
           <p class="card-definition" lang="en"></p>
           <div class="card-meaning">
             <button class="card-reveal" type="button" aria-expanded="false" aria-controls="card-translation">Показати переклад</button>
@@ -44,7 +47,9 @@
     const surface = host.querySelector(".word-card");
     const front = host.querySelector(".card-front");
     const back = host.querySelector(".card-back");
+    const art = host.querySelector(".card-art");
     const picture = host.querySelector(".card-picture");
+    const emoji = host.querySelector(".card-emoji");
     const definition = host.querySelector(".card-definition");
     const translation = host.querySelector("#card-translation");
     const flip = host.querySelector(".card-flip");
@@ -75,7 +80,10 @@
       definition.textContent = card.definition;
       translation.textContent = card.translation;
       const src = imageURL(card.image);
+      emoji.textContent = typeof card.emoji === "string" ? card.emoji.trim() : "";
+      emoji.hidden = Boolean(src) || !emoji.textContent;
       picture.hidden = !src;
+      art.hidden = picture.hidden && emoji.hidden;
       picture.alt = typeof card.imageAlt === "string" ? card.imageAlt : "";
       if (src) picture.src = src;
       else picture.removeAttribute("src");
@@ -90,7 +98,11 @@
       showCard();
     }
 
-    picture.addEventListener("error", () => { picture.hidden = true; });
+    picture.addEventListener("error", () => {
+      picture.hidden = true;
+      emoji.hidden = !emoji.textContent;
+      art.hidden = emoji.hidden;
+    });
     flip.onclick = () => showBack(back.hidden);
     reveal.onclick = () => showTranslation(translation.hidden);
     if (prev && next) {
@@ -116,8 +128,7 @@
       const dy = event.clientY - swipeStart.y;
       swipeStart = null;
       if (Math.abs(dx) < 40 || Math.abs(dx) <= Math.abs(dy) * 1.5) return;
-      if (cards.length === 1) showBack(back.hidden);
-      else step(dx < 0 ? 1 : -1);
+      step(dx < 0 ? 1 : -1);
     });
     showCard();
   }
