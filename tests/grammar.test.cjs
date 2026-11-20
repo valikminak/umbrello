@@ -78,7 +78,7 @@ test('the report names the level, the scores, the time and what to work on', () 
 });
 
 // The page runs with the real app.js helpers; fetch serves the questions and records reports.
-async function openGrammar({ data = fixture(), access = true, search = '', report = { ok: true, json: async () => ({}) } } = {}) {
+async function openGrammar({ data = fixture(), access = true, search = '?tab=test', report = { ok: true, json: async () => ({}) } } = {}) {
   const renders = [], reports = [], timers = [], requested = [];
   const tabs = { innerHTML: '' };
   let now = 0;
@@ -129,22 +129,13 @@ async function openGrammar({ data = fixture(), access = true, search = '', repor
   return { host, tabs, renders, reports, requested, context, click, tap, answer, level, flush, wait };
 }
 
-test('Grammar opens on the Test tab, with links to Test and Learn and no profile', async () => {
-  for (const search of ['', '?tab=test', '?tab=unknown', '?user=sophia']) {
+test('the Test tab shows the level test, with Tenses first and Test second, and no profile', async () => {
+  for (const search of ['?tab=test', '?tab=test&user=sophia']) {
     const app = await openGrammar({ search });
-    assert.match(app.tabs.innerHTML, /<a href="grammar\.html\?v=10" aria-current="page">Test<\/a>/, search);
-    assert.match(app.tabs.innerHTML, /<a href="grammar\.html\?v=10&tab=learn">Learn<\/a>/, search);
+    assert.match(app.tabs.innerHTML, /^<a href="grammar\.html\?v=10">Tenses<\/a><a href="grammar\.html\?v=10&tab=test" aria-current="page">Test<\/a>$/, search);
+    assert.doesNotMatch(app.tabs.innerHTML, /Learn/);
     assert.match(app.host.html, /id="start"/, search);
   }
-});
-
-test('the Learn tab is empty for now and never loads the test questions', async () => {
-  const app = await openGrammar({ search: '?tab=learn' });
-  assert.match(app.tabs.innerHTML, /<a href="grammar\.html\?v=10&tab=learn" aria-current="page">Learn<\/a>/);
-  assert.doesNotMatch(app.tabs.innerHTML, /aria-current="page">Test/);
-  assert.match(app.host.html, /<h1>Learn<\/h1>/);
-  assert.doesNotMatch(app.host.html, /id="start"/);
-  assert.deepEqual(app.requested, []);
 });
 
 test('the intro explains the test and Start shows the first A1 question with four options and I don\'t know', async () => {

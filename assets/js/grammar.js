@@ -5,18 +5,13 @@
   const menuUrl = Profiles.url("index.html");
   backTo(menuUrl);
   const core = GrammarCore;
-  // Test, Learn and Tenses are tabs of one page; the tab lives in the URL, like Listen's level filter.
-  const asked = new URLSearchParams(location.search).get("tab");
-  const tab = ["learn", "tenses"].includes(asked) ? asked : "test";
-  const tabUrl = id => Profiles.url("grammar.html") + (id === "test" ? "" : `&tab=${id}`);
-  document.getElementById("grammarTabs").innerHTML = [["test", "Test"], ["learn", "Learn"], ["tenses", "Tenses"]].map(([id, title]) =>
+  // Tenses and Test are tabs of one page; the tab lives in the URL, like Listen's level filter.
+  // Tenses opens by default, the level test is ?tab=test.
+  const tab = new URLSearchParams(location.search).get("tab") === "test" ? "test" : "tenses";
+  const tabUrl = id => Profiles.url("grammar.html") + (id === "tenses" ? "" : `&tab=${id}`);
+  document.getElementById("grammarTabs").innerHTML = [["tenses", "Tenses"], ["test", "Test"]].map(([id, title]) =>
     `<a href="${tabUrl(id)}"${id === tab ? ' aria-current="page"' : ""}>${title}</a>`).join("");
   let blocks = [], level = 0, order = [], index = 0, answers = [], started = 0, locked = false;
-
-  // Grammar lessons are not written yet; they will live in grammar/ next to the level test.
-  function learn() {
-    host.innerHTML = `<div class="center"><h1>Learn</h1><p class="sub">Grammar lessons will appear here soon.</p></div>`;
-  }
 
   async function load() {
     try {
@@ -119,7 +114,6 @@
     send();
   }
 
-  if (tab === "learn") learn();
-  else if (tab === "tenses") window.TensesApp.mount(host);
+  if (tab === "tenses") window.TensesApp.mount(host);
   else load();
 })();

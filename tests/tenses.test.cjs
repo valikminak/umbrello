@@ -106,12 +106,13 @@ test('malformed tenses files are rejected with the lesson and sentence named', (
   ]) assert.throws(() => core.validate(data), message);
 });
 
-test('Grammar has a Tenses tab that mounts the trainer without loading the level test', async () => {
+test('Grammar opens on the Tenses tab by default and mounts the trainer without loading the level test', async () => {
+  for (const search of ['', '?tab=tenses', '?tab=learn', '?tab=unknown', '?user=sophia']) {
   const tabs = { innerHTML: '' }, host = { innerHTML: '' }, requested = [], mounted = [];
   const context = vm.createContext({
     Profiles: { shared: async () => true, url: page => `${page}?v=10` },
     document: { getElementById: id => (id === 'grammarTabs' ? tabs : host) },
-    location: { href: '', search: '?tab=tenses' }, URLSearchParams, console,
+    location: { href: '', search }, URLSearchParams, console,
     TensesApp: { mount: target => mounted.push(target) },
     fetch: async url => { requested.push(url); return { ok: true, json: async () => [] }; },
   });
@@ -120,10 +121,10 @@ test('Grammar has a Tenses tab that mounts the trainer without loading the level
     vm.runInContext(fs.readFileSync(path.join(root, 'assets/js', name), 'utf8'), context);
   }
   await new Promise(resolve => setImmediate(resolve));
-  assert.match(tabs.innerHTML, /<a href="grammar\.html\?v=10&tab=tenses" aria-current="page">Tenses<\/a>/);
-  assert.match(tabs.innerHTML, /<a href="grammar\.html\?v=10">Test<\/a>/);
-  assert.deepEqual(mounted, [host]);
-  assert.deepEqual(requested, []);
+  assert.equal(tabs.innerHTML, '<a href="grammar.html?v=10" aria-current="page">Tenses</a><a href="grammar.html?v=10&tab=test">Test</a>', search);
+  assert.deepEqual(mounted, [host], search);
+  assert.deepEqual(requested, [], search);
+  }
 });
 
 test('grammar.html loads the tenses rules before the page script', () => {
