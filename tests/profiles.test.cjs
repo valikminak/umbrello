@@ -157,14 +157,15 @@ test('Cards loads Sophia’s deck after access and reveals the translation separ
   const app = await page('cards', '?user=sophia');
   assert.deepEqual(app.errors, []);
   assert.deepEqual(app.requested, ['users/index.json', 'users/sophia/cards.json']);
-  const [front, back, picture, translation, flip, reveal] = [
-    '.card-front', '.card-back', '.card-picture', '#card-translation', '.card-flip', '.card-reveal'
+  const [front, back, picture, translation, turn, reveal] = [
+    '.card-front', '.card-back', '.card-picture', '#card-translation', '.card-turn', '.card-reveal'
   ].map(app.node);
   assert.equal(front.textContent, 'bird');
   assert.equal(picture.src, 'https://example.test/umbrello/users/sophia/cards/bird.svg');
   assert.match(app.node('app').innerHTML, /id="card-next"/);
+  assert.doesNotMatch(app.node('app').innerHTML, />Перевернути</);
   assert.equal(back.hidden, true);
-  flip.onclick();
+  turn.onclick({ detail: 1 });
   assert.equal(front.hidden, true);
   assert.equal(back.hidden, false);
   assert.match(app.node('.card-definition').textContent, /feathers/);
@@ -172,10 +173,11 @@ test('Cards loads Sophia’s deck after access and reveals the translation separ
   reveal.onclick();
   assert.equal(translation.hidden, false);
   assert.equal(translation.textContent, 'птах');
+  assert.equal(back.hidden, false);
   picture.onerror();
   assert.equal(picture.hidden, true);
-  flip.onclick();
-  flip.onclick();
+  turn.onclick({ detail: 1 });
+  turn.onclick({ detail: 0 });
   assert.equal(translation.hidden, true);
 });
 
@@ -183,18 +185,20 @@ test('Sophia can browse the cards in both directions with swipes or buttons', as
   const deck = await page('cards', '?user=sophia');
   const front = deck.node('.card-front');
   const surface = deck.node('.word-card');
+  const turn = deck.node('.card-turn');
   const prev = deck.node('#card-prev');
   const next = deck.node('#card-next');
   function swipe(dx, dy) {
     surface.onpointerdown({ isPrimary: true, button: 0, pointerId: 1,
-      clientX: 120, clientY: 120, target: { closest: () => null } });
+      clientX: 120, clientY: 120, target: turn });
     surface.onpointerup({ pointerId: 1, clientX: 120 + dx, clientY: 120 + dy });
+    turn.onclick({ detail: 1 });
   }
   assert.deepEqual(deck.errors, []);
   assert.equal(front.textContent, 'bird');
   assert.equal(prev.disabled, true);
   assert.equal(next.disabled, false);
-  deck.node('.card-flip').onclick();
+  turn.onclick({ detail: 0 });
   deck.node('.card-reveal').onclick();
   swipe(-85, 4);
   assert.equal(front.textContent, 'grow');
@@ -211,6 +215,35 @@ test('Sophia can browse the cards in both directions with swipes or buttons', as
   assert.equal(deck.node('.card-emoji').hidden, false);
   prev.onclick();
   assert.equal(front.textContent, 'grow');
+});
+
+test('Знаю skips the card immediately and after reopening for the same Telegram account', async () => {
+  const storage = {};
+  const deck = await page('cards', '?user=sophia', undefined, { storage });
+  const front = deck.node('.card-front');
+  const know = deck.node('#card-known');
+  assert.equal(front.textContent, 'bird');
+  know.onclick();
+  assert.equal(front.textContent, 'grow');
+  assert.equal(deck.node('#card-prev').disabled, true);
+  assert.deepEqual(JSON.parse(Object.values(storage)[0]), ['bird']);
+
+  const reopened = await page('cards', '?user=sophia', undefined, { storage });
+  assert.equal(reopened.node('.card-front').textContent, 'grow');
+  const other = await page('cards', '?user=sophia', undefined, {
+    storage, fetch: async () => ({ ok: true, json: async () => ({ allowed: true, userId: 456 }) })
+  });
+  assert.equal(other.node('.card-front').textContent, 'bird');
+
+  const ids = JSON.parse(fs.readFileSync(path.join(root, 'users/sophia/cards.json'), 'utf8')).map(card => card.id);
+  const key = Object.keys(storage)[0];
+  storage[key] = JSON.stringify(ids.slice(1));
+  const finalCard = await page('cards', '?user=sophia', undefined, { storage });
+  assert.equal(finalCard.node('#card-next').disabled, true);
+  finalCard.node('#card-known').onclick();
+  assert.match(finalCard.node('app').innerHTML, /Ти знаєш усі картки!/);
+  const completed = await page('cards', '?user=sophia', undefined, { storage });
+  assert.match(completed.node('app').innerHTML, /Ти знаєш усі картки!/);
 });
 
 test('Listen is shared: opens without a profile, ignores ?user and filters the catalog by level', async () => {

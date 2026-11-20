@@ -8,6 +8,7 @@
 .cards-app [hidden] { display: none !important; }
 
 .word-card {
+  position: relative;
   display: grid;
   min-height: 300px;
   border: 1px solid var(--line);
@@ -78,6 +79,8 @@
 .card-meaning p { margin: 0; font-weight: 600; }
 
 .card-reveal {
+  position: relative;
+  z-index: 2;
   min-height: 44px;
   padding: 0 10px;
   border: 0;
@@ -98,5 +101,17 @@
   font-weight: 600;
 }
 
-.cards-app .card-flip { margin-top: 12px; }
-.card-nav { display: flex; gap: 10px; margin-top: 10px; }
+.card-turn {
+  position: absolute;
+  z-index: 1;
+  inset: 0;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  border-radius: inherit;
+  background: transparent;
+  cursor: pointer;
+}
+
+.card-nav { display: flex; gap: 10px; margin-top: 12px; }
+.cards-app .card-known { margin-top: 10px; }
