@@ -30,6 +30,12 @@
   display:flex;flex-wrap:wrap;gap:4px 6px;align-items:center}
 .tn-answer.right{background:var(--ok-soft);color:var(--ok)}
 .tn-answer.wrong{background:var(--bad-soft)}
+.tn-answer.slotted{gap:10px 8px;align-items:flex-start;padding:12px 12px 8px}
+.tn-slot{display:flex;flex-direction:column;align-items:center;min-width:46px}
+.tn-blank{display:block;width:46px;height:27px;border-bottom:2px solid var(--line)}
+.tn-slot.next .tn-blank{border-bottom-color:var(--accent)}
+.tn-slot.filled .tn-word{border-bottom:2px solid transparent;line-height:25px}
+.tn-slot small{margin-top:2px;color:var(--hint);font-size:11px;line-height:1.2;white-space:nowrap}
 .tn-word{font:inherit;color:inherit;background:none;border:0;padding:0 2px;border-radius:6px;cursor:pointer}
 .tn-caret{width:2px;height:22px;background:var(--accent);animation:tn-blink 1s steps(2,start) infinite}
 @keyframes tn-blink{to{visibility:hidden}}
@@ -37,7 +43,8 @@
 .tn-undo{flex:none;width:52px;height:58px;display:grid;place-items:center;border:0;border-radius:16px;background:var(--card);color:var(--text);cursor:pointer}
 .tn-fix{min-height:24px;margin-top:10px;color:var(--hint);font-size:15px}
 .tn-fix span{display:block;margin-top:2px;color:var(--ok);font-size:19px;font-weight:600;line-height:1.35}
-.tn-bank{margin-top:auto;padding:16px 0 12px;display:flex;flex-wrap:wrap;justify-content:center;gap:8px}
+.tn-bank{margin-top:auto;padding:16px 0 12px;display:flex;flex-wrap:wrap;justify-content:center;gap:10px 14px}
+.tn-group{display:flex;flex-wrap:wrap;justify-content:center;gap:6px}
 .tn-tile{min-height:46px;padding:8px 14px;border:0;border-radius:12px;background:var(--card);color:var(--text);font:inherit;font-size:18px;cursor:pointer;transition:transform .08s}
 .tn-tile:active{transform:scale(.96)}
 .tn-tile.used{visibility:hidden}
@@ -57,4 +64,5 @@
 .tn-grid th,.tn-grid td{padding:7px 6px;border:1px solid var(--line);vertical-align:top}
 .tn-grid th{background:var(--card);font-weight:600}
 .tn-big{color:var(--ok)}
+.tn-order td,.tn-order th{text-align:center}
 .tn-reset{color:var(--bad)}

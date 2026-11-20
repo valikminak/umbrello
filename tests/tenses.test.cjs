@@ -10,23 +10,29 @@ const lexicon = () => core.makeLexicon(file().lexicon);
 // A seeded generator, so random tile banks are the same on every run.
 const seeded = seed => () => ((seed = (seed * 16807) % 2147483647) / 2147483647);
 
-test('the tenses file is valid: lesson 1 is ready with 45 Ukrainian sentences, later lessons are locked placeholders', () => {
+test('the tenses file is valid: word order (0) and simple tenses (1) are ready, later lessons are locked placeholders', () => {
   const data = core.validate(file());
   assert.equal(data.passRating, 4.5);
-  assert.equal(data.lessons.length, 13);
-  assert.deepEqual(data.lessons.map(lesson => lesson.id), [...Array(13).keys()].map(i => i + 1));
-  assert.equal(data.lessons[0].ready, true);
-  assert.equal(data.lessons[0].items.length, 45);
-  for (const lesson of data.lessons.slice(1)) assert.equal(lesson.ready, false, lesson.title);
-  for (const it of data.lessons[0].items) {
+  assert.equal(data.lessons.length, 14);
+  assert.deepEqual(data.lessons.map(lesson => lesson.id), [...Array(14).keys()]);
+  const [order, simple] = data.lessons;
+  assert.deepEqual([order.ready, order.hints, order.nearMisses, order.info], [true, 'labels', false, 'word-order']);
+  assert.deepEqual([simple.ready, simple.hints, simple.nearMisses, simple.info], [true, 'slots', true, 'simple-tenses']);
+  assert.equal(order.items.length, 22);
+  assert.equal(simple.items.length, 45);
+  for (const lesson of data.lessons.slice(2)) {
+    assert.equal(lesson.ready, false, lesson.title);
+    assert.equal(lesson.hints, 'count', `${lesson.title}: later lessons show only the number of tiles`);
+  }
+  for (const it of [...order.items, ...simple.items]) {
     assert.match(it.uk, /[ІіЇїЄєҐґ'А-Яа-я]/u, it.uk);
     assert.doesNotMatch(it.uk, /[ЫыЭэЪъЁё]/u, `no Russian letters: ${it.uk}`);
   }
 });
 
-test('every sentence gets a tile bank with all of its words, near misses and no repeated tile', () => {
+test('every sentence of lesson 1 gets a tile bank with all of its words, near misses and no repeated tile', () => {
   const data = core.validate(file()), rand = seeded(7);
-  for (const it of data.lessons[0].items) {
+  for (const it of data.lessons[1].items) {
     for (let k = 0; k < 200; k++) {
       const tiles = core.bank(it, data.lex, rand), words = tiles.map(t => t.toLowerCase());
       for (const step of it.steps) assert.ok(words.includes(step.toLowerCase()), `${it.uk}: missing ${step}`);
@@ -90,19 +96,23 @@ test('a new round never starts with the sentence that was just answered', () => 
 
 test('malformed tenses files are rejected with the lesson and sentence named', () => {
   const broken = change => { const data = file(); change(data); return data; };
-  const item = (data, index, value) => { data.lessons[0].items[index] = { ...data.lessons[0].items[index], ...value }; };
+  const item = (data, index, value) => { data.lessons[1].items[index] = { ...data.lessons[1].items[index], ...value }; };
   for (const [data, message] of [
     [broken(d => { d.passRating = 6; }), /passRating/],
     [broken(d => { delete d.lexicon.verbs; }), /lexicon/],
     [broken(d => { d.lexicon.verbs.go = ['goes']; }), /verb "go"/],
-    [broken(d => { d.lessons[1].id = 1; }), /lesson 2 needs its own/],
-    [broken(d => { d.lessons[1].ready = true; }), /lesson 2 is ready but has no sentences/],
-    [broken(d => item(d, 2, { uk: 'We play tennis.' })), /lesson 1, sentence 3: uk/],
+    [broken(d => { d.lessons[1].id = 0; }), /lesson 2 needs its own/],
+    [broken(d => { d.lessons[2].ready = true; }), /lesson 3 is ready but has no sentences/],
+    [broken(d => item(d, 2, { uk: 'We play tennis.' })), /lesson 2, sentence 3: uk/],
     [broken(d => item(d, 2, { en: 'We|play|tennis' })), /sentence 3: en must end/],
     [broken(d => item(d, 2, { en: 'We||play.' })), /sentence 3: en has an empty step/],
     [broken(d => item(d, 7, { en: 'You|work|on Saturdays.' })), /sentence 8: a question/],
-    [broken(d => item(d, 3, { uk: d.lessons[0].items[0].uk })), /sentence 4 repeats/],
+    [broken(d => item(d, 3, { uk: d.lessons[1].items[0].uk })), /sentence 4 repeats/],
     [broken(d => item(d, 21, { en: 'I|will|phone|you|tomorrow.' })), /sentence 22: add the verb after "will"/],
+    [broken(d => item(d, 2, { en: 'We|ride|horses|at weekends.' })), /sentence 3: add its verb/],
+    [broken(d => { d.lessons[0].hints = 'arrows'; }), /lesson 1: hints must be one of labels, slots, count/],
+    [broken(d => { d.lessons[0].nearMisses = 'no'; }), /lesson 1: nearMisses/],
+    [broken(d => { d.lessons[1].info = 'tables'; }), /lesson 2: info must be one of/],
   ]) assert.throws(() => core.validate(data), message);
 });
 
@@ -132,4 +142,42 @@ test('grammar.html loads the tenses rules before the page script', () => {
   const at = name => html.indexOf(`assets/js/${name}`);
   assert.ok(at('tenses-core.js') > 0 && at('tenses-core.js') < at('tenses.js') && at('tenses.js') < at('grammar.js'));
   assert.match(html, /assets\/css\/tenses\.css/);
+});
+
+test('the word-order lesson gives only the answer\'s own words and names every place in the sentence', () => {
+  const data = core.validate(file()), rand = seeded(5), lesson = data.lessons[0];
+  for (const it of lesson.items) {
+    const tiles = core.bank(it, data.lex, rand, lesson.nearMisses);
+    assert.deepEqual([...tiles].sort(), [...it.steps].sort(), it.uk);
+    const roles = it.steps.map((_, i) => core.role(it, i, data.lex));
+    assert.equal(roles.filter(r => r === 'хто').length, 1, `${it.uk}: one subject`);
+    assert.equal(roles.filter(r => r === 'дія').length, 1, `${it.uk}: one verb`);
+    if (it.q) assert.deepEqual(roles.slice(0, 2), ['допоміжне', 'хто'], `${it.uk}: the helper comes first in a question`);
+  }
+  const roles = en => { const it = core.parse({ uk: 'Речення.', en }, data.lex); return it.steps.map((_, i) => core.role(it, i, data.lex)); };
+  assert.deepEqual(roles('We|drink|coffee|in a cafe|every morning.'), ['хто', 'дія', 'кого / що', 'де', 'коли']);
+  assert.deepEqual(roles('We|will|go|to the sea|tomorrow.'), ['хто', 'допоміжне', 'дія', 'куди', 'коли']);
+  assert.deepEqual(roles('She|sings|well.'), ['хто', 'дія', 'як']);
+  assert.deepEqual(roles('Does|he|work|here?'), ['допоміжне', 'хто', 'дія', 'де']);
+});
+
+test('tiles come in groups: each word with its own near misses, in random group order', () => {
+  const lex = lexicon();
+  const it = core.parse({ uk: 'Учора вона не зателефонувала.', en: "She|didn't|call|yesterday." }, lex);
+  const firsts = new Set();
+  for (let seed = 1; seed < 40; seed++) {
+    const groups = core.bankGroups(it, lex, seeded(seed));
+    assert.equal(groups.length, it.steps.length);
+    const find = word => groups.find(group => group.includes(word));
+    assert.ok(find("didn't").every(w => lex.negativeAux.includes(w)), 'helpers stay together');
+    assert.ok(find('call').every(w => ['call', 'calls', 'called'].includes(w)), 'forms of call stay together');
+    assert.ok(find('yesterday').every(w => lex.timeOf[w.toLowerCase()]), 'time words stay together');
+    firsts.add(groups[0].join());
+  }
+  assert.ok(firsts.size > 2, 'the groups are not always in sentence order');
+});
+
+test('the number of tiles is written with the right Ukrainian ending', () => {
+  assert.deepEqual([1, 2, 4, 5, 11, 12, 21, 22, 25].map(core.tilesWord),
+    ['1 плитка', '2 плитки', '4 плитки', '5 плиток', '11 плиток', '12 плиток', '21 плитка', '22 плитки', '25 плиток']);
 });

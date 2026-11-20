@@ -41,7 +41,9 @@
       "sell": ["sells", "sold"],
       "pay": ["pays", "paid"],
       "sleep": ["sleeps", "slept"],
-      "start": ["starts", "started"]
+      "start": ["starts", "started"],
+      "sing": ["sings", "sang"],
+      "drive": ["drives", "drove"]
     },
     "time": {
       "present": ["every day", "every evening", "every morning", "at weekends", "in the morning", "in the evening", "on Sundays", "on Saturdays"],
@@ -51,10 +53,45 @@
   },
   "lessons": [
     {
+      "id": 0,
+      "title": "Порядок слів",
+      "desc": "Хто — дія — що — де — коли. Питання і заперечення",
+      "ready": true,
+      "hints": "labels",
+      "nearMisses": false,
+      "info": "word-order",
+      "items": [
+        {"uk": "Я працюю вдома щодня.", "en": "I|work|at home|every day."},
+        {"uk": "Вона дивиться фільми ввечері.", "en": "She|watches|films|in the evening."},
+        {"uk": "Ми п'ємо каву в кафе щоранку.", "en": "We|drink|coffee|in a cafe|every morning."},
+        {"uk": "Він грає у футбол у парку по суботах.", "en": "He|plays|football|in the park|on Saturdays."},
+        {"uk": "Мої друзі живуть у Львові.", "en": "My friends|live|in Lviv."},
+        {"uk": "Учора я бачив Анну в магазині.", "en": "I|saw|Anna|in the shop|yesterday."},
+        {"uk": "Вона купила хліб у магазині вчора.", "en": "She|bought|bread|in the shop|yesterday."},
+        {"uk": "Вона добре співає.", "en": "She|sings|well."},
+        {"uk": "Він швидко їздить.", "en": "He|drives|fast."},
+        {"uk": "Ми не працюємо по неділях.", "en": "We|don't|work|on Sundays."},
+        {"uk": "Вона не п'є чай уранці.", "en": "She|doesn't|drink|tea|in the morning."},
+        {"uk": "Вони не прийшли вчора.", "en": "They|didn't|come|yesterday."},
+        {"uk": "Ми не бачили їх у парку.", "en": "We|didn't|see|them|in the park."},
+        {"uk": "Я не прийду завтра.", "en": "I|won't|come|tomorrow."},
+        {"uk": "Ти живеш у Києві?", "en": "Do|you|live|in Kyiv?"},
+        {"uk": "Він працює тут?", "en": "Does|he|work|here?"},
+        {"uk": "Ви бачили Тома вчора?", "en": "Did|you|see|Tom|yesterday?"},
+        {"uk": "Ти зачинив двері?", "en": "Did|you|close|the door?"},
+        {"uk": "Ти прийдеш завтра?", "en": "Will|you|come|tomorrow?"},
+        {"uk": "Завтра ми поїдемо до моря.", "en": "We|will|go|to the sea|tomorrow."},
+        {"uk": "Я подзвоню тобі ввечері.", "en": "I|will|call|you|in the evening."},
+        {"uk": "Вона допоможе нам завтра.", "en": "She|will|help|us|tomorrow."}
+      ]
+    },
+    {
       "id": 1,
       "title": "Прості часи",
       "desc": "Минуле, теперішнє, майбутнє: ствердження, заперечення, питання",
       "ready": true,
+      "hints": "slots",
+      "info": "simple-tenses",
       "items": [
         {"uk": "Я працюю щодня.", "en": "I|work|every day."},
         {"uk": "Вона готує щовечора.", "en": "She|cooks|every evening."},

@@ -54,6 +54,22 @@
     return "other";
   }
 
+  // The place a step takes in the sentence, named for the slot labels of the word-order lesson.
+  const PLACE = ["here", "there", "home", "abroad", "outside"];
+  const MANNER = ["well", "badly", "fast", "hard", "late", "early", "slowly", "quickly", "loudly"];
+  function role(it, i, lex) {
+    const k = kind(it, i, lex), ls = low(it.steps[i]);
+    if (i === (it.q ? 1 : 0)) return "хто";
+    if (k === "aux" || k === "will") return "допоміжне";
+    if (k === "verb") return "дія";
+    if (k === "time") return "коли";
+    if (k === "object") return "кого / що";
+    if (/^to\s/.test(ls)) return "куди";
+    if (/^(at|in|on|near|under|behind|from)\s/.test(ls) || PLACE.includes(ls)) return "де";
+    if (MANNER.includes(ls)) return "як";
+    return "кого / що";
+  }
+
   // The words a learner could mistake for step i: its neighbours of the same kind.
   function options(it, i, lex, rand = Math.random) {
     const s = it.steps[i], ls = low(s), prev = i ? low(it.steps[i - 1]) : null, subject = it.q ? 1 : 0;
@@ -91,21 +107,25 @@
     return opts.filter(o => !seen.has(low(o)) && seen.add(low(o)));
   }
 
-  // Tiles for one sentence: all of its words plus near misses for the words that carry grammar.
+  // Tiles for one sentence in groups: each word of the answer with its near misses beside it
+  // (didn't with don't and won't). The groups come in random order, so the order of the
+  // sentence is not given away. With nearMisses false there are only the answer's own words.
   const NEAR_MISSES = { subject: 1, aux: 2, verb: 2, will: 1, time: 1, object: 1, other: 0 };
-  function bank(it, lex, rand = Math.random) {
-    const tiles = it.steps.slice(), taken = tiles.map(low);
-    it.steps.forEach((s, i) => {
-      const k = kind(it, i, lex), n = NEAR_MISSES[k];
-      if (!n) return;
+  function bankGroups(it, lex, rand = Math.random, nearMisses = true) {
+    const taken = it.steps.map(low);
+    const groups = it.steps.map((s, i) => {
+      const k = kind(it, i, lex), n = nearMisses ? NEAR_MISSES[k] : 0, group = [s];
+      if (!n) return group;
       const wrong = options(it, i, lex, rand).filter(o => !taken.includes(low(o)));
       // him → he is the classic slip, so an object pronoun always brings its subject form.
       const twin = k === "object" ? lex.objects[low(s)] : null;
       const chosen = twin && !taken.includes(low(twin)) ? [twin] : pick(wrong, n, [], rand);
-      for (const o of chosen) { tiles.push(o); taken.push(low(o)); }
+      for (const o of chosen) { group.push(o); taken.push(low(o)); }
+      return shuffled(group, rand);
     });
-    return shuffled(tiles, rand);
+    return shuffled(groups, rand);
   }
+  const bank = (it, lex, rand, nearMisses) => bankGroups(it, lex, rand, nearMisses).flat();
 
   // Right answers: the sentence as written and, for a statement that ends with a time phrase,
   // the same sentence with that phrase moved to the front ("Yesterday she didn't call").
@@ -140,6 +160,17 @@
     return order;
   }
 
+  // labels: empty places with their names (хто, дія, коли); slots: empty places only;
+  // count: only how many tiles the answer has.
+  const HINTS = ["labels", "slots", "count"];
+  const INFO = ["word-order", "simple-tenses"];
+
+  // "4 плитки": Ukrainian plural for the number of tiles in the answer.
+  function tilesWord(n) {
+    const d = n % 10, h = n % 100;
+    return `${n} ${d === 1 && h !== 11 ? "плитка" : d >= 2 && d <= 4 && (h < 12 || h > 14) ? "плитки" : "плиток"}`;
+  }
+
   // Checks grammar/tenses.json and returns it with parsed sentences, or throws a message naming the problem.
   function validate(data) {
     const fail = problem => { throw new Error(`Check grammar/tenses.json: ${problem}`); };
@@ -163,6 +194,9 @@
       if (typeof lesson.ready !== "boolean") fail(`${where}: ready must be true or false.`);
       if (!Array.isArray(lesson.items)) fail(`${where}: items must be a list.`);
       if (lesson.ready && !lesson.items.length) fail(`${where} is ready but has no sentences.`);
+      if (lesson.hints !== undefined && !HINTS.includes(lesson.hints)) fail(`${where}: hints must be one of ${HINTS.join(", ")}.`);
+      if (lesson.nearMisses !== undefined && typeof lesson.nearMisses !== "boolean") fail(`${where}: nearMisses must be true or false.`);
+      if (lesson.info !== undefined && !INFO.includes(lesson.info)) fail(`${where}: info must be one of ${INFO.join(", ")}.`);
       const seen = new Set();
       const items = lesson.items.map((item, ii) => {
         const at = `${where}, sentence ${ii + 1}`;
@@ -176,15 +210,17 @@
         it.steps.forEach((s, i) => {
           if (kind(it, i, lex) === "will" && !lex.formOf[low(it.steps[i + 1] || "")]) fail(`${at}: add the verb after "will" to the lexicon.`);
         });
+        if (!it.steps.some((s, i) => kind(it, i, lex) === "verb")) fail(`${at}: add its verb to the lexicon.`);
         return it;
       });
-      return { id: lesson.id, title: lesson.title.trim(), desc: lesson.desc.trim(), ready: lesson.ready, items };
+      return { id: lesson.id, title: lesson.title.trim(), desc: lesson.desc.trim(), ready: lesson.ready, items,
+        hints: lesson.hints || "count", nearMisses: lesson.nearMisses !== false, info: lesson.info || null };
     });
     return { title: data.title.trim(), subtitle: filled(data.subtitle) ? data.subtitle.trim() : "", passRating: data.passRating, lex, lessons };
   }
 
-  const api = { RIGHT, WRONG, makeLexicon, parse, kind, options, bank, accepted, isRight, sentence,
-    score, passes, fmt, newOrder, validate };
+  const api = { RIGHT, WRONG, HINTS, INFO, makeLexicon, parse, kind, role, options, bankGroups, bank, accepted, isRight,
+    sentence, tilesWord, score, passes, fmt, newOrder, validate };
   if (typeof module !== "undefined" && module.exports) module.exports = api;
   else root.TensesCore = api;
 })(typeof window !== "undefined" ? window : globalThis);
