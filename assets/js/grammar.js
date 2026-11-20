@@ -5,10 +5,11 @@
   const menuUrl = Profiles.url("index.html");
   backTo(menuUrl);
   const core = GrammarCore;
-  // Test and Learn are tabs of one page; the tab lives in the URL, like Listen's level filter.
-  const tab = new URLSearchParams(location.search).get("tab") === "learn" ? "learn" : "test";
+  // Test, Learn and Tenses are tabs of one page; the tab lives in the URL, like Listen's level filter.
+  const asked = new URLSearchParams(location.search).get("tab");
+  const tab = ["learn", "tenses"].includes(asked) ? asked : "test";
   const tabUrl = id => Profiles.url("grammar.html") + (id === "test" ? "" : `&tab=${id}`);
-  document.getElementById("grammarTabs").innerHTML = [["test", "Test"], ["learn", "Learn"]].map(([id, title]) =>
+  document.getElementById("grammarTabs").innerHTML = [["test", "Test"], ["learn", "Learn"], ["tenses", "Tenses"]].map(([id, title]) =>
     `<a href="${tabUrl(id)}"${id === tab ? ' aria-current="page"' : ""}>${title}</a>`).join("");
   let blocks = [], level = 0, order = [], index = 0, answers = [], started = 0, locked = false;
 
@@ -119,5 +120,6 @@
   }
 
   if (tab === "learn") learn();
+  else if (tab === "tenses") window.TensesApp.mount(host);
   else load();
 })();

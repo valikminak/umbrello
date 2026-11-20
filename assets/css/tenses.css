@@ -1,0 +1,60 @@
+/* Grammar → Tenses. Colours come from style.css, so Telegram's theme applies here too. */
+.tn{display:flex;flex-direction:column;flex:1}
+.tn-ico{display:inline-flex;width:20px;height:20px;flex:none}
+.tn-ico svg{width:100%;height:100%;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+
+.tn-lessons{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:10px}
+.tn-row{width:100%;display:grid;grid-template-columns:38px minmax(0,1fr) auto;gap:12px;align-items:center;
+  padding:14px 16px;border:0;border-radius:16px;background:var(--card);color:var(--text);font:inherit;text-align:left;cursor:pointer}
+.tn-row b{display:block;font-size:17px}
+.tn-row b + span{display:block;color:var(--hint);font-size:14px;line-height:1.35;margin-top:1px}
+.tn-num{width:38px;height:38px;border-radius:50%;display:grid;place-items:center;background:var(--accent);color:var(--accent-text);font-weight:700;font-size:15px}
+.tn-status{display:flex;align-items:center;gap:4px;font-size:14px;color:var(--hint);font-variant-numeric:tabular-nums}
+.tn-row.done .tn-status{color:var(--ok)}
+.tn-row.locked{cursor:default}
+.tn-row.locked .tn-num{background:var(--line);color:var(--hint)}
+.tn-row.locked b,.tn-row.locked b + span{opacity:.55}
+
+.tn-lesson{min-height:calc(100vh - 160px)}
+.tn-head{display:flex;align-items:center;gap:4px;margin:-4px -6px 6px}
+.tn-head h2{margin:0 auto 0 2px;font-size:18px}
+.tn-icon-btn{width:40px;height:40px;display:grid;place-items:center;border:0;border-radius:12px;background:none;color:var(--text);cursor:pointer}
+.tn-stat{display:flex;align-items:center;gap:3px;padding:0 4px;font-size:15px;font-variant-numeric:tabular-nums}
+.tn-stat .tn-ico{width:17px;height:17px}
+.tn-stat.ok{color:var(--ok)}
+.tn-stat.bad{color:var(--bad)}
+.tn-hint{margin:8px 0 4px;color:var(--hint);font-size:13px}
+.tn-uk{margin:0;font-size:21px;line-height:1.35;font-weight:600}
+.tn-answer-row{display:flex;gap:8px;align-items:flex-start;margin-top:14px}
+.tn-answer{flex:1;min-height:58px;padding:12px 14px;border-radius:16px;background:var(--card);font-size:19px;line-height:1.4;
+  display:flex;flex-wrap:wrap;gap:4px 6px;align-items:center}
+.tn-answer.right{background:var(--ok-soft);color:var(--ok)}
+.tn-answer.wrong{background:var(--bad-soft)}
+.tn-word{font:inherit;color:inherit;background:none;border:0;padding:0 2px;border-radius:6px;cursor:pointer}
+.tn-caret{width:2px;height:22px;background:var(--accent);animation:tn-blink 1s steps(2,start) infinite}
+@keyframes tn-blink{to{visibility:hidden}}
+.tn-undo[hidden]{display:none}
+.tn-undo{flex:none;width:52px;height:58px;display:grid;place-items:center;border:0;border-radius:16px;background:var(--card);color:var(--text);cursor:pointer}
+.tn-fix{min-height:24px;margin-top:10px;color:var(--hint);font-size:15px}
+.tn-fix span{display:block;margin-top:2px;color:var(--ok);font-size:19px;font-weight:600;line-height:1.35}
+.tn-bank{margin-top:auto;padding:16px 0 12px;display:flex;flex-wrap:wrap;justify-content:center;gap:8px}
+.tn-tile{min-height:46px;padding:8px 14px;border:0;border-radius:12px;background:var(--card);color:var(--text);font:inherit;font-size:18px;cursor:pointer;transition:transform .08s}
+.tn-tile:active{transform:scale(.96)}
+.tn-tile.used{visibility:hidden}
+.tn-next{margin:0}
+.tn-progress{display:flex;gap:2px}
+.tn-progress i{flex:1;height:8px;border-radius:2px;background:var(--line)}
+.tn-progress i.r{background:var(--ok)}
+.tn-progress i.w{background:var(--bad)}
+.tn-progress i.cur{outline:2px solid var(--text);outline-offset:1px}
+
+.tn-veil{position:fixed;inset:0;z-index:10;display:flex;align-items:flex-end;justify-content:center;background:rgba(0,0,0,.45)}
+.tn-sheet{width:100%;max-width:600px;max-height:90vh;overflow:auto;padding:22px 16px calc(16px + env(safe-area-inset-bottom));
+  border-radius:20px 20px 0 0;background:var(--bg)}
+.tn-sheet h2{font-size:21px}
+.tn-sheet .sub{margin:8px 0 12px;font-size:15px}
+.tn-grid{width:100%;border-collapse:collapse;margin:10px 0 12px;font-size:14px}
+.tn-grid th,.tn-grid td{padding:7px 6px;border:1px solid var(--line);vertical-align:top}
+.tn-grid th{background:var(--card);font-weight:600}
+.tn-big{color:var(--ok)}
+.tn-reset{color:var(--bad)}

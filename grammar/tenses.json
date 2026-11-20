@@ -1,0 +1,191 @@
+{
+  "title": "Часи",
+  "subtitle": "Склади фразу з плиток. Наступний урок відкривається при рейтингу 4.5.",
+  "passRating": 4.5,
+  "lexicon": {
+    "subjects": ["I", "you", "he", "she", "it", "we", "they"],
+    "objects": {
+      "me": "I",
+      "you": "you",
+      "him": "he",
+      "her": "she",
+      "us": "we",
+      "them": "they"
+    },
+    "questionAux": ["do", "does", "did", "will"],
+    "negativeAux": ["don't", "doesn't", "didn't", "won't"],
+    "verbs": {
+      "work": ["works", "worked"],
+      "cook": ["cooks", "cooked"],
+      "play": ["plays", "played"],
+      "drink": ["drinks", "drank"],
+      "watch": ["watches", "watched"],
+      "live": ["lives", "lived"],
+      "speak": ["speaks", "spoke"],
+      "like": ["likes", "liked"],
+      "buy": ["buys", "bought"],
+      "see": ["sees", "saw"],
+      "call": ["calls", "called"],
+      "move": ["moves", "moved"],
+      "go": ["goes", "went"],
+      "close": ["closes", "closed"],
+      "come": ["comes", "came"],
+      "help": ["helps", "helped"],
+      "understand": ["understands", "understood"],
+      "be": ["is", "was"],
+      "eat": ["eats", "ate"],
+      "know": ["knows", "knew"],
+      "meet": ["meets", "met"],
+      "want": ["wants", "wanted"],
+      "forget": ["forgets", "forgot"],
+      "sell": ["sells", "sold"],
+      "pay": ["pays", "paid"],
+      "sleep": ["sleeps", "slept"],
+      "start": ["starts", "started"]
+    },
+    "time": {
+      "present": ["every day", "every evening", "every morning", "at weekends", "in the morning", "in the evening", "on Sundays", "on Saturdays"],
+      "past": ["yesterday", "last week", "last year"],
+      "future": ["tomorrow", "next week", "next year"]
+    }
+  },
+  "lessons": [
+    {
+      "id": 1,
+      "title": "Прості часи",
+      "desc": "Минуле, теперішнє, майбутнє: ствердження, заперечення, питання",
+      "ready": true,
+      "items": [
+        {"uk": "Я працюю щодня.", "en": "I|work|every day."},
+        {"uk": "Вона готує щовечора.", "en": "She|cooks|every evening."},
+        {"uk": "Ми граємо в теніс у вихідні.", "en": "We|play|tennis|at weekends."},
+        {"uk": "Він п'є каву щоранку.", "en": "He|drinks|coffee|every morning."},
+        {"uk": "Я не дивлюся телевізор зранку.", "en": "I|don't|watch|TV|in the morning."},
+        {"uk": "Вона не п'є каву ввечері.", "en": "She|doesn't|drink|coffee|in the evening."},
+        {"uk": "Вони не працюють по неділях.", "en": "They|don't|work|on Sundays."},
+        {"uk": "Ти працюєш по суботах?", "en": "Do|you|work|on Saturdays?"},
+        {"uk": "Він живе в Києві?", "en": "Does|he|live|in Kyiv?"},
+        {"uk": "Ви розмовляєте англійською?", "en": "Do|you|speak|English?"},
+        {"uk": "Вона любить каву?", "en": "Does|she|like|coffee?"},
+        {"uk": "Учора я купив нову куртку.", "en": "I|bought|a new jacket|yesterday."},
+        {"uk": "Ми бачили Анну минулого тижня.", "en": "We|saw|Anna|last week."},
+        {"uk": "Учора він мені зателефонував.", "en": "He|called|me|yesterday."},
+        {"uk": "Минулого року вони переїхали до Львова.", "en": "They|moved|to Lviv|last year."},
+        {"uk": "Учора я його не бачив.", "en": "I|didn't|see|him|yesterday."},
+        {"uk": "Учора вона не зателефонувала.", "en": "She|didn't|call|yesterday."},
+        {"uk": "Минулого року ми не поїхали на море.", "en": "We|didn't|go|to the sea|last year."},
+        {"uk": "Ти вчора зачинив вікно?", "en": "Did|you|close|the window|yesterday?"},
+        {"uk": "Він прийшов учора?", "en": "Did|he|come|yesterday?"},
+        {"uk": "Ви купили квитки минулого тижня?", "en": "Did|you|buy|the tickets|last week?"},
+        {"uk": "Завтра я тобі зателефоную.", "en": "I|will|call|you|tomorrow."},
+        {"uk": "Вона прийде завтра.", "en": "She|will|come|tomorrow."},
+        {"uk": "Наступного року ми поїдемо на море.", "en": "We|will|go|to the sea|next year."},
+        {"uk": "Завтра я не запізнюся.", "en": "I|won't|be|late|tomorrow."},
+        {"uk": "Наступного тижня вони не прийдуть.", "en": "They|won't|come|next week."},
+        {"uk": "Він не зрозуміє.", "en": "He|won't|understand."},
+        {"uk": "Ти прийдеш завтра?", "en": "Will|you|come|tomorrow?"},
+        {"uk": "Вона нам допоможе?", "en": "Will|she|help|us?"},
+        {"uk": "Ви купите цю машину?", "en": "Will|you|buy|this car?"},
+        {"uk": "Вони п'ють чай щовечора.", "en": "They|drink|tea|every evening."},
+        {"uk": "Він не їсть м'яса.", "en": "He|doesn't|eat|meat."},
+        {"uk": "Ти знаєш його номер?", "en": "Do|you|know|his number?"},
+        {"uk": "Ми зустрічаємося по суботах.", "en": "We|meet|on Saturdays."},
+        {"uk": "Вона не хоче чекати.", "en": "She|doesn't|want|to wait."},
+        {"uk": "Учора я забув телефон удома.", "en": "I|forgot|my phone|at home|yesterday."},
+        {"uk": "Минулого тижня вона продала свою машину.", "en": "She|sold|her car|last week."},
+        {"uk": "Учора він не заплатив за обід.", "en": "He|didn't|pay|for lunch|yesterday."},
+        {"uk": "Вони зустріли Тома минулого року?", "en": "Did|they|meet|Tom|last year?"},
+        {"uk": "Ти добре спав учора?", "en": "Did|you|sleep|well|yesterday?"},
+        {"uk": "Наступного тижня вона почне нову роботу.", "en": "She|will|start|a new job|next week."},
+        {"uk": "Він не забуде.", "en": "He|won't|forget."},
+        {"uk": "Ви зустрінете нас завтра?", "en": "Will|you|meet|us|tomorrow?"},
+        {"uk": "Наступного року вони не продадуть будинок.", "en": "They|won't|sell|the house|next year."},
+        {"uk": "Я заплачу завтра.", "en": "I|will|pay|tomorrow."}
+      ]
+    },
+    {
+      "id": 2,
+      "title": "У процесі",
+      "desc": "Present, past і future continuous",
+      "ready": false,
+      "items": []
+    },
+    {
+      "id": 3,
+      "title": "Суміш 1",
+      "desc": "Simple і continuous в усіх трьох часах",
+      "ready": false,
+      "items": []
+    },
+    {
+      "id": 4,
+      "title": "Уже до «зараз»",
+      "desc": "Present perfect і past simple",
+      "ready": false,
+      "items": []
+    },
+    {
+      "id": 5,
+      "title": "Триває вже якийсь час",
+      "desc": "Present perfect continuous і present perfect",
+      "ready": false,
+      "items": []
+    },
+    {
+      "id": 6,
+      "title": "Суміш 2",
+      "desc": "Усе теперішнє й минуле",
+      "ready": false,
+      "items": []
+    },
+    {
+      "id": 7,
+      "title": "Уже до моменту в минулому",
+      "desc": "Past perfect і past perfect continuous",
+      "ready": false,
+      "items": []
+    },
+    {
+      "id": 8,
+      "title": "Майбутнє",
+      "desc": "will, going to, плани, future perfect",
+      "ready": false,
+      "items": []
+    },
+    {
+      "id": 9,
+      "title": "When і if",
+      "desc": "Теперішній час замість майбутнього",
+      "ready": false,
+      "items": []
+    },
+    {
+      "id": 10,
+      "title": "Суміш 3",
+      "desc": "Усі дванадцять форм",
+      "ready": false,
+      "items": []
+    },
+    {
+      "id": 11,
+      "title": "Пасив",
+      "desc": "Коли в центрі те, з чим щось роблять",
+      "ready": false,
+      "items": []
+    },
+    {
+      "id": 12,
+      "title": "Умовні з «би»",
+      "desc": "Зараз, тоді, тоді → зараз",
+      "ready": false,
+      "items": []
+    },
+    {
+      "id": 13,
+      "title": "Фінальна суміш",
+      "desc": "Усе разом",
+      "ready": false,
+      "items": []
+    }
+  ]
+}
