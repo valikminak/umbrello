@@ -1,0 +1,879 @@
+{
+  "title": "Модальні",
+  "subtitle": "can, must, have to, should, might. Наступний урок відкривається при рейтингу 4.5.",
+  "passRating": 4.5,
+  "lexicon": {
+    "modals": ["can", "can't", "could", "couldn't", "be able to", "was able to", "wasn't able to", "were able to", "weren't able to", "will be able to", "won't be able to", "must", "mustn't", "have to", "has to", "had to", "don't have to", "doesn't have to", "didn't have to", "will have to", "won't have to", "should", "shouldn't", "may", "might", "may not", "might not"],
+    "modalTwins": {
+      "can": ["could", "may"],
+      "can't": ["couldn't", "mustn't"],
+      "could": ["can", "was able to"],
+      "couldn't": ["can't", "wasn't able to"],
+      "be able to": ["can", "be able"],
+      "was able to": ["could", "can"],
+      "wasn't able to": ["couldn't", "can't"],
+      "were able to": ["could", "was able to"],
+      "weren't able to": ["couldn't", "can't"],
+      "will be able to": ["will can", "can"],
+      "won't be able to": ["won't can", "can't"],
+      "must": ["have to", "should"],
+      "mustn't": ["don't have to", "shouldn't"],
+      "have to": ["must", "had to"],
+      "has to": ["have to", "must"],
+      "had to": ["must", "have to"],
+      "don't have to": ["mustn't", "doesn't have to"],
+      "doesn't have to": ["mustn't", "don't have to"],
+      "didn't have to": ["mustn't", "don't have to"],
+      "will have to": ["will must", "must"],
+      "won't have to": ["mustn't", "won't must"],
+      "should": ["must", "could"],
+      "shouldn't": ["mustn't", "don't have to"],
+      "may": ["might", "can"],
+      "might": ["may", "must"],
+      "may not": ["might not", "can't"],
+      "might not": ["may not", "can't"]
+    },
+    "verbs": {
+      "smoke": ["smokes", "smoked", "smoked", "smoking"],
+      "park": ["parks", "parked", "parked", "parking"],
+      "wear": ["wears", "wore", "worn", "wearing"],
+      "thank": ["thanks", "thanked", "thanked", "thanking"],
+      "explain": ["explains", "explained", "explained", "explaining"],
+      "rest": ["rests", "rested", "rested", "resting"],
+      "try": ["tries", "tried", "tried", "trying"],
+      "say": ["says", "said", "said", "saying"],
+      "become": ["becomes", "became", "become", "becoming"],
+      "fall": ["falls", "fell", "fallen", "falling"],
+      "cost": ["costs", "cost", "cost", "costing"],
+      "ski": ["skis", "skied", "skied", "skiing"],
+      "bring": ["brings", "brought", "brought", "bringing"],
+      "hear": ["hears", "heard", "heard", "hearing"],
+      "open": ["opens", "opened", "opened", "opening"],
+      "use": ["uses", "used", "used", "using"]
+    },
+    "time": {
+      "present": ["on Saturday"],
+      "future": ["soon"]
+    }
+  },
+  "notes": {
+    "can": "<h2>Можу, вмію, зміг</h2>\n<p class=\"sub\">Після модального дієслова — початкова форма без to: I can swim, не «can to swim», не «can swims».</p>\n<table class=\"tn-grid\" lang=\"en\"><tr><th lang=\"uk\">Українською</th><th>Англійською</th></tr>\n<tr><td lang=\"uk\">Я вмію / можу плавати.</td><td>I <b>can</b> swim.</td></tr>\n<tr><td lang=\"uk\">У дитинстві я вмів плавати.</td><td>I <b>could</b> swim when I was five.</td></tr>\n<tr><td lang=\"uk\">Учора я <b>зміг</b> закінчити звіт.</td><td>I <b>was able to</b> finish the report.</td></tr>\n<tr><td lang=\"uk\">Завтра я зможу допомогти.</td><td>I <b>will be able to</b> help you.</td></tr></table>\n<p class=\"sub\">could — уміння взагалі в минулому. Коли один раз удалося («зміг», «змогли») — was able to. Із «не» годяться обидва: I couldn't / wasn't able to find it.</p>\n<p class=\"sub\">У майбутньому can не буває: не «will can», а will be able to. Прохання: Can you…? чи ввічливіше Could you…?</p>",
+    "must": "<h2>Мушу, треба, не можна</h2>\n<table class=\"tn-grid\" lang=\"en\"><tr><th lang=\"uk\">Українською</th><th>Англійською</th></tr>\n<tr><td lang=\"uk\">Я мушу йти.</td><td>I <b>must</b> go. / I <b>have to</b> go.</td></tr>\n<tr><td lang=\"uk\">Їй доводиться вставати о шостій.</td><td>She <b>has to</b> get up at six.</td></tr>\n<tr><td lang=\"uk\">Тут <b>не можна</b> курити.</td><td>You <b>mustn't</b> smoke here.</td></tr>\n<tr><td lang=\"uk\">Тобі <b>не треба</b> приходити.</td><td>You <b>don't have to</b> come.</td></tr>\n<tr><td lang=\"uk\">Мені довелося чекати.</td><td>I <b>had to</b> wait.</td></tr>\n<tr><td lang=\"uk\">Мені доведеться чекати.</td><td>I <b>will have to</b> wait.</td></tr></table>\n<p class=\"sub\">Головна пастка: mustn't — «не можна, заборонено», don't have to — «не треба, не обов'язково». Це різні речі.</p>\n<p class=\"sub\">must буває тільки в теперішньому. Минуле й майбутнє — через have to: had to, will have to. Питання: Do you have to…? Did she have to…?</p>",
+    "should": "<h2>Варто і можливо</h2>\n<table class=\"tn-grid\" lang=\"en\"><tr><th lang=\"uk\">Українською</th><th>Англійською</th></tr>\n<tr><td lang=\"uk\">Тобі <b>варто</b> більше спати.</td><td>You <b>should</b> sleep more.</td></tr>\n<tr><td lang=\"uk\">Тобі <b>не варто</b> так працювати.</td><td>You <b>shouldn't</b> work so much.</td></tr>\n<tr><td lang=\"uk\"><b>Можливо</b>, піде дощ.</td><td>It <b>might</b> rain. / It <b>may</b> rain.</td></tr>\n<tr><td lang=\"uk\">Можливо, вона <b>не</b> прийде.</td><td>She <b>might not</b> come.</td></tr></table>\n<p class=\"sub\">should — порада («варто», «слід»). might і may — «можливо», вони тут однакові.</p>\n<p class=\"sub\">«Можливо» перекладаємо не maybe, а might: Maybe it will rain = It might rain, але друге коротше і природніше.</p>",
+    "must-be": "<h2>Напевно</h2>\n<p class=\"sub\">Ті самі слова — про те, у чому ми впевнені, а в чому ні.</p>\n<table class=\"tn-grid\" lang=\"en\"><tr><th lang=\"uk\">Українською</th><th>Англійською</th></tr>\n<tr><td lang=\"uk\">Вона, <b>напевно</b>, втомлена.</td><td>She <b>must</b> be tired.</td></tr>\n<tr><td lang=\"uk\"><b>Можливо</b>, вона вдома.</td><td>She <b>might</b> be at home.</td></tr>\n<tr><td lang=\"uk\"><b>Не може бути</b>, щоб це був Том.</td><td>It <b>can't</b> be Tom.</td></tr>\n<tr><td lang=\"uk\">Він, напевно, зараз спить.</td><td>He <b>must be sleeping</b> now.</td></tr></table>\n<p class=\"sub\">Протилежність must тут не mustn't, а can't: «не може бути» — It can't be true.</p>\n<p class=\"sub\">Про те, що відбувається саме зараз: must / might / can't + be + -ing.</p>",
+    "perfect": "<h2>Варто було, напевно зробив</h2>\n<p class=\"sub\">Про минуле: модальне + have + третя форма.</p>\n<table class=\"tn-grid\" lang=\"en\"><tr><th lang=\"uk\">Українською</th><th>Англійською</th></tr>\n<tr><td lang=\"uk\">Тобі <b>варто було</b> подзвонити.</td><td>You <b>should have called</b>.</td></tr>\n<tr><td lang=\"uk\">Мені <b>не варто було</b> цього казати.</td><td>I <b>shouldn't have said</b> that.</td></tr>\n<tr><td lang=\"uk\">Вона, <b>напевно</b>, забула.</td><td>She <b>must have forgotten</b>.</td></tr>\n<tr><td lang=\"uk\"><b>Можливо</b>, вони запізнилися.</td><td>They <b>might have missed</b> the train.</td></tr>\n<tr><td lang=\"uk\"><b>Не може бути</b>, щоб він це сказав.</td><td>He <b>can't have said</b> that.</td></tr>\n<tr><td lang=\"uk\">Ти <b>міг би</b> мені сказати!</td><td>You <b>could have told</b> me.</td></tr></table>\n<p class=\"sub\">Після модального завжди have, не has і не had: She must have forgotten. Про те, що тривало: He must have been sleeping.</p>",
+    "mix": "<h2>Суміш модальних</h2>\n<table class=\"tn-grid\" lang=\"en\"><tr><th lang=\"uk\">Підказка</th><th>Що будувати</th></tr>\n<tr><td lang=\"uk\">вмію, можу / зміг / зможу</td><td>can, could / was able to / will be able to</td></tr>\n<tr><td lang=\"uk\">мушу, треба / довелося / доведеться</td><td>must, have to / had to / will have to</td></tr>\n<tr><td lang=\"uk\">не можна / не треба</td><td>mustn't / don't have to</td></tr>\n<tr><td lang=\"uk\">варто / не варто</td><td>should / shouldn't</td></tr>\n<tr><td lang=\"uk\">можливо / напевно / не може бути</td><td>might / must / can't</td></tr>\n<tr><td lang=\"uk\">варто було, напевно (зробив)</td><td>should have done, must have done</td></tr></table>"
+  },
+  "lessons": [
+    {
+      "id": 1,
+      "title": "Можу, вмію, зміг",
+      "desc": "can, could, be able to",
+      "ready": true,
+      "forms": ["simple"],
+      "hints": "count",
+      "info": "can",
+      "items": [
+        {
+          "uk": "Я вмію плавати.",
+          "en": "I|can|swim."
+        },
+        {
+          "uk": "Я не вмію водити машину.",
+          "en": "I|can't|drive."
+        },
+        {
+          "uk": "Ти вмієш готувати?",
+          "en": "Can|you|cook?"
+        },
+        {
+          "uk": "Мій дід не вмів писати.",
+          "en": "My grandfather|couldn't|write."
+        },
+        {
+          "uk": "У п'ять років я вже вміла плавати.",
+          "en": "I|could|swim|when I was five."
+        },
+        {
+          "uk": "Учора я зміг закінчити звіт.",
+          "en": "I|was able to|finish|the report|yesterday."
+        },
+        {
+          "uk": "Ми не змогли знайти готель.",
+          "en": "We|weren't able to|find|the hotel.",
+          "alt": ["We|couldn't|find|the hotel."]
+        },
+        {
+          "uk": "Завтра я зможу тобі допомогти.",
+          "en": "I|will be able to|help|you|tomorrow."
+        },
+        {
+          "uk": "Вона не зможе прийти в суботу.",
+          "en": "She|won't be able to|come|on Saturday."
+        },
+        {
+          "uk": "Ти можеш мені допомогти?",
+          "en": "Can|you|help|me?",
+          "alt": ["Could|you|help|me?"]
+        },
+        {
+          "uk": "Можна я відчиню вікно?",
+          "en": "Can|I|open|the window?",
+          "alt": ["Could|I|open|the window?", "May|I|open|the window?"]
+        },
+        {
+          "uk": "Я тебе не чую.",
+          "en": "I|can't|hear|you."
+        },
+        {
+          "uk": "Ти бачиш ту машину?",
+          "en": "Can|you|see|that car?"
+        },
+        {
+          "uk": "Він уміє говорити трьома мовами.",
+          "en": "He|can|speak|three languages."
+        },
+        {
+          "uk": "Чому ти не можеш заснути?",
+          "en": "Why|can't|you|sleep?"
+        },
+        {
+          "uk": "Я не міг заснути всю ніч.",
+          "en": "I|couldn't|sleep|all night.",
+          "alt": ["I|wasn't able to|sleep|all night."]
+        },
+        {
+          "uk": "Учора він зміг здати іспит.",
+          "en": "He|was able to|pass|the exam|yesterday."
+        },
+        {
+          "uk": "Скоро ти зможеш говорити англійською.",
+          "en": "You|will be able to|speak|English|soon."
+        },
+        {
+          "uk": "Ти зможеш прийти завтра?",
+          "en": "Will|you|be able to|come|tomorrow?"
+        },
+        {
+          "uk": "Я не можу знайти ключі.",
+          "en": "I|can't|find|my keys."
+        },
+        {
+          "uk": "Вона вміє дуже швидко бігати.",
+          "en": "She|can|run|very fast."
+        },
+        {
+          "uk": "Замолоду я міг бігати годинами.",
+          "en": "I|could|run|for hours|when I was young."
+        },
+        {
+          "uk": "Ми змогли купити квитки.",
+          "en": "We|were able to|buy|the tickets."
+        },
+        {
+          "uk": "Можеш говорити тихіше?",
+          "en": "Can|you|speak|more quietly?",
+          "alt": ["Could|you|speak|more quietly?"]
+        },
+        {
+          "uk": "Він не зміг відчинити двері.",
+          "en": "He|couldn't|open|the door.",
+          "alt": ["He|wasn't able to|open|the door."]
+        },
+        {
+          "uk": "Сьогодні ввечері я не зможу тобі подзвонити.",
+          "en": "I|won't be able to|call|you|tonight."
+        },
+        {
+          "uk": "Ти вмієш грати на гітарі?",
+          "en": "Can|you|play|the guitar?"
+        },
+        {
+          "uk": "Птахи вміють літати.",
+          "en": "Birds|can|fly."
+        },
+        {
+          "uk": "Учора я не зміг прийти.",
+          "en": "I|couldn't|come|yesterday.",
+          "alt": ["I|wasn't able to|come|yesterday."]
+        },
+        {
+          "uk": "Діти не вміють читати мапу.",
+          "en": "The children|can't|use|a map."
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "title": "Мушу, треба, не можна",
+      "desc": "must, have to, mustn't, don't have to",
+      "ready": true,
+      "forms": ["simple"],
+      "hints": "count",
+      "info": "must",
+      "items": [
+        {
+          "uk": "Я мушу йти.",
+          "en": "I|must|go.",
+          "alt": ["I|have to|go."]
+        },
+        {
+          "uk": "У суботу мені доводиться працювати.",
+          "en": "I|have to|work|on Saturday."
+        },
+        {
+          "uk": "Тут не можна курити.",
+          "en": "You|mustn't|smoke|here."
+        },
+        {
+          "uk": "Тобі не треба приходити завтра.",
+          "en": "You|don't have to|come|tomorrow."
+        },
+        {
+          "uk": "Їй доводиться вставати о шостій.",
+          "en": "She|has to|get|up|at six."
+        },
+        {
+          "uk": "Учора мені довелося чекати дві години.",
+          "en": "I|had to|wait|for two hours|yesterday."
+        },
+        {
+          "uk": "Нам не довелося платити.",
+          "en": "We|didn't have to|pay."
+        },
+        {
+          "uk": "Завтра мені доведеться встати рано.",
+          "en": "I|will have to|get|up|early|tomorrow."
+        },
+        {
+          "uk": "Тобі не можна нікому про це казати.",
+          "en": "You|mustn't|tell|anybody."
+        },
+        {
+          "uk": "Йому не треба носити костюм на роботі.",
+          "en": "He|doesn't have to|wear|a suit|at work."
+        },
+        {
+          "uk": "Ти мусиш це побачити!",
+          "en": "You|must|see|this.",
+          "alt": ["You|have to|see|this."]
+        },
+        {
+          "uk": "Тобі треба йти?",
+          "en": "Do|you|have to|go?"
+        },
+        {
+          "uk": "Їй довелося працювати вчора?",
+          "en": "Did|she|have to|work|yesterday?"
+        },
+        {
+          "uk": "Не можна відчиняти ці двері.",
+          "en": "You|mustn't|open|this door."
+        },
+        {
+          "uk": "Тобі не треба мені дякувати.",
+          "en": "You|don't have to|thank|me."
+        },
+        {
+          "uk": "Мені довелося продати машину.",
+          "en": "I|had to|sell|my car."
+        },
+        {
+          "uk": "Ми мусимо бути там о восьмій.",
+          "en": "We|must|be|there|at eight.",
+          "alt": ["We|have to|be|there|at eight."]
+        },
+        {
+          "uk": "Вам не треба купувати квитки.",
+          "en": "You|don't have to|buy|tickets."
+        },
+        {
+          "uk": "Тобі доведеться почекати.",
+          "en": "You|will have to|wait."
+        },
+        {
+          "uk": "Тут не можна паркуватися.",
+          "en": "You|mustn't|park|here."
+        },
+        {
+          "uk": "Йому довелося піти рано.",
+          "en": "He|had to|leave|early."
+        },
+        {
+          "uk": "Завтра мені не треба працювати.",
+          "en": "I|don't have to|work|tomorrow."
+        },
+        {
+          "uk": "Ти не мусиш нічого мені пояснювати.",
+          "en": "You|don't have to|explain|anything."
+        },
+        {
+          "uk": "Їй не можна їсти цукор.",
+          "en": "She|mustn't|eat|sugar."
+        },
+        {
+          "uk": "Нам доведеться переїхати.",
+          "en": "We|will have to|move."
+        },
+        {
+          "uk": "Нам не доведеться чекати.",
+          "en": "We|won't have to|wait."
+        },
+        {
+          "uk": "Чому тобі довелося піти?",
+          "en": "Why|did|you|have to|leave?"
+        },
+        {
+          "uk": "Анна мусить відпочити.",
+          "en": "Anna|must|rest.",
+          "alt": ["Anna|has to|rest."]
+        },
+        {
+          "uk": "Мамі доводиться працювати щодня.",
+          "en": "Mum|has to|work|every day."
+        },
+        {
+          "uk": "Не можна запізнюватися!",
+          "en": "You|mustn't|be|late."
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "title": "Варто і можливо",
+      "desc": "should, might, may",
+      "ready": true,
+      "forms": ["simple"],
+      "hints": "count",
+      "info": "should",
+      "items": [
+        {
+          "uk": "Тобі варто більше спати.",
+          "en": "You|should|sleep|more."
+        },
+        {
+          "uk": "Тобі не варто стільки працювати.",
+          "en": "You|shouldn't|work|so much."
+        },
+        {
+          "uk": "Можливо, завтра піде дощ.",
+          "en": "It|might|rain|tomorrow.",
+          "alt": ["It|may|rain|tomorrow."]
+        },
+        {
+          "uk": "Можливо, вона не прийде.",
+          "en": "She|might not|come.",
+          "alt": ["She|may not|come."]
+        },
+        {
+          "uk": "Мені варто йому подзвонити?",
+          "en": "Should|I|call|him?"
+        },
+        {
+          "uk": "Можливо, я запізнюся.",
+          "en": "I|might|be|late.",
+          "alt": ["I|may|be|late."]
+        },
+        {
+          "uk": "Вам варто спробувати цей торт.",
+          "en": "You|should|try|this cake."
+        },
+        {
+          "uk": "Йому не варто їсти так пізно.",
+          "en": "He|shouldn't|eat|so late."
+        },
+        {
+          "uk": "Можливо, він знає відповідь.",
+          "en": "He|might|know|the answer.",
+          "alt": ["He|may|know|the answer."]
+        },
+        {
+          "uk": "Можливо, вони переїдуть до Львова.",
+          "en": "They|might|move|to Lviv.",
+          "alt": ["They|may|move|to Lviv."]
+        },
+        {
+          "uk": "Тобі варто піти до лікаря.",
+          "en": "You|should|see|a doctor."
+        },
+        {
+          "uk": "Нам не варто чекати.",
+          "en": "We|shouldn't|wait."
+        },
+        {
+          "uk": "Можливо, ми поїдемо на море.",
+          "en": "We|might|go|to the sea.",
+          "alt": ["We|may|go|to the sea."]
+        },
+        {
+          "uk": "Тобі варто вчити англійську щодня.",
+          "en": "You|should|study|English|every day."
+        },
+        {
+          "uk": "Можливо, вона не знає.",
+          "en": "She|might not|know.",
+          "alt": ["She|may not|know."]
+        },
+        {
+          "uk": "Тобі не варто так говорити з мамою.",
+          "en": "You|shouldn't|talk|to Mum|like that."
+        },
+        {
+          "uk": "Мені варто купити цю куртку?",
+          "en": "Should|I|buy|this jacket?"
+        },
+        {
+          "uk": "Можливо, я куплю нову машину.",
+          "en": "I|might|buy|a new car.",
+          "alt": ["I|may|buy|a new car."]
+        },
+        {
+          "uk": "Тобі варто відпочити.",
+          "en": "You|should|rest."
+        },
+        {
+          "uk": "Дітям не варто так довго дивитися телевізор.",
+          "en": "Children|shouldn't|watch|TV|for so long."
+        },
+        {
+          "uk": "Можливо, сьогодні ввечері буде холодно.",
+          "en": "It|might|be|cold|tonight.",
+          "alt": ["It|may|be|cold|tonight."]
+        },
+        {
+          "uk": "Куди нам варто поїхати влітку?",
+          "en": "Where|should|we|go|in summer?"
+        },
+        {
+          "uk": "Можливо, Том нам допоможе.",
+          "en": "Tom|might|help|us.",
+          "alt": ["Tom|may|help|us."]
+        },
+        {
+          "uk": "Тобі варто подзвонити мамі.",
+          "en": "You|should|call|Mum."
+        },
+        {
+          "uk": "Можливо, вони не захочуть прийти.",
+          "en": "They|might not|want|to come.",
+          "alt": ["They|may not|want|to come."]
+        },
+        {
+          "uk": "Тобі не варто пити каву ввечері.",
+          "en": "You|shouldn't|drink|coffee|in the evening."
+        },
+        {
+          "uk": "Можливо, я подзвоню тобі пізніше.",
+          "en": "I|might|call|you|later.",
+          "alt": ["I|may|call|you|later."]
+        },
+        {
+          "uk": "Нам варто вийти раніше.",
+          "en": "We|should|leave|earlier."
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "title": "Напевно",
+      "desc": "must be, can't be, might be",
+      "ready": true,
+      "forms": ["simple", "continuous"],
+      "decoys": true,
+      "hints": "none",
+      "check": "button",
+      "info": "must-be",
+      "items": [
+        {
+          "uk": "Вона, напевно, втомлена.",
+          "en": "She|must|be|tired."
+        },
+        {
+          "uk": "Не може бути, щоб він був удома.",
+          "en": "He|can't|be|at home."
+        },
+        {
+          "uk": "Можливо, вона вдома.",
+          "en": "She|might|be|at home.",
+          "alt": ["She|may|be|at home."]
+        },
+        {
+          "uk": "Він, напевно, зараз спить.",
+          "en": "He|must|be|sleeping|now."
+        },
+        {
+          "uk": "Вони, напевно, знають.",
+          "en": "They|must|know."
+        },
+        {
+          "uk": "Не може бути, щоб це був Том.",
+          "en": "It|can't|be|Tom."
+        },
+        {
+          "uk": "Ти, напевно, жартуєш!",
+          "en": "You|must|be|joking."
+        },
+        {
+          "uk": "Можливо, вони зараз вечеряють.",
+          "en": "They|might|be|eating|now.",
+          "alt": ["They|may|be|eating|now."]
+        },
+        {
+          "uk": "Це, напевно, дорого.",
+          "en": "It|must|be|expensive."
+        },
+        {
+          "uk": "Не може бути, щоб це було правдою.",
+          "en": "It|can't|be|true."
+        },
+        {
+          "uk": "Вона, напевно, живе десь поруч.",
+          "en": "She|must|live|near here."
+        },
+        {
+          "uk": "Він, напевно, чекає на нас.",
+          "en": "He|must|be|waiting|for us."
+        },
+        {
+          "uk": "Не може бути, щоб вони зараз спали.",
+          "en": "They|can't|be|sleeping|now."
+        },
+        {
+          "uk": "Можливо, Анна на роботі.",
+          "en": "Anna|might|be|at work.",
+          "alt": ["Anna|may|be|at work."]
+        },
+        {
+          "uk": "Ти, напевно, голодний.",
+          "en": "You|must|be|hungry."
+        },
+        {
+          "uk": "Не може бути, щоб він був голодний.",
+          "en": "He|can't|be|hungry."
+        },
+        {
+          "uk": "Можливо, вони чекають надворі.",
+          "en": "They|might|be|waiting|outside.",
+          "alt": ["They|may|be|waiting|outside."]
+        },
+        {
+          "uk": "Цей телефон, напевно, коштує дуже дорого.",
+          "en": "This phone|must|cost|a lot."
+        },
+        {
+          "uk": "Можливо, це правда.",
+          "en": "It|might|be|true.",
+          "alt": ["It|may|be|true."]
+        },
+        {
+          "uk": "Він, напевно, сьогодні працює вдома.",
+          "en": "He|must|be|working|from home|today."
+        },
+        {
+          "uk": "Ти не можеш говорити серйозно!",
+          "en": "You|can't|be|serious."
+        },
+        {
+          "uk": "Вона, напевно, любить котів.",
+          "en": "She|must|like|cats."
+        },
+        {
+          "uk": "Можливо, він зараз за кермом.",
+          "en": "He|might|be|driving|now.",
+          "alt": ["He|may|be|driving|now."]
+        },
+        {
+          "uk": "Не може бути, що їй тридцять.",
+          "en": "She|can't|be|thirty."
+        },
+        {
+          "uk": "Йому, напевно, близько п'ятдесяти.",
+          "en": "He|must|be|about fifty."
+        },
+        {
+          "uk": "Можливо, я помиляюся.",
+          "en": "I|might|be|wrong.",
+          "alt": ["I|may|be|wrong."]
+        },
+        {
+          "uk": "Не може бути, щоб вони жили тут.",
+          "en": "They|can't|live|here."
+        },
+        {
+          "uk": "Ти, напевно, дуже радий.",
+          "en": "You|must|be|very happy."
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "title": "Варто було",
+      "desc": "should have, must have, could have",
+      "ready": true,
+      "forms": ["perfect", "perfect-continuous"],
+      "decoys": true,
+      "hints": "none",
+      "check": "button",
+      "info": "perfect",
+      "items": [
+        {
+          "uk": "Тобі варто було мені подзвонити.",
+          "en": "You|should|have|called|me."
+        },
+        {
+          "uk": "Мені не варто було їсти так багато.",
+          "en": "I|shouldn't|have|eaten|so much."
+        },
+        {
+          "uk": "Вона, напевно, забула.",
+          "en": "She|must|have|forgotten."
+        },
+        {
+          "uk": "Не може бути, щоб він це сказав.",
+          "en": "He|can't|have|said|that."
+        },
+        {
+          "uk": "Можливо, вони запізнилися на потяг.",
+          "en": "They|might|have|missed|the train.",
+          "alt": ["They|may|have|missed|the train."]
+        },
+        {
+          "uk": "Ти міг би мені сказати!",
+          "en": "You|could|have|told|me."
+        },
+        {
+          "uk": "Нам варто було вийти раніше.",
+          "en": "We|should|have|left|earlier."
+        },
+        {
+          "uk": "Він, напевно, спав.",
+          "en": "He|must|have|been|sleeping."
+        },
+        {
+          "uk": "Не може бути, щоб вона пішла так рано.",
+          "en": "She|can't|have|left|so early."
+        },
+        {
+          "uk": "Можливо, я загубив ключі в таксі.",
+          "en": "I|might|have|lost|my keys|in the taxi.",
+          "alt": ["I|may|have|lost|my keys|in the taxi."]
+        },
+        {
+          "uk": "Мені не варто було цього казати.",
+          "en": "I|shouldn't|have|said|that."
+        },
+        {
+          "uk": "Ти, напевно, був дуже втомлений.",
+          "en": "You|must|have|been|very tired."
+        },
+        {
+          "uk": "Ми могли б виграти!",
+          "en": "We|could|have|won."
+        },
+        {
+          "uk": "Тобі варто було прийти на вечірку.",
+          "en": "You|should|have|come|to the party."
+        },
+        {
+          "uk": "Вони, напевно, вже приїхали.",
+          "en": "They|must|have|arrived."
+        },
+        {
+          "uk": "Не може бути, щоб вони продали будинок.",
+          "en": "They|can't|have|sold|the house."
+        },
+        {
+          "uk": "Можливо, Анна не почула телефон.",
+          "en": "Anna|might not|have|heard|the phone.",
+          "alt": ["Anna|may not|have|heard|the phone."]
+        },
+        {
+          "uk": "Він міг би стати лікарем.",
+          "en": "He|could|have|become|a doctor."
+        },
+        {
+          "uk": "Тобі не варто було купувати цю машину.",
+          "en": "You|shouldn't|have|bought|this car."
+        },
+        {
+          "uk": "Хтось, напевно, взяв мою парасольку.",
+          "en": "Somebody|must|have|taken|my umbrella."
+        },
+        {
+          "uk": "Можливо, вона пішла додому.",
+          "en": "She|might|have|gone|home.",
+          "alt": ["She|may|have|gone|home."]
+        },
+        {
+          "uk": "Мені варто було краще вчитися в школі.",
+          "en": "I|should|have|studied|harder|at school."
+        },
+        {
+          "uk": "Не може бути, щоб ти бачив Тома.",
+          "en": "You|can't|have|seen|Tom."
+        },
+        {
+          "uk": "Ти міг упасти!",
+          "en": "You|could|have|fallen."
+        },
+        {
+          "uk": "Напевно, ішов дощ.",
+          "en": "It|must|have|rained."
+        },
+        {
+          "uk": "Можливо, вони спали.",
+          "en": "They|might|have|been|sleeping.",
+          "alt": ["They|may|have|been|sleeping."]
+        },
+        {
+          "uk": "Нам не варто було туди йти.",
+          "en": "We|shouldn't|have|gone|there."
+        },
+        {
+          "uk": "Він, напевно, чув нас.",
+          "en": "He|must|have|heard|us."
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "title": "Суміш модальних",
+      "desc": "Усе разом",
+      "ready": true,
+      "forms": ["simple", "continuous", "perfect"],
+      "decoys": true,
+      "hints": "none",
+      "check": "button",
+      "info": "mix",
+      "items": [
+        {
+          "uk": "Ти вмієш кататися на лижах?",
+          "en": "Can|you|ski?"
+        },
+        {
+          "uk": "Учора мені довелося працювати допізна.",
+          "en": "I|had to|work|late|yesterday."
+        },
+        {
+          "uk": "Тобі не треба нічого приносити.",
+          "en": "You|don't have to|bring|anything."
+        },
+        {
+          "uk": "Тут не можна фотографувати.",
+          "en": "You|mustn't|take|photos|here."
+        },
+        {
+          "uk": "Тобі варто більше гуляти.",
+          "en": "You|should|walk|more."
+        },
+        {
+          "uk": "Можливо, завтра піде сніг.",
+          "en": "It|might|snow|tomorrow.",
+          "alt": ["It|may|snow|tomorrow."]
+        },
+        {
+          "uk": "Вона, напевно, вдома: світло горить.",
+          "en": "She|must|be|at home."
+        },
+        {
+          "uk": "Не може бути, щоб це був він.",
+          "en": "It|can't|be|him."
+        },
+        {
+          "uk": "Тобі варто було мене послухати.",
+          "en": "You|should|have|listened|to me."
+        },
+        {
+          "uk": "Він, напевно, загубив телефон.",
+          "en": "He|must|have|lost|his phone."
+        },
+        {
+          "uk": "Я не зміг знайти твій будинок.",
+          "en": "I|couldn't|find|your house.",
+          "alt": ["I|wasn't able to|find|your house."]
+        },
+        {
+          "uk": "Ти зможеш мені допомогти в суботу?",
+          "en": "Will|you|be able to|help|me|on Saturday?"
+        },
+        {
+          "uk": "Нам доведеться почати спочатку.",
+          "en": "We|will have to|start|again."
+        },
+        {
+          "uk": "Можливо, вони ще сплять.",
+          "en": "They|might|still|be|sleeping.",
+          "alt": ["They|may|still|be|sleeping."]
+        },
+        {
+          "uk": "Тобі не варто пити стільки кави.",
+          "en": "You|shouldn't|drink|so much coffee."
+        },
+        {
+          "uk": "Не може бути, щоб вона це забула.",
+          "en": "She|can't|have|forgotten|it."
+        },
+        {
+          "uk": "Можна я сяду тут?",
+          "en": "Can|I|sit|here?",
+          "alt": ["Could|I|sit|here?", "May|I|sit|here?"]
+        },
+        {
+          "uk": "Мій брат уміє грати на піаніно.",
+          "en": "My brother|can|play|the piano."
+        },
+        {
+          "uk": "Учора ми не змогли поїхати на море.",
+          "en": "We|couldn't|go|to the sea|yesterday.",
+          "alt": ["We|weren't able to|go|to the sea|yesterday."]
+        },
+        {
+          "uk": "Мені треба щодня вставати о сьомій.",
+          "en": "I|have to|get|up|at seven|every day."
+        },
+        {
+          "uk": "Йому не треба поспішати.",
+          "en": "He|doesn't have to|hurry."
+        },
+        {
+          "uk": "Ти, напевно, дуже зайнятий.",
+          "en": "You|must|be|very busy."
+        },
+        {
+          "uk": "Можливо, я помилився.",
+          "en": "I|might|have|made|a mistake.",
+          "alt": ["I|may|have|made|a mistake."]
+        },
+        {
+          "uk": "Ми могли б поїхати разом!",
+          "en": "We|could|have|gone|together."
+        },
+        {
+          "uk": "Тобі доведеться пояснити це ще раз.",
+          "en": "You|will have to|explain|it|again."
+        },
+        {
+          "uk": "Можливо, Тома немає вдома.",
+          "en": "Tom|might not|be|at home.",
+          "alt": ["Tom|may not|be|at home."]
+        },
+        {
+          "uk": "Мені не довелося довго чекати.",
+          "en": "I|didn't have to|wait|long."
+        },
+        {
+          "uk": "Тобі не варто було йому казати.",
+          "en": "You|shouldn't|have|told|him."
+        },
+        {
+          "uk": "Він, напевно, зараз їде додому.",
+          "en": "He|must|be|driving|home|now."
+        },
+        {
+          "uk": "Вона ще не вміє ходити.",
+          "en": "She|can't|walk|yet."
+        }
+      ]
+    }
+  ]
+}

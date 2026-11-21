@@ -68,3 +68,4 @@
 .tn-big{color:var(--ok)}
 .tn-order td,.tn-order th{text-align:center}
 .tn-reset{color:var(--bad)}
+.tn-title{display:flex;align-items:center;gap:4px;margin:0 0 2px -8px}.tn-title h1{margin:0}

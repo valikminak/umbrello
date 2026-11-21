@@ -1,5 +1,6 @@
-/* Grammar → Tenses: lessons where the learner builds the English sentence from tiles.
-   Mounted by grammar.js on grammar.html?tab=tenses. Rules live in tenses-core.js. */
+/* Grammar → Lessons: topics (Часи, Модальні…) whose lessons have the learner build the English
+   sentence from tiles. Mounted by grammar.js on grammar.html (the Lessons tab). Rules live in tenses-core.js;
+   the topics are listed in grammar/topics.json, the words they share in grammar/lexicon.json. */
 (function () {
   "use strict";
   const core = window.TensesCore;
@@ -14,21 +15,81 @@
   };
   const icon = name => `<span class="tn-ico" aria-hidden="true">${ICON[name]}</span>`;
 
-  async function mount(host) {
-    let data;
+  // Progress is kept on this device per Telegram account and topic, like Cards and Books.
+  // Tenses keeps the key it had before there were other topics.
+  const storeKey = id => id === "tenses" ? `umbrello.tenses.v1.${Profiles.userId}` : `umbrello.grammar.${id}.v1.${Profiles.userId}`;
+  function readStore(id) {
+    let store = null;
+    try { if (Profiles.userId) store = JSON.parse(localStorage.getItem(storeKey(id))); } catch (_) {}
+    return store && typeof store.lessons === "object" ? store : { lessons: {} };
+  }
+  // One keyboard listener for the page; the open lesson sets what it does.
+  let onKey = null;
+  document.addEventListener("keydown", event => { if (onKey) onKey(event); });
+
+  // The topic in the address, so a reload or the back button of Telegram comes back to it.
+  function remember(id) {
     try {
-      data = core.validate(await loadJSON("grammar/tenses.json"));
+      const params = new URLSearchParams(location.search);
+      if (id) params.set("topic", id); else params.delete("topic");
+      history.replaceState(null, "", `${location.pathname}?${params}`);
+    } catch (_) {}
+  }
+
+  async function mount(host) {
+    let topics, base;
+    try {
+      [topics, base] = await Promise.all([loadJSON("grammar/topics.json").then(core.validateTopics), loadJSON("grammar/lexicon.json")]);
     } catch (error) {
       showError(host, error, () => mount(host));
       return;
     }
-    const lex = data.lex;
+    const cache = {};
+    const load = topic => (cache[topic.id] ||= loadJSON(topic.file).then(raw =>
+      core.validate({ ...raw, lexicon: core.mergeLexicon(base, raw.lexicon) }, topic.file)).catch(error => { delete cache[topic.id]; throw error; }));
 
-    // Progress is kept on this device per Telegram account, like Cards and Books.
-    const key = Profiles.userId ? `umbrello.tenses.v1.${Profiles.userId}` : null;
-    let store = { lessons: {} };
-    try { if (key) store = JSON.parse(localStorage.getItem(key)) || store; } catch (_) {}
-    if (!store || typeof store.lessons !== "object") store = { lessons: {} };
+    /* ---------- topic list ---------- */
+    async function list() {
+      onKey = null;
+      remember(null);
+      const ready = topics.filter(t => t.file);
+      const loaded = await Promise.allSettled(ready.map(load));
+      const done = {};
+      ready.forEach((t, i) => {
+        if (loaded[i].status !== "fulfilled") return;
+        const lessons = loaded[i].value.lessons.filter(l => l.ready), store = readStore(t.id);
+        done[t.id] = `${lessons.filter(l => store.lessons[l.id]?.passed).length}/${lessons.length}`;
+      });
+      host.innerHTML = `<div class="tn">
+        <h1>Граматика</h1><p class="sub">Теми по черзі або в будь-якому порядку. Усередині теми уроки відкриваються при рейтингу 4.5.</p>
+        <ul class="tn-lessons">${topics.map((t, i) => `<li><button class="tn-row${t.file ? "" : " locked"}" type="button"
+            ${t.file ? `data-topic="${t.id}"` : 'disabled aria-disabled="true"'}>
+          <span class="tn-num">${i + 1}</span>
+          <span><b>${esc(t.title)}</b><span>${esc(t.desc)}</span></span>
+          <span class="tn-status">${t.file ? (done[t.id] ? icon("star") + done[t.id] : "") : "Незабаром"}</span></button></li>`).join("")}</ul></div>`;
+      host.querySelectorAll("[data-topic]").forEach(button => { button.onclick = () => openTopic(topics.find(t => t.id === button.dataset.topic)); });
+    }
+
+    async function openTopic(topic) {
+      let data;
+      try {
+        data = await load(topic);
+      } catch (error) {
+        showError(host, error, () => openTopic(topic));
+        return;
+      }
+      remember(topic.id);
+      trainer(host, topic, data, list);
+    }
+
+    const wanted = topics.find(t => t.file && t.id === new URLSearchParams(location.search).get("topic"));
+    if (wanted) openTopic(wanted); else list();
+  }
+
+  function trainer(host, topic, data, toTopics) {
+    const lex = data.lex;
+    const key = Profiles.userId ? storeKey(topic.id) : null;
+    let store = readStore(topic.id);
     const save = () => { try { if (key) localStorage.setItem(key, JSON.stringify(store)); } catch (_) {} };
     const progress = id => (store.lessons[id] ||= { marks: {}, order: [], pos: 0, passed: false, seenInfo: false });
     const scoreOf = lesson => core.score(lesson.items.length, progress(lesson.id).marks);
@@ -43,8 +104,10 @@
     function menu() {
       stop();
       L = null;
+      onKey = keys;
       host.innerHTML = `<div class="tn">
-        <h1>${esc(data.title)}</h1><p class="sub">${esc(data.subtitle)}</p>
+        <div class="tn-title"><button class="tn-icon-btn" id="tnTopics" type="button" aria-label="До тем">${icon("back")}</button>
+          <h1>${esc(data.title)}</h1></div><p class="sub">${esc(data.subtitle)}</p>
         <ul class="tn-lessons">${data.lessons.map((lesson, i) => {
           const open = unlocked(i), p = progress(lesson.id), sc = scoreOf(lesson);
           const status = !open ? icon("lock") : p.passed ? icon("star") + core.fmt(sc.rating) : sc.answered ? `${sc.answered}/${sc.total}` : "";
@@ -55,6 +118,7 @@
             <span class="tn-status">${status}</span></button></li>`;
         }).join("")}</ul></div>`;
       host.querySelectorAll("[data-lesson]").forEach(button => { button.onclick = () => open(+button.dataset.lesson); });
+      host.querySelector("#tnTopics").onclick = () => { stop(); L = null; toTopics(); };
     }
 
     /* ---------- one lesson ---------- */
@@ -372,7 +436,7 @@
 
     function info() {
       stop();
-      sheet(`${INFO[L.lesson.info] || `<h2>${esc(L.lesson.title)}</h2>`}${HOW}
+      sheet(`${INFO[L.lesson.info] || data.notes[L.lesson.info] || `<h2>${esc(L.lesson.title)}</h2>`}${HOW}
         <button class="btn" id="tnClose" type="button">Зрозуміло</button>
         <button class="btn ghost tn-reset" id="tnReset" type="button">Почати урок заново</button>`, (veil, close) => {
         veil.querySelector("#tnClose").onclick = close;
@@ -402,12 +466,12 @@
     }
 
     // Keyboard on a computer: Backspace takes the last word back, Enter goes on after an answer.
-    document.addEventListener("keydown", event => {
+    function keys(event) {
       if (!L || document.querySelector(".tn-veil") || event.target.closest?.("input, textarea")) return;
       if (L.done && event.key === "Enter") { event.preventDefault(); host.querySelector("#tnNext")?.click(); }
       else if (!L.done && event.key === "Enter" && L.lesson.check === "button") { event.preventDefault(); check(); }
       else if (!L.done && event.key === "Backspace") { event.preventDefault(); undo(); }
-    });
+    }
 
     menu();
   }

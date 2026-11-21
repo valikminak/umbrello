@@ -29,7 +29,23 @@
     for (const [family, phrases] of Object.entries(lex.time)) for (const t of phrases) time[low(t)] = family;
     const list = name => (lex[name] || []).map(low);
     return { ...lex, haveAux: list("haveAux"), haveNegative: list("haveNegative"), wh: list("wh"), conj: list("conj"),
-      timeTwins: lex.timeTwins || {}, formOf: form, timeOf: time };
+      modals: list("modals"), modalTwins: lex.modalTwins || {}, timeTwins: lex.timeTwins || {}, formOf: form, timeOf: time };
+  }
+
+  // A topic's own words on top of the shared grammar/lexicon.json: lists are joined, maps are merged
+  // (a topic may add verbs, time phrases, objects and modals with their twins).
+  function mergeLexicon(base, extra = {}) {
+    const out = JSON.parse(JSON.stringify(base));
+    for (const [name, value] of Object.entries(extra || {})) {
+      if (Array.isArray(value)) out[name] = [...new Set([...(out[name] || []), ...value])];
+      else if (value && typeof value === "object") {
+        out[name] = { ...(out[name] || {}) };
+        for (const [k, v] of Object.entries(value)) {
+          out[name][k] = Array.isArray(v) && Array.isArray(out[name][k]) && name === "time" ? [...new Set([...out[name][k], ...v])] : v;
+        }
+      } else out[name] = value;
+    }
+    return out;
   }
 
   // "She|didn't|call|yesterday." → steps the learner puts in order; "?" at the end makes it a question.
@@ -46,13 +62,15 @@
     // The capital at the start of a sentence is not part of the word: "She" is "she", "My mum" is "my mum",
     // so the tiles do not show which word comes first. Names keep theirs: "Tom", "I".
     const first = low(steps[0]), firstWord = first.split(" ")[0];
-    if (steps[0] !== "I" && ([...lex.subjects, ...lex.questionAux, ...lex.beAux, ...lex.haveAux, ...lex.wh, ...lex.conj].map(low).includes(first) ||
+    if (steps[0] !== "I" && ([...lex.subjects, ...lex.questionAux, ...lex.beAux, ...lex.haveAux, ...lex.wh, ...lex.conj, ...lex.modals].map(low).includes(first) ||
       LOWER_STARTS.includes(firstWord))) steps[0] = first;
     // A question may open with a question word: "How long|have|you|been|waiting?"
     const head = q && lex.wh.includes(steps[0]) ? 1 : 0;
     // Where each clause has its subject: after when / if, and after the helper in a question.
     const subj = clauses.map(([start], c) => start + (lex.conj.includes(low(steps[start])) ? 1 : 0) + (q && c === 0 ? head + 1 : 0));
-    return { uk: item.uk.trim(), steps, q, head, clauses, subj, comma: clauses.length > 1 && lex.conj.includes(steps[0]),
+    // Other answers that are just as right: "I have to go" beside "I must go".
+    const alt = (item.alt || []).map(a => a.trim().replace(/[.?!]\s*$/, "").split(/\s+\/\s+|\|/).map(w => low(w.trim())).join(" "));
+    return { uk: item.uk.trim(), steps, q, head, clauses, subj, alt, comma: clauses.length > 1 && lex.conj.includes(steps[0]),
       forms: lesson.forms || ["simple"], decoys: Boolean(lesson.decoys), going: Boolean(lesson.going),
       perfectTimes: lesson.perfectTimes || ["present", "past", "future"] };
   }
@@ -95,7 +113,9 @@
   function kind(it, i, lex) {
     const ls = low(it.steps[i]), c = clauseOf(it, i), start = it.clauses[c][0];
     if (it.q && i < it.head) return "wh";
-    if (it.q && c === 0 && i === it.head) return "aux";
+    if (it.q && c === 0 && i === it.head) return lex.modals.includes(ls) ? "modal" : "aux";
+    // can, mustn't, has to, will be able to: one tile each.
+    if (lex.modals.includes(ls)) return "modal";
     if (i === start && lex.conj.includes(ls)) return "conj";
     if (i === it.subj[c] && lex.subjects.map(low).includes(ls)) return "subject";
     if (lex.negativeAux.includes(ls) || lex.beNegative.includes(ls) || lex.haveNegative.includes(ls)) return "aux";
@@ -144,7 +164,7 @@
   function role(it, i, lex) {
     const k = kind(it, i, lex), ls = low(it.steps[i]);
     if (i === it.subj[clauseOf(it, i)]) return "хто";
-    if (["aux", "will", "would", "be", "have", "going"].includes(k)) return "допоміжне";
+    if (["aux", "will", "would", "be", "have", "going", "modal"].includes(k)) return "допоміжне";
     if (k === "wh" || k === "conj") return "коли";
     if (k === "verb") return "дія";
     if (k === "time") return "коли";
@@ -188,7 +208,13 @@
     if (!base || i !== it.subj[c] + 1 || (ls !== base && ls !== lex.verbs[base][S]) || helper(prev, lex)) return null;
     return `will ${base}`;
   }
-  const helper = (w, lex) => Boolean(w) && ([...lex.questionAux, ...lex.negativeAux, ...lex.beAux, ...lex.beNegative,
+  // "I must to go": after a modal without its own "to" the verb is bare, and "to go" is the slip.
+  function toSlip(it, i, lex) {
+    const prev = i ? low(it.steps[i - 1]) : null, base = lex.formOf[low(it.steps[i])];
+    if (!base || !prev || !lex.modals.includes(prev) || / to$/.test(prev) || low(it.steps[i]) !== base) return null;
+    return `to ${base}`;
+  }
+  const helper = (w, lex) => Boolean(w) && ([...lex.modals, ...lex.questionAux, ...lex.negativeAux, ...lex.beAux, ...lex.beNegative,
     ...lex.haveAux, ...lex.haveNegative, ...WOULD, "be", "been", "being", "will", "going to"].includes(w));
 
   // The words a learner could mistake for step i: its neighbours of the same kind,
@@ -219,6 +245,13 @@
         opts = ["will", es, past, ...(it.going ? ["going to"] : [])];
         break;
       }
+      case "modal": {
+        // must beside have to and should; mustn't beside don't have to: the twins come from the topic's lexicon.
+        const twins = lex.modalTwins[ls] || [];
+        const negative = / not$|n't/.test(ls);
+        opts = [s, ...twins, ...pick(lex.modals.filter(m => / not$|n't/.test(m) === negative), 2, [ls, ...twins], rand)];
+        break;
+      }
       case "would":
         // would beside will: "If I knew, I will tell you" is the slip.
         opts = ls === "would" ? ["would", "will"] : ["wouldn't", "won't"];
@@ -239,7 +272,7 @@
         opts = [s, ...(CONJ_TWINS[ls] || [])];
         break;
       case "verb": {
-        const slip = futureSlip(it, i, lex);
+        const slip = futureSlip(it, i, lex) || toSlip(it, i, lex);
         opts = forms(lex.formOf[ls]);
         if (slip) opts = [slip, ...opts];
         else if (!helper(prev, lex) && !it.q && i === it.subj[c] + 1) opts = ["will", ...opts];
@@ -274,7 +307,8 @@
     if (["do", "does", "did", "don't", "doesn't", "didn't"].includes(w)) return "do";
     if (isBe(w, lex)) return "be";
     if (isHave(w, lex)) return "have";
-    if (w === "will" || w === "won't" || w === "going to" || w.startsWith("will ") || WOULD.includes(w) || w.startsWith("would ")) return "will";
+    if (w === "will" || w === "won't" || w === "going to" || w.startsWith("will ") || WOULD.includes(w) || w.startsWith("would ") ||
+      lex.modals.includes(w) || w.startsWith("to ")) return "will";
     return isIng(w, lex) ? "ing" : isPart(w, lex) ? "part" : "plain";
   }
   // One near miss from each other family first (did beside is and has; saw beside seen and seeing),
@@ -301,7 +335,7 @@
   function decoys(it, lex, tiles) {
     if (!it.decoys) return [];
     const words = it.steps.map(low), who = words[it.subj[0]];
-    const will = words.some(w => ["will", "won't", ...WOULD].includes(w));
+    const will = words.some(w => ["will", "won't", ...WOULD, ...lex.modals].includes(w));
     const out = [];
     // With have the be-word that matters is "been" (have been waiting); where the lesson has no plain
     // continuous, "been" is the only be-word it teaches.
@@ -327,7 +361,8 @@
     const ls = low(it.steps[i]);
     if (k === "object") return [lex.objects[ls]];
     if (k === "time") return lex.timeTwins[ls] || [];
-    if (k === "verb" || k === "be" || k === "have") { const slip = futureSlip(it, i, lex); return slip ? [slip] : []; }
+    if (k === "verb" || k === "be" || k === "have") { const slip = futureSlip(it, i, lex) || (k === "verb" && toSlip(it, i, lex)); return slip ? [slip] : []; }
+    if (k === "modal") return lex.modalTwins[ls] || [];
     return [];
   }
 
@@ -336,7 +371,7 @@
   // sentence is not given away. With nearMisses false there are only the answer's own words.
   // A sentence of two clauses gets no near misses for its subjects and time words, or it would
   // have too many tiles.
-  const NEAR_MISSES = { subject: 1, aux: 2, be: 2, have: 1, verb: 2, will: 1, would: 1, going: 1, time: 1, object: 1, wh: 1, conj: 1, other: 0 };
+  const NEAR_MISSES = { subject: 1, aux: 2, be: 2, have: 1, verb: 2, will: 1, would: 1, modal: 2, going: 1, time: 1, object: 1, wh: 1, conj: 1, other: 0 };
   function bankGroups(it, lex, rand = Math.random, nearMisses = true) {
     const taken = it.steps.map(low), two = it.clauses.length > 1;
     const groups = it.steps.map((s, i) => {
@@ -347,7 +382,8 @@
         : two && k === "verb" && it.steps.length >= 10 ? 1 : NEAR_MISSES[k];
       if (!n) return group;
       const wrong = options(it, i, lex, rand).filter(o => !taken.includes(low(o)));
-      const first = preferred(it, i, k, lex).filter(o => o && wrong.includes(o)).slice(0, 1);
+      // A modal brings both its twins (mustn't: don't have to, shouldn't); other steps one preferred slip.
+      const first = preferred(it, i, k, lex).filter(o => o && wrong.includes(o)).slice(0, k === "modal" ? n : 1);
       const rest = wrong.filter(o => !first.includes(o));
       const chosen = [...first, ...(n - first.length <= 0 ? []
         : k === "be" ? rest.slice(0, n - first.length)
@@ -374,7 +410,7 @@
   // A sentence of two clauses joined by when / if / because may also come in the other order:
   // "We will stay at home if it rains" as well as "If it rains, we will stay at home".
   function accepted(it, lex) {
-    const words = it.steps.map(low), out = [words.join(" ")];
+    const words = it.steps.map(low), out = [words.join(" "), ...(it.alt || [])];
     if (it.clauses.length > 1) {
       const parts = it.clauses.map(([a, b]) => words.slice(a, b).join(" "));
       if (!it.q && it.clauses.some(([a]) => lex.conj.includes(words[a]))) out.push([...parts.slice(1), parts[0]].join(" "));
@@ -425,9 +461,11 @@
     return `${n} ${d === 1 && h !== 11 ? "плитка" : d >= 2 && d <= 4 && (h < 12 || h > 14) ? "плитки" : "плиток"}`;
   }
 
-  // Checks grammar/tenses.json and returns it with parsed sentences, or throws a message naming the problem.
-  function validate(data) {
-    const fail = problem => { throw new Error(`Check grammar/tenses.json: ${problem}`); };
+  // Checks a topic file (grammar/tenses.json, grammar/modals.json…) with its lexicon already merged in,
+  // and returns it with parsed sentences, or throws a message naming the problem.
+  // notes are the topic's own explanations: { key: html }, used by lessons whose info is not built in.
+  function validate(data, file = "grammar/tenses.json") {
+    const fail = problem => { throw new Error(`Check ${file}: ${problem}`); };
     if (!data || typeof data !== "object") fail("the file must be an object.");
     if (!filled(data.title)) fail("add a title.");
     if (typeof data.passRating !== "number" || data.passRating <= 0 || data.passRating > 5) fail("passRating must be a number from 0 to 5.");
@@ -456,7 +494,10 @@
       if (lesson.hints !== undefined && !HINTS.includes(lesson.hints)) fail(`${where}: hints must be one of ${HINTS.join(", ")}.`);
       if (lesson.nearMisses !== undefined && typeof lesson.nearMisses !== "boolean") fail(`${where}: nearMisses must be true or false.`);
       if (lesson.decoys !== undefined && typeof lesson.decoys !== "boolean") fail(`${where}: decoys must be true or false.`);
-      if (lesson.info !== undefined && !INFO.includes(lesson.info)) fail(`${where}: info must be one of ${INFO.join(", ")}.`);
+      const notes = data.notes && typeof data.notes === "object" ? data.notes : {};
+      if (lesson.info !== undefined && !INFO.includes(lesson.info) && !filled(notes[lesson.info])) {
+        fail(`${where}: info must be one of ${INFO.join(", ")} or a key of notes.`);
+      }
       if (lesson.check !== undefined && !CHECK.includes(lesson.check)) fail(`${where}: check must be one of ${CHECK.join(", ")}.`);
       if (lesson.forms !== undefined && (!Array.isArray(lesson.forms) || !lesson.forms.length || lesson.forms.some(f => !FORMS.includes(f)))) {
         fail(`${where}: forms must list some of ${FORMS.join(", ")}.`);
@@ -467,6 +508,7 @@
         const at = `${where}, sentence ${ii + 1}`;
         if (!filled(item?.uk) || !/[А-Яа-яІіЇїЄєҐґ]/u.test(item.uk)) fail(`${at}: uk must be the Ukrainian sentence.`);
         if (!filled(item.en) || !/[.?]$/.test(item.en.trim())) fail(`${at}: en must end with "." or "?".`);
+        if (item.alt !== undefined && (!Array.isArray(item.alt) || !item.alt.every(filled))) fail(`${at}: alt must be a list of other right answers.`);
         if (item.en.replace(/[.?]\s*$/, "").split(/[|/]/).some(part => !part.trim())) fail(`${at}: en has an empty step between "|".`);
         if (/\?\s*$/.test(item.uk) !== /\?\s*$/.test(item.en)) fail(`${at}: a question in uk must be a question in en.`);
         if (seen.has(item.uk.trim())) fail(`${at} repeats "${item.uk.trim()}".`);
@@ -497,10 +539,26 @@
         hints: lesson.hints || "count", nearMisses: lesson.nearMisses !== false, decoys: Boolean(lesson.decoys),
         check: lesson.check || "auto", info: lesson.info || null };
     });
-    return { title: data.title.trim(), subtitle: filled(data.subtitle) ? data.subtitle.trim() : "", passRating: data.passRating, lex, lessons };
+    const notes = {};
+    for (const [key, html] of Object.entries(data.notes || {})) if (filled(html)) notes[key] = html;
+    return { title: data.title.trim(), subtitle: filled(data.subtitle) ? data.subtitle.trim() : "", passRating: data.passRating, lex, lessons, notes };
   }
 
-  const api = { RIGHT, WRONG, FORMS, HINTS, INFO, CHECK, makeLexicon, parse, kind, tense, tenses, role, options, decoys, family, bankGroups, bank,
+  // grammar/topics.json: the topics of the Lessons tab in order. A topic without a file is shown as coming soon.
+  function validateTopics(data) {
+    const fail = problem => { throw new Error(`Check grammar/topics.json: ${problem}`); };
+    if (!data || !Array.isArray(data.topics) || !data.topics.length) fail("add a list of topics.");
+    const ids = new Set();
+    return data.topics.map((t, i) => {
+      if (!t || !/^[a-z-]+$/.test(t.id || "") || ids.has(t.id)) fail(`topic ${i + 1} needs its own id of small latin letters.`);
+      ids.add(t.id);
+      if (!filled(t.title) || !filled(t.desc)) fail(`topic ${t.id} needs a title and desc.`);
+      if (t.file !== undefined && t.file !== null && !/^grammar\/[a-z-]+\.json$/.test(t.file)) fail(`topic ${t.id}: file must look like grammar/name.json.`);
+      return { id: t.id, title: t.title.trim(), desc: t.desc.trim(), file: t.file || null };
+    });
+  }
+
+  const api = { RIGHT, WRONG, FORMS, HINTS, INFO, CHECK, makeLexicon, mergeLexicon, validateTopics, parse, kind, tense, tenses, role, options, decoys, family, bankGroups, bank,
     accepted, isRight, sentence, tilesWord, score, passes, fmt, newOrder, validate };
   if (typeof module !== "undefined" && module.exports) module.exports = api;
   else root.TensesCore = api;

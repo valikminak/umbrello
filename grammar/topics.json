@@ -1,0 +1,76 @@
+{
+  "topics": [
+    {
+      "id": "tenses",
+      "title": "Часи",
+      "desc": "Усі 12 форм, going to, пасив, when / if і «якби»",
+      "file": "grammar/tenses.json"
+    },
+    {
+      "id": "modals",
+      "title": "Модальні",
+      "desc": "can, must, have to, should, might і «варто було»",
+      "file": "grammar/modals.json"
+    },
+    {
+      "id": "questions",
+      "title": "Питання",
+      "desc": "Who called? чи Who did you call?, хвостики, непрямі питання"
+    },
+    {
+      "id": "phrasal",
+      "title": "Фразові дієслова",
+      "desc": "Що значать up, off, out, on і куди ставити it"
+    },
+    {
+      "id": "gerund",
+      "title": "Gerund та infinitive",
+      "desc": "enjoy doing чи want to do, used to"
+    },
+    {
+      "id": "reported",
+      "title": "Непряма мова",
+      "desc": "He said he was…, asked if…, told me to…"
+    },
+    {
+      "id": "wishes",
+      "title": "Умовні далі",
+      "desc": "wish, if only, unless, I'd rather"
+    },
+    {
+      "id": "passive-more",
+      "title": "Пасив далі",
+      "desc": "must be done, have something done, he is said to…"
+    },
+    {
+      "id": "relative",
+      "title": "Відносні речення",
+      "desc": "who, which, that, whose, where"
+    },
+    {
+      "id": "adjectives",
+      "title": "Прикметники та прислівники",
+      "desc": "bigger, the biggest, as… as, bored чи boring, too, enough"
+    },
+    {
+      "id": "articles",
+      "title": "Артиклі та кількість",
+      "desc": "a, the чи нічого; some, any; much, many, few"
+    },
+    {
+      "id": "pronouns",
+      "title": "Займенники",
+      "desc": "myself, each other, nobody, both, either"
+    },
+    {
+      "id": "prepositions",
+      "title": "Прийменники",
+      "desc": "in, on, at; interested in, good at"
+    },
+    {
+      "id": "advanced",
+      "title": "Конструкції C1",
+      "desc": "although, despite, so that, Never have I…, What I need is…"
+    }
+  ]
+}

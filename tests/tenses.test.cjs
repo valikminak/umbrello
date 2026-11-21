@@ -5,7 +5,10 @@ const path = require('node:path');
 const vm = require('node:vm');
 const core = require('../assets/js/tenses-core.js');
 const root = path.join(__dirname, '..');
-const file = () => JSON.parse(fs.readFileSync(path.join(root, 'grammar/tenses.json'), 'utf8'));
+const read = name => JSON.parse(fs.readFileSync(path.join(root, 'grammar', name), 'utf8'));
+// A topic file with the shared grammar/lexicon.json merged in, the way the page loads it.
+const topic = name => { const data = read(name); return { ...data, lexicon: core.mergeLexicon(read('lexicon.json'), data.lexicon) }; };
+const file = () => topic('tenses.json');
 const lexicon = () => core.makeLexicon(file().lexicon);
 // A seeded generator, so random tile banks are the same on every run.
 const seeded = seed => () => ((seed = (seed * 16807) % 2147483647) / 2147483647);
@@ -141,7 +144,7 @@ test('malformed tenses files are rejected with the lesson and sentence named', (
   ]) assert.throws(() => core.validate(data), message);
 });
 
-test('Grammar opens on the Tenses tab by default and mounts the trainer without loading the level test', async () => {
+test('Grammar opens on the Lessons tab by default and mounts the topics without loading the level test', async () => {
   for (const search of ['', '?tab=tenses', '?tab=learn', '?tab=unknown', '?user=sophia']) {
   const tabs = { innerHTML: '' }, host = { innerHTML: '' }, requested = [], mounted = [];
   const context = vm.createContext({
@@ -156,7 +159,7 @@ test('Grammar opens on the Tenses tab by default and mounts the trainer without 
     vm.runInContext(fs.readFileSync(path.join(root, 'assets/js', name), 'utf8'), context);
   }
   await new Promise(resolve => setImmediate(resolve));
-  assert.equal(tabs.innerHTML, '<a href="grammar.html?v=10" aria-current="page">Tenses</a><a href="grammar.html?v=10&tab=test">Test</a>', search);
+  assert.equal(tabs.innerHTML, '<a href="grammar.html?v=10" aria-current="page">Lessons</a><a href="grammar.html?v=10&tab=test">Test</a>', search);
   assert.deepEqual(mounted, [host], search);
   assert.deepEqual(requested, [], search);
   }
@@ -456,4 +459,85 @@ test('conditionals: would never follows if, and the Ukrainian sentence says now 
   const known = core.parse(raw.items[13], lex, lesson);
   assert.ok(core.options(known, 2, lex, seeded(1)).includes('would have'), 'had sits beside would have');
   assert.equal(core.isRight(known, lex, ['i', 'would', 'have', 'told', 'you', 'if', 'i', 'had', 'known']), true);
+});
+
+test('topics.json lists the topics in order; every topic with a file is valid on top of the shared lexicon', () => {
+  const topics = core.validateTopics(read('topics.json'));
+  assert.deepEqual(topics.slice(0, 4).map(t => t.id), ['tenses', 'modals', 'questions', 'phrasal']);
+  assert.equal(topics.length, 14);
+  for (const t of topics.filter(t => t.file)) {
+    const data = core.validate(topic(t.file.replace('grammar/', '')), t.file);
+    assert.ok(data.lessons.every(l => l.ready && l.items.length >= 20), t.id);
+    for (const lesson of data.lessons) assert.ok(lesson.info && (core.INFO.includes(lesson.info) || data.notes[lesson.info]), `${t.id} lesson ${lesson.id} explanation`);
+  }
+  for (const bad of [{}, { topics: [{ id: 'Tenses', title: 'x', desc: 'y' }] }, { topics: [{ id: 'a', title: 'x', desc: 'y', file: '../a.json' }] },
+    { topics: [{ id: 'a', title: 'x', desc: 'y' }, { id: 'a', title: 'x', desc: 'y' }] }]) {
+    assert.throws(() => core.validateTopics(bad), /grammar\/topics\.json/);
+  }
+});
+
+test('a topic adds its own words to the shared lexicon without losing any', () => {
+  const merged = core.mergeLexicon({ verbs: { go: ['goes', 'went', 'gone', 'going'] }, time: { past: ['yesterday'] }, subjects: ['I'] },
+    { verbs: { park: ['parks', 'parked', 'parked', 'parking'] }, time: { past: ['last week'], future: ['soon'] }, subjects: ['I', 'we'], modals: ['can'] });
+  assert.deepEqual(Object.keys(merged.verbs), ['go', 'park']);
+  assert.deepEqual(merged.time, { past: ['yesterday', 'last week'], future: ['soon'] });
+  assert.deepEqual(merged.subjects, ['I', 'we']);
+  assert.deepEqual(merged.modals, ['can']);
+});
+
+const modals = () => core.validate(topic('modals.json'), 'grammar/modals.json');
+test('modals: a modal is one tile with its twins beside it, and the verb after it sits beside "to go"', () => {
+  const data = modals(), lex = data.lex, [can, must] = data.lessons;
+  const swim = core.parse({ uk: 'Я вмію плавати.', en: 'I|can|swim.' }, lex, can);
+  assert.deepEqual(swim.steps.map((_, i) => core.kind(swim, i, lex)), ['subject', 'modal', 'verb']);
+  const opts = core.options(swim, 2, lex, seeded(1));
+  assert.ok(opts.includes('to swim') && opts.includes('swims'), 'swim beside to swim and swims');
+  const smoke = core.parse({ uk: 'Тут не можна курити.', en: 'You|mustn\'t|smoke|here.' }, lex, must);
+  for (let seed = 1; seed < 15; seed++) {
+    const group = core.bankGroups(smoke, lex, seeded(seed), true).find(g => g.includes("mustn't"));
+    assert.ok(group.includes("don't have to"), "mustn't always sits beside don't have to");
+  }
+  const has = core.parse({ uk: 'Їй доводиться вставати о шостій.', en: 'She|has to|get|up|at six.' }, lex, must);
+  assert.ok(!core.options(has, 2, lex, seeded(1)).some(o => o.startsWith('to ')), 'no "to get" after has to');
+  const q = core.parse({ uk: 'Ти вмієш готувати?', en: 'Can|you|cook?' }, lex, can);
+  assert.equal(q.steps[0], 'can', 'the first tile does not show the capital');
+  assert.equal(core.sentence(q), 'Can you cook?');
+  const future = core.parse(read('modals.json').lessons[0].items.find(i => /зможу тобі/.test(i.uk)), lex, can);
+  assert.ok(core.options(future, 1, lex, seeded(1)).includes('will can'), '"will can" is the slip for will be able to');
+});
+
+test('modals: other right answers count, and every lesson has its tiles', () => {
+  const data = modals(), lex = data.lex;
+  const go = core.parse({ uk: 'Я мушу йти.', en: 'I|must|go.', alt: ['I|have to|go.'] }, lex, data.lessons[1]);
+  assert.equal(core.isRight(go, lex, ['I', 'have to', 'go']), true);
+  assert.equal(core.isRight(go, lex, ['I', 'must', 'to go']), false);
+  for (const lesson of data.lessons) {
+    for (const it of lesson.items) {
+      for (let seed = 1; seed < 20; seed++) {
+        const words = core.bank(it, lex, seeded(seed), true).map(w => w.toLowerCase());
+        for (const step of it.steps) assert.ok(words.includes(step.toLowerCase()), `${it.uk}: ${step}`);
+        assert.ok(words.length <= 16, `${it.uk}: ${words.length} tiles`);
+        assert.equal(new Set(words.filter(w => !it.steps.map(s => s.toLowerCase()).includes(w))).size,
+          words.filter(w => !it.steps.map(s => s.toLowerCase()).includes(w)).length, `${it.uk}: repeated near miss`);
+      }
+      for (const alt of it.alt) assert.ok(core.isRight(it, lex, alt.split(' ')), `${it.uk}: alt ${alt}`);
+    }
+  }
+});
+
+// mustn't is «не можна», don't have to is «не треба»; can't (be) is «не може бути»; should have is «варто було».
+test('modals: the Ukrainian sentence says which modal is meant', () => {
+  const data = modals();
+  const rules = [
+    [/mustn't/, /не можна/], [/(don't|doesn't|didn't|won't) have to/, /не треба|не довелося|не доведеться|не мусиш/],
+    [/^(?!.*\bhave\b).*can't\|be|can't\|live/, /не може бути|не можеш говорити серйозно/], [/should\|have/, /варто було/],
+    [/shouldn't\|have/, /не варто було/], [/must\|have/, /напевно/], [/could\|have/, /міг би|могли б|міг упасти/],
+    [/will be able to/, /зможу|зможе|зможеш/], [/was able to|were able to/, /зміг|змогли/], [/had to/, /довелося/], [/will have to/, /доведеться/],
+  ];
+  for (const lesson of data.lessons) {
+    for (const it of lesson.items) {
+      const en = it.steps.join('|').toLowerCase(), uk = it.uk.toLowerCase();
+      for (const [answer, cue] of rules) if (answer.test(en)) assert.match(uk, cue, `"${it.uk}" → ${en}`);
+    }
+  }
 });
