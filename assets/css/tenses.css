@@ -41,6 +41,8 @@
 @keyframes tn-blink{to{visibility:hidden}}
 .tn-undo[hidden]{display:none}
 .tn-undo{flex:none;width:52px;height:58px;display:grid;place-items:center;border:0;border-radius:16px;background:var(--card);color:var(--text);cursor:pointer}
+.tn-check{margin:12px 0 0}
+.tn-check[hidden]{display:none}
 .tn-fix{min-height:24px;margin-top:10px;color:var(--hint);font-size:15px}
 .tn-fix span{display:block;margin-top:2px;color:var(--ok);font-size:19px;font-weight:600;line-height:1.35}
 .tn-bank{margin-top:auto;padding:16px 0 12px;display:flex;flex-wrap:wrap;justify-content:center;gap:10px 14px}
