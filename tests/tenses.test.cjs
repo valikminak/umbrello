@@ -20,25 +20,25 @@ test('the tenses file is valid: all 14 lessons are ready with their settings', (
   assert.deepEqual(data.lessons.map(lesson => lesson.id), [...Array(14).keys()]);
   const [order, simple] = data.lessons;
   assert.deepEqual([order.ready, order.hints, order.nearMisses, order.info], [true, 'labels', false, 'word-order']);
-  assert.deepEqual([simple.ready, simple.hints, simple.nearMisses, simple.info], [true, 'slots', true, 'simple-tenses']);
+  assert.deepEqual([simple.ready, simple.hints, simple.nearMisses, simple.info], [true, 'none', true, 'simple-tenses']);
   assert.equal(order.items.length, 22);
   assert.equal(simple.items.length, 45);
   const [, , continuous, mix] = data.lessons;
-  assert.deepEqual([continuous.ready, continuous.forms, continuous.check, continuous.info], [true, ['continuous'], 'auto', 'continuous']);
-  assert.deepEqual([mix.ready, mix.forms, mix.decoys, mix.hints, mix.check], [true, ['simple', 'continuous'], true, 'none', 'button']);
+  assert.deepEqual([continuous.ready, continuous.forms, continuous.info], [true, ['continuous'], 'continuous']);
+  assert.deepEqual([mix.ready, mix.forms, mix.decoys, mix.hints], [true, ['simple', 'continuous'], true, 'none']);
   assert.ok(continuous.items.length >= 40 && mix.items.length >= 40);
-  const settings = lesson => [lesson.forms, lesson.decoys, lesson.hints, lesson.check, lesson.info];
+  const settings = lesson => [lesson.forms, lesson.decoys, lesson.hints, lesson.info];
   assert.deepEqual(data.lessons.slice(4).map(settings), [
-    [['simple', 'perfect'], true, 'none', 'button', 'present-perfect'],
-    [['perfect', 'perfect-continuous'], true, 'none', 'button', 'perfect-continuous'],
-    [['simple', 'continuous', 'perfect', 'perfect-continuous'], true, 'none', 'button', 'mix-present-past'],
-    [['simple', 'perfect', 'perfect-continuous'], true, 'none', 'button', 'past-perfect'],
-    [['simple', 'continuous', 'perfect'], true, 'none', 'button', 'future'],
-    [['simple'], false, 'count', 'auto', 'when-if'],
-    [['simple', 'continuous', 'perfect', 'perfect-continuous'], true, 'none', 'button', 'mix-all'],
-    [['simple', 'continuous', 'perfect', 'passive'], true, 'none', 'button', 'passive'],
-    [['simple', 'perfect'], true, 'none', 'button', 'conditionals'],
-    [['simple', 'continuous', 'perfect', 'perfect-continuous', 'passive'], true, 'none', 'button', 'final'],
+    [['simple', 'perfect'], true, 'none', 'present-perfect'],
+    [['perfect', 'perfect-continuous'], true, 'none', 'perfect-continuous'],
+    [['simple', 'continuous', 'perfect', 'perfect-continuous'], true, 'none', 'mix-present-past'],
+    [['simple', 'perfect', 'perfect-continuous'], true, 'none', 'past-perfect'],
+    [['simple', 'continuous', 'perfect'], true, 'none', 'future'],
+    [['simple'], false, 'none', 'when-if'],
+    [['simple', 'continuous', 'perfect', 'perfect-continuous'], true, 'none', 'mix-all'],
+    [['simple', 'continuous', 'perfect', 'passive'], true, 'none', 'passive'],
+    [['simple', 'perfect'], true, 'none', 'conditionals'],
+    [['simple', 'continuous', 'perfect', 'perfect-continuous', 'passive'], true, 'none', 'final'],
   ]);
   for (const lesson of data.lessons.slice(4)) assert.ok(lesson.ready && lesson.items.length >= 30, lesson.title);
   for (const it of data.lessons.filter(lesson => lesson.ready).flatMap(lesson => lesson.items)) {
@@ -129,10 +129,9 @@ test('malformed tenses files are rejected with the lesson and sentence named', (
     [broken(d => item(d, 3, { uk: d.lessons[1].items[0].uk })), /sentence 4 repeats/],
     [broken(d => item(d, 21, { en: 'I|will|phone|you|tomorrow.' })), /sentence 22: add the verb after "will"/],
     [broken(d => item(d, 2, { en: 'We|ride|horses|at weekends.' })), /sentence 3: add its verb/],
-    [broken(d => { d.lessons[0].hints = 'arrows'; }), /lesson 1: hints must be one of labels, slots, count/],
+    [broken(d => { d.lessons[0].hints = 'arrows'; }), /lesson 1: hints must be one of labels, none/],
     [broken(d => { d.lessons[0].nearMisses = 'no'; }), /lesson 1: nearMisses/],
     [broken(d => { d.lessons[1].info = 'tables'; }), /lesson 2: info must be one of/],
-    [broken(d => { d.lessons[1].check = 'later'; }), /lesson 2: check must be one of auto, button/],
     [broken(d => { d.lessons[1].forms = ['middle']; }), /lesson 2: forms must list some of/],
     [broken(d => item(d, 0, { en: 'I|am|working|every day.' })), /lesson 2, sentence 1 is continuous, which this lesson's forms do not include/],
     [broken(d => { delete d.lexicon.beAux; }), /lexicon needs/],
@@ -205,10 +204,6 @@ test('tiles come in groups: each word with its own near misses, in random group 
   assert.ok(firsts.size > 2, 'the groups are not always in sentence order');
 });
 
-test('the number of tiles is written with the right Ukrainian ending', () => {
-  assert.deepEqual([1, 2, 4, 5, 11, 12, 21, 22, 25].map(core.tilesWord),
-    ['1 плитка', '2 плитки', '4 плитки', '5 плиток', '11 плиток', '12 плиток', '21 плитка', '22 плитки', '25 плиток']);
-});
 
 // Words in the Ukrainian sentence that say "in progress at this moment". A continuous answer needs
 // one of them; a simple answer must not have any, or the learner could not tell which tense is meant.
@@ -539,5 +534,42 @@ test('modals: the Ukrainian sentence says which modal is meant', () => {
       const en = it.steps.join('|').toLowerCase(), uk = it.uk.toLowerCase();
       for (const [answer, cue] of rules) if (answer.test(en)) assert.match(uk, cue, `"${it.uk}" → ${en}`);
     }
+  }
+});
+
+// Like Polyglot: the tiles come one group per place in the sentence, in order. A decoy (is, has, been)
+// joins the group where it changes the tense, so the tense is still chosen, not given.
+test('groups in order: each place has its word, at most six tiles, decoys where they change the tense', () => {
+  for (const [name, data] of [['tenses', core.validate(file())], ['modals', core.validate(topic('modals.json'), 'grammar/modals.json')]]) {
+    const isBe = w => [...data.lex.beAux, ...data.lex.beNegative, 'be', 'been'].includes(w);
+    const isHave = w => [...data.lex.haveAux, ...data.lex.haveNegative].includes(w);
+    for (const lesson of data.lessons.filter(l => l.nearMisses)) {
+      for (const it of lesson.items) {
+        for (let seed = 1; seed < 12; seed++) {
+          const groups = core.sequence(it, data.lex, seeded(seed));
+          assert.equal(groups.length, it.steps.length, `${name}: ${it.uk}`);
+          groups.forEach((g, i) => {
+            assert.ok(g.includes(it.steps[i]), `${name}: ${it.uk}: place ${i + 1} lacks ${it.steps[i]}`);
+            assert.ok(g.length <= 6, `${name}: ${it.uk}: ${g.length} tiles in group ${i + 1}`);
+          });
+          const all = groups.flat().map(w => w.toLowerCase()), own = it.steps.map(w => w.toLowerCase());
+          const extra = all.filter(w => !own.includes(w));
+          assert.equal(new Set(extra).size, extra.length, `${name}: ${it.uk}: repeated tile`);
+          if (lesson.decoys && !it.q && (lesson.forms.some(f => f.includes('continuous')) || lesson.going)) assert.ok(all.some(isBe), `${name}: ${it.uk}: no be-word`);
+          if (lesson.decoys && !it.q && lesson.forms.some(f => f.startsWith('perfect'))) assert.ok(all.some(isHave), `${name}: ${it.uk}: no have`);
+        }
+      }
+    }
+  }
+  const data = core.validate(file()), mix = data.lessons[3];
+  const plays = core.parse({ uk: 'Мама спить після обіду щодня.', en: 'My mum|sleeps|after lunch|every day.' }, data.lex, mix);
+  for (let seed = 1; seed < 10; seed++) {
+    const second = core.sequence(plays, data.lex, seeded(seed))[1];
+    assert.ok(second.includes('sleeps') && second.some(w => ['is', 'was'].includes(w)), `sleeps beside is / was: ${second}`);
+  }
+  const help = core.parse({ uk: 'Я тобі допоможу.', en: 'I|will|help|you.' }, data.lex, data.lessons[8]);
+  for (let seed = 1; seed < 10; seed++) {
+    const third = core.sequence(help, data.lex, seeded(seed))[2];
+    assert.ok(third.includes('help') && third.includes('be') && third.includes('have'), `help beside be and have: ${third}`);
   }
 });

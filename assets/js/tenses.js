@@ -23,6 +23,11 @@
     try { if (Profiles.userId) store = JSON.parse(localStorage.getItem(storeKey(id))); } catch (_) {}
     return store && typeof store.lessons === "object" ? store : { lessons: {} };
   }
+  // Screens slide in: deeper (topic → lessons → lesson) from the right, back from the left.
+  function render(host, html, dir) {
+    host.innerHTML = html;
+    if (dir) host.firstElementChild?.classList.add(dir === "back" ? "tn-in-back" : "tn-in");
+  }
   // One keyboard listener for the page; the open lesson sets what it does.
   let onKey = null;
   document.addEventListener("keydown", event => { if (onKey) onKey(event); });
@@ -49,7 +54,7 @@
       core.validate({ ...raw, lexicon: core.mergeLexicon(base, raw.lexicon) }, topic.file)).catch(error => { delete cache[topic.id]; throw error; }));
 
     /* ---------- topic list ---------- */
-    async function list() {
+    async function list(dir) {
       onKey = null;
       remember(null);
       const ready = topics.filter(t => t.file);
@@ -60,13 +65,13 @@
         const lessons = loaded[i].value.lessons.filter(l => l.ready), store = readStore(t.id);
         done[t.id] = `${lessons.filter(l => store.lessons[l.id]?.passed).length}/${lessons.length}`;
       });
-      host.innerHTML = `<div class="tn">
+      render(host, `<div class="tn">
         <h1>Граматика</h1><p class="sub">Теми по черзі або в будь-якому порядку. Усередині теми уроки відкриваються при рейтингу 4.5.</p>
         <ul class="tn-lessons">${topics.map((t, i) => `<li><button class="tn-row${t.file ? "" : " locked"}" type="button"
             ${t.file ? `data-topic="${t.id}"` : 'disabled aria-disabled="true"'}>
           <span class="tn-num">${i + 1}</span>
           <span><b>${esc(t.title)}</b><span>${esc(t.desc)}</span></span>
-          <span class="tn-status">${t.file ? (done[t.id] ? icon("star") + done[t.id] : "") : "Незабаром"}</span></button></li>`).join("")}</ul></div>`;
+          <span class="tn-status">${t.file ? (done[t.id] ? icon("star") + done[t.id] : "") : "Незабаром"}</span></button></li>`).join("")}</ul></div>`, dir);
       host.querySelectorAll("[data-topic]").forEach(button => { button.onclick = () => openTopic(topics.find(t => t.id === button.dataset.topic)); });
     }
 
@@ -79,7 +84,7 @@
         return;
       }
       remember(topic.id);
-      trainer(host, topic, data, list);
+      trainer(host, topic, data, () => list("back"));
     }
 
     const wanted = topics.find(t => t.file && t.id === new URLSearchParams(location.search).get("topic"));
@@ -101,11 +106,11 @@
     const stop = () => { clearTimeout(timer); timer = null; };
 
     /* ---------- lesson list ---------- */
-    function menu() {
+    function menu(dir = "in") {
       stop();
       L = null;
       onKey = keys;
-      host.innerHTML = `<div class="tn">
+      render(host, `<div class="tn">
         <div class="tn-title"><button class="tn-icon-btn" id="tnTopics" type="button" aria-label="До тем">${icon("back")}</button>
           <h1>${esc(data.title)}</h1></div><p class="sub">${esc(data.subtitle)}</p>
         <ul class="tn-lessons">${data.lessons.map((lesson, i) => {
@@ -116,7 +121,7 @@
             <span class="tn-num">${lesson.id}</span>
             <span><b>${esc(lesson.title)}</b><span>${esc(lesson.desc)}</span></span>
             <span class="tn-status">${status}</span></button></li>`;
-        }).join("")}</ul></div>`;
+        }).join("")}</ul></div>`, dir);
       host.querySelectorAll("[data-lesson]").forEach(button => { button.onclick = () => open(+button.dataset.lesson); });
       host.querySelector("#tnTopics").onclick = () => { stop(); L = null; toTopics(); };
     }
@@ -126,7 +131,7 @@
       const lesson = data.lessons[index], p = progress(lesson.id);
       L = { index, lesson, p, wasPassed: p.passed };
       if (p.order.length !== lesson.items.length || p.pos >= p.order.length) newRound();
-      host.innerHTML = `<div class="tn tn-lesson">
+      render(host, `<div class="tn tn-lesson">
         <div class="tn-head">
           <button class="tn-icon-btn" id="tnBack" type="button" aria-label="До списку уроків">${icon("back")}</button>
           <h2>Урок ${lesson.id}</h2>
@@ -141,18 +146,16 @@
           <div class="tn-answer" id="tnAnswer" aria-live="polite"></div>
           <button class="tn-undo" id="tnUndo" type="button" aria-label="Відмінити останнє слово" hidden>${icon("undo")}</button>
         </div>
-        <button class="btn tn-check" id="tnCheck" type="button" hidden>Перевірити</button>
         <div class="tn-fix" id="tnFix" aria-live="polite"></div>
         <div class="tn-bank" id="tnBank"></div>
         <div class="tn-progress" id="tnProgress" aria-hidden="true"></div>
-      </div>`;
-      host.querySelector("#tnBack").onclick = menu;
+      </div>`, "in");
+      host.querySelector("#tnBack").onclick = () => menu("back");
       host.querySelector("#tnInfo").onclick = info;
       host.querySelector("#tnUndo").onclick = undo;
-      host.querySelector("#tnCheck").onclick = check;
       question();
-      // The first time a lesson opens, its explanation comes up by itself.
-      if (lesson.info && !p.seenInfo) { p.seenInfo = true; save(); info(); }
+      // The first time a lesson opens, its explanation comes up by itself, with a button to start.
+      if (lesson.info && !p.seenInfo) { p.seenInfo = true; save(); info(true); }
     }
 
     function newRound() {
@@ -170,13 +173,14 @@
       L.it = L.lesson.items[L.p.order[L.p.pos]];
       L.done = false;
       L.chosen = [];
-      const groups = core.bankGroups(current(), lex, Math.random, L.lesson.nearMisses);
+      // Like Polyglot: one group at a time, the one for the next word. Only the word-order lesson,
+      // which has no near misses, shows all its tiles at once, since there the order is the task.
+      L.inOrder = L.lesson.nearMisses;
+      const groups = L.inOrder ? core.sequence(current(), lex, Math.random) : core.bankGroups(current(), lex, Math.random, false);
       L.tiles = groups.flat();
       L.groups = groups.map(group => group.length);
       L.roles = current().steps.map((_, i) => core.role(current(), i, lex));
       host.querySelector("#tnUk").textContent = current().uk;
-      host.querySelector("#tnHint").textContent = L.lesson.hints === "count"
-        ? `Перекладіть речення · ${core.tilesWord(current().steps.length)}` : "Перекладіть речення";
       host.querySelector("#tnFix").innerHTML = "";
       answer();
       tiles();
@@ -187,7 +191,7 @@
     // and in the word-order lesson each place is named (хто, дія, коли).
     function answer(state) {
       const box = host.querySelector("#tnAnswer"), it = current(), words = chosenWords();
-      const slots = !state && (L.lesson.hints === "labels" || L.lesson.hints === "slots"), labels = slots && L.lesson.hints === "labels";
+      const slots = !state && L.lesson.hints === "labels", labels = slots;
       box.className = "tn-answer" + (state ? " " + state : "") + (slots ? " slotted" : "");
       const word = (w, i) => {
         let text = i === 0 ? w.charAt(0).toUpperCase() + w.slice(1) : w;
@@ -205,11 +209,11 @@
         if (!state) html.push('<span class="tn-caret"></span>');
       }
       box.innerHTML = html.join("");
+      // A placed word is taken back by a tap; with groups in order, the words after it go back too.
       box.querySelectorAll("[data-k]").forEach(button => {
-        button.onclick = () => { L.chosen.splice(+button.dataset.k, 1); answer(); tiles(); };
+        button.onclick = () => { const k = +button.dataset.k; L.chosen.splice(k, L.inOrder ? L.chosen.length : 1); answer(); tiles(); };
       });
       host.querySelector("#tnUndo").hidden = Boolean(state) || !L.chosen.length;
-      host.querySelector("#tnCheck").hidden = Boolean(state) || L.lesson.check !== "button" || !L.chosen.length;
     }
 
     function tiles() {
@@ -220,21 +224,22 @@
       };
       // Each word sits with its near misses (didn't, don't, won't), so the choice is made inside a group.
       let next = 0;
-      box.innerHTML = L.groups.map(size => {
+      const all = L.groups.map(size => {
         const ids = [...Array(size).keys()].map(k => next + k);
         next += size;
-        return `<span class="tn-group">${ids.map(tile).join("")}</span>`;
-      }).join("");
+        return ids;
+      });
+      // In order, only the group of the next place is shown; it comes in with a short slide.
+      const shown = L.inOrder ? all.filter((_, g) => g === L.chosen.length) : all;
+      box.innerHTML = shown.map(ids => `<span class="tn-group${L.inOrder ? " tn-next" : ""}">${ids.map(tile).join("")}</span>`).join("");
       box.querySelectorAll("[data-id]").forEach(button => { button.onclick = () => add(+button.dataset.id); });
     }
 
     // Nothing is judged until the last word is in place; a word can be taken back before that.
-    // In lessons that mix tenses the learner presses Перевірити instead, so the number of
-    // tiles in the answer does not tell the tense.
     function add(id) {
       if (L.done || L.chosen.includes(id)) return;
       L.chosen.push(id);
-      if (L.lesson.check === "auto" && L.chosen.length === current().steps.length) return check();
+      if (L.chosen.length === current().steps.length) return check();
       answer();
       tiles();
     }
@@ -345,7 +350,7 @@
           <tr><td>He walks to work every day.</td><td>He is walking to work now.</td></tr>
           <tr><td>I finished work at six yesterday.</td><td>I was working at six yesterday.</td></tr>
           <tr><td>I will call you tomorrow.</td><td>I will be flying at this time tomorrow.</td></tr></table>
-        <p class="sub">У цьому уроці фраза не перевіряється сама і кількість слів не підказується: склади відповідь і натисни «Перевірити».</p>`;
+        <p class="sub">Одразу після підмета серед плиток будуть і дієслово, і am / is / was: вибери, чи це simple, чи continuous.</p>`;
     INFO["present-perfect"] = `<h2>Уже до «зараз»</h2>
         <p class="sub">Present perfect — have / has + третя форма дієслова. Важливо, що вже є зараз: результат, досвід, «ще не». Коли саме — не важливо.</p>
         <table class="tn-grid" lang="en"><tr><th></th><th>Present perfect</th><th>Past simple</th></tr>
@@ -354,7 +359,7 @@
           <tr><th>?</th><td><b>Have</b> you ever seen it?</td><td><b>Did</b> you see it last week?</td></tr></table>
         <p class="sub">Past simple — коли названо закінчений час: учора, минулого тижня, два роки тому, у 2020 році. Present perfect — без такого часу: вже (already), щойно (just), ніколи (never), коли-небудь (ever), ще не (… yet).</p>
         <p class="sub">Третя форма у правильних дієсловах така сама, як минула: worked, finished. У неправильних — своя: see — saw — seen, go — went — gone, eat — ate — eaten.</p>
-        <p class="sub">Тут фраза перевіряється кнопкою «Перевірити», а кількість слів не підказується: have і has є серед плиток у кожному реченні.</p>`;
+        <p class="sub">Одразу після підмета серед плиток будуть і have / has, і дієслово в минулому: вибери, яка тут форма.</p>`;
     INFO["perfect-continuous"] = `<h2>Триває вже якийсь час</h2>
         <p class="sub">Present perfect continuous — have / has been + -ing: дія почалася раніше і триває досі. Українською це теперішній час із «уже дві години», «з ранку», «скільки часу».</p>
         <table class="tn-grid" lang="en"><tr><th lang="uk">Українською</th><th>Англійською</th></tr>
@@ -365,7 +370,7 @@
         <p class="sub">for — скільки часу: for two hours, for ten years. since — з якого моменту: since Monday, since this morning. Не «since two hours» і не «from Monday».</p>
         <p class="sub">know і be не бувають у continuous: «Я знаю його десять років» — I have known him for ten years. Із «не» теж present perfect: I haven't seen him since Monday.</p>`;
     INFO["mix-present-past"] = `<h2>Усе теперішнє й минуле</h2>
-        <p class="sub">Шість форм. Час підказує тільки українське речення: серед плиток завжди є і be, і have.</p>
+        <p class="sub">Шість форм. Час підказує тільки українське речення: після підмета серед плиток є і be, і have, і саме дієслово.</p>
         <table class="tn-grid" lang="en"><tr><th lang="uk">Підказка</th><th>Форма</th></tr>
           <tr><td lang="uk">щодня, по неділях</td><td>He <b>plays</b> tennis on Sundays.</td></tr>
           <tr><td lang="uk">зараз, саме</td><td>He <b>is playing</b> tennis now.</td></tr>
@@ -431,16 +436,20 @@
           <tr><td lang="uk">немає того, хто робить: «квартиру продали»</td><td>пасив: was sold</td></tr>
           <tr><td lang="uk">якщо, коли, щойно + майбутнє</td><td>теперішній: if it rains</td></tr>
           <tr><td lang="uk">якби… б (тепер / тоді)</td><td>would / would have</td></tr></table>`;
-    const HOW = `<p class="sub">Склади фразу з плиток. Слово можна прибрати, торкнувшись його, або кнопкою відміни. Перевірка — лише після останнього слова.</p>
+    const HOW = `<p class="sub">Плитки з'являються групами, по одній на кожне місце в реченні: з групи вибери потрібне слово. Слово можна прибрати, торкнувшись його (разом з наступними), або кнопкою відміни. Перевірка — після останнього слова.</p>
       <p class="sub">Рейтинг — частка правильних відповідей серед усіх речень уроку, помножена на 5: поки речення не пройдене, воно рахується як неправильне. Кожне речення зберігає останню відповідь: виправити помилку можна, лише дійшовши до нього в наступному колі, а нова помилка псує правильну відповідь.</p>`;
 
-    function info() {
+    // first: the lesson has just been opened for the first time, so the sheet ends with «Почати»
+    // and has nothing to reset.
+    function info(first = false) {
       stop();
+      const started = scoreOf(L.lesson).answered > 0;
       sheet(`${INFO[L.lesson.info] || data.notes[L.lesson.info] || `<h2>${esc(L.lesson.title)}</h2>`}${HOW}
-        <button class="btn" id="tnClose" type="button">Зрозуміло</button>
-        <button class="btn ghost tn-reset" id="tnReset" type="button">Почати урок заново</button>`, (veil, close) => {
+        <button class="btn" id="tnClose" type="button">${first ? "Почати" : "Зрозуміло"}</button>
+        ${started ? '<button class="btn ghost tn-reset" id="tnReset" type="button">Почати урок заново</button>' : ""}`, (veil, close) => {
         veil.querySelector("#tnClose").onclick = close;
         const reset = veil.querySelector("#tnReset");
+        if (!reset) return;
         let armed = false;
         reset.onclick = () => {
           if (!armed) { armed = true; reset.textContent = "Точно скинути прогрес уроку?"; return; }
@@ -461,7 +470,7 @@
         <button class="btn" id="tnStay" type="button">Продовжити урок</button>
         <button class="btn ghost" id="tnMenu" type="button">До уроків</button>`, (veil, close) => {
         veil.querySelector("#tnStay").onclick = close;
-        veil.querySelector("#tnMenu").onclick = () => { close(); menu(); };
+        veil.querySelector("#tnMenu").onclick = () => { close(); menu("back"); };
       });
     }
 
@@ -469,7 +478,6 @@
     function keys(event) {
       if (!L || document.querySelector(".tn-veil") || event.target.closest?.("input, textarea")) return;
       if (L.done && event.key === "Enter") { event.preventDefault(); host.querySelector("#tnNext")?.click(); }
-      else if (!L.done && event.key === "Enter" && L.lesson.check === "button") { event.preventDefault(); check(); }
       else if (!L.done && event.key === "Backspace") { event.preventDefault(); undo(); }
     }
 

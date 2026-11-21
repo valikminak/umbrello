@@ -372,7 +372,7 @@
   // A sentence of two clauses gets no near misses for its subjects and time words, or it would
   // have too many tiles.
   const NEAR_MISSES = { subject: 1, aux: 2, be: 2, have: 1, verb: 2, will: 1, would: 1, modal: 2, going: 1, time: 1, object: 1, wh: 1, conj: 1, other: 0 };
-  function bankGroups(it, lex, rand = Math.random, nearMisses = true) {
+  function build(it, lex, rand, nearMisses) {
     const taken = it.steps.map(low), two = it.clauses.length > 1;
     const groups = it.steps.map((s, i) => {
       const k = kind(it, i, lex), group = [s];
@@ -392,18 +392,44 @@
       // An object pronoun brings only its subject form: him with he.
       if (k === "object" && first.length) chosen.splice(1);
       for (const o of chosen) { group.push(o); taken.push(low(o)); }
-      return shuffled(group, rand);
+      return group;
     });
+    const extras = [];
     if (nearMisses) {
       for (const extra of decoys(it, lex, taken)) {
         const group = extra.filter(w => !taken.includes(w));
         taken.push(...group);
-        if (group.length) groups.push(shuffled(group, rand));
+        if (group.length) extras.push(group);
       }
     }
-    return shuffled(groups.filter(g => g.length), rand);
+    return { groups, extras };
+  }
+  function bankGroups(it, lex, rand = Math.random, nearMisses = true) {
+    const { groups, extras } = build(it, lex, rand, nearMisses);
+    return shuffled([...groups, ...extras].map(g => shuffled(g, rand)), rand);
   }
   const bank = (it, lex, rand, nearMisses) => bankGroups(it, lex, rand, nearMisses).flat();
+
+  // The same tiles one group per place in the sentence, in order, the way Polyglot shows them:
+  // the learner sees only the group for the next word. A decoy (is, was; have, has; been) joins the
+  // group where it would change the tense: right after the subject (He plays / is / has…), after will
+  // or a modal (will help / be / have), and been beside the main verb (have written / been).
+  // A group keeps at most MAX_GROUP tiles; plain near misses give way before decoys.
+  const MAX_GROUP = 6;
+  function sequence(it, lex, rand = Math.random, nearMisses = true) {
+    const { groups, extras } = build(it, lex, rand, nearMisses);
+    const end = it.clauses[0][1], after = it.subj[0] + 1;
+    const firstVerb = it.steps.findIndex((_, i) => i >= after && i < end && kind(it, i, lex) === "verb");
+    const near = groups.map(g => g.length);
+    for (const extra of extras) {
+      let t = Math.min(after, end - 1);
+      if (extra.includes("been") || extra.includes("be")) t = firstVerb >= 0 ? firstVerb : t;
+      else if (["will", "would", "modal"].includes(kind(it, t, lex)) && t + 1 < end) t++;
+      groups[t].push(...extra);
+      while (groups[t].length > MAX_GROUP && near[t] > 1) { groups[t].splice(near[t] - 1, 1); near[t]--; }
+    }
+    return groups.map(g => shuffled(g, rand));
+  }
 
   // Right answers: the sentence as written and, for a statement that ends with a time phrase,
   // the same sentence with that phrase moved to the front ("Yesterday she didn't call").
@@ -445,21 +471,11 @@
     return order;
   }
 
-  // labels: empty places with their names (хто, дія, коли); slots: empty places only;
-  // count: only how many tiles the answer has; none: no hint at all (lessons that mix tenses,
-  // where the length of the answer would tell the tense).
-  const HINTS = ["labels", "slots", "count", "none"];
+  // labels: empty places with their names (хто, дія, коли), for the word-order lesson, where all tiles
+  // are shown at once; none: no hint, the groups shown one by one are enough.
+  const HINTS = ["labels", "none"];
   const INFO = ["word-order", "simple-tenses", "continuous", "mix-simple-continuous", "present-perfect",
     "perfect-continuous", "mix-present-past", "past-perfect", "future", "when-if", "mix-all", "passive", "conditionals", "final"];
-  // auto: the answer is checked when its last tile is placed; button: the learner presses
-  // Перевірити, so a shorter or longer sentence can be given and its length tells nothing.
-  const CHECK = ["auto", "button"];
-
-  // "4 плитки": Ukrainian plural for the number of tiles in the answer.
-  function tilesWord(n) {
-    const d = n % 10, h = n % 100;
-    return `${n} ${d === 1 && h !== 11 ? "плитка" : d >= 2 && d <= 4 && (h < 12 || h > 14) ? "плитки" : "плиток"}`;
-  }
 
   // Checks a topic file (grammar/tenses.json, grammar/modals.json…) with its lexicon already merged in,
   // and returns it with parsed sentences, or throws a message naming the problem.
@@ -498,7 +514,6 @@
       if (lesson.info !== undefined && !INFO.includes(lesson.info) && !filled(notes[lesson.info])) {
         fail(`${where}: info must be one of ${INFO.join(", ")} or a key of notes.`);
       }
-      if (lesson.check !== undefined && !CHECK.includes(lesson.check)) fail(`${where}: check must be one of ${CHECK.join(", ")}.`);
       if (lesson.forms !== undefined && (!Array.isArray(lesson.forms) || !lesson.forms.length || lesson.forms.some(f => !FORMS.includes(f)))) {
         fail(`${where}: forms must list some of ${FORMS.join(", ")}.`);
       }
@@ -536,8 +551,8 @@
       const going = items.some(it => it.steps.map(low).includes("going to"));
       for (const it of items) Object.assign(it, { perfectTimes, going });
       return { id: lesson.id, title: lesson.title.trim(), desc: lesson.desc.trim(), ready: lesson.ready, items, forms, perfectTimes, going,
-        hints: lesson.hints || "count", nearMisses: lesson.nearMisses !== false, decoys: Boolean(lesson.decoys),
-        check: lesson.check || "auto", info: lesson.info || null };
+        hints: lesson.hints || "none", nearMisses: lesson.nearMisses !== false, decoys: Boolean(lesson.decoys),
+        info: lesson.info || null };
     });
     const notes = {};
     for (const [key, html] of Object.entries(data.notes || {})) if (filled(html)) notes[key] = html;
@@ -558,8 +573,8 @@
     });
   }
 
-  const api = { RIGHT, WRONG, FORMS, HINTS, INFO, CHECK, makeLexicon, mergeLexicon, validateTopics, parse, kind, tense, tenses, role, options, decoys, family, bankGroups, bank,
-    accepted, isRight, sentence, tilesWord, score, passes, fmt, newOrder, validate };
+  const api = { RIGHT, WRONG, FORMS, HINTS, INFO, makeLexicon, mergeLexicon, validateTopics, parse, kind, tense, tenses, role, options, decoys, family, bankGroups, bank, sequence,
+    accepted, isRight, sentence, score, passes, fmt, newOrder, validate };
   if (typeof module !== "undefined" && module.exports) module.exports = api;
   else root.TensesCore = api;
 })(typeof window !== "undefined" ? window : globalThis);

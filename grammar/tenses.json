@@ -1,6 +1,6 @@
 {
   "title": "Часи",
-  "subtitle": "Склади фразу з плиток. Наступний урок відкривається при рейтингу 4.5.",
+  "subtitle": "Склади фразу з плиток, група за групою. Наступний урок відкривається при рейтингу 4.5.",
   "passRating": 4.5,
   "lessons": [
     {
@@ -41,7 +41,6 @@
       "title": "Прості часи",
       "desc": "Минуле, теперішнє, майбутнє: ствердження, заперечення, питання",
       "ready": true,
-      "hints": "slots",
       "info": "simple-tenses",
       "items": [
         {"uk": "Я працюю щодня.", "en": "I|work|every day."},
@@ -148,8 +147,6 @@
       "ready": true,
       "forms": ["simple", "continuous"],
       "decoys": true,
-      "hints": "none",
-      "check": "button",
       "info": "mix-simple-continuous",
       "items": [
         {"uk": "Він щодня ходить на роботу пішки.", "en": "He|walks|to work|every day."},
@@ -202,8 +199,6 @@
       "ready": true,
       "forms": ["simple", "perfect"],
       "decoys": true,
-      "hints": "none",
-      "check": "button",
       "info": "present-perfect",
       "items": [
         {"uk": "Я вже закінчив звіт.", "en": "I|have|already|finished|the report."},
@@ -257,8 +252,6 @@
       "ready": true,
       "forms": ["perfect", "perfect-continuous"],
       "decoys": true,
-      "hints": "none",
-      "check": "button",
       "info": "perfect-continuous",
       "items": [
         {"uk": "Я чекаю вже дві години.", "en": "I|have|been|waiting|for two hours."},
@@ -311,8 +304,6 @@
       "ready": true,
       "forms": ["simple", "continuous", "perfect", "perfect-continuous"],
       "decoys": true,
-      "hints": "none",
-      "check": "button",
       "info": "mix-present-past",
       "items": [
         {"uk": "Він грає в теніс по неділях.", "en": "He|plays|tennis|on Sundays."},
@@ -369,8 +360,6 @@
       "ready": true,
       "forms": ["simple", "perfect", "perfect-continuous"],
       "decoys": true,
-      "hints": "none",
-      "check": "button",
       "info": "past-perfect",
       "items": [
         {"uk": "Коли ми прийшли, фільм уже почався.", "en": "The film|had|already|started / when|we|arrived."},
@@ -419,8 +408,6 @@
       "ready": true,
       "forms": ["simple", "continuous", "perfect"],
       "decoys": true,
-      "hints": "none",
-      "check": "button",
       "info": "future",
       "items": [
         {"uk": "Я збираюся продати свою машину.", "en": "I|am|going to|sell|my car."},
@@ -514,8 +501,6 @@
       "ready": true,
       "forms": ["simple", "continuous", "perfect", "perfect-continuous"],
       "decoys": true,
-      "hints": "none",
-      "check": "button",
       "info": "mix-all",
       "items": [
         {"uk": "Вона ходить у спортзал по суботах.", "en": "She|goes|to the gym|on Saturdays."},
@@ -567,8 +552,6 @@
       "ready": true,
       "forms": ["simple", "continuous", "perfect", "passive"],
       "decoys": true,
-      "hints": "none",
-      "check": "button",
       "info": "passive",
       "items": [
         {"uk": "Цей будинок побудували у 1990 році.", "en": "This house|was|built|in 1990."},
@@ -619,8 +602,6 @@
       "ready": true,
       "forms": ["simple", "perfect"],
       "decoys": true,
-      "hints": "none",
-      "check": "button",
       "info": "conditionals",
       "items": [
         {"uk": "Якби я жив біля моря, я б плавав щодня.", "en": "If|I|lived|by the sea / I|would|swim|every day."},
@@ -662,8 +643,6 @@
       "ready": true,
       "forms": ["simple", "continuous", "perfect", "perfect-continuous", "passive"],
       "decoys": true,
-      "hints": "none",
-      "check": "button",
       "info": "final",
       "items": [
         {"uk": "Я знаю Анну з 2020 року.", "en": "I|have|known|Anna|since 2020."},

@@ -69,3 +69,11 @@
 .tn-order td,.tn-order th{text-align:center}
 .tn-reset{color:var(--bad)}
 .tn-title{display:flex;align-items:center;gap:4px;margin:0 0 2px -8px}.tn-title h1{margin:0}
+/* Screens slide in from the side they come from; the next group of tiles rises into place. */
+.tn-in{animation:tn-in .26s cubic-bezier(.2,.8,.2,1)}
+.tn-in-back{animation:tn-in-back .26s cubic-bezier(.2,.8,.2,1)}
+.tn-next{animation:tn-rise .2s ease-out}
+@keyframes tn-in{from{opacity:0;transform:translateX(28px)}to{opacity:1;transform:none}}
+@keyframes tn-in-back{from{opacity:0;transform:translateX(-28px)}to{opacity:1;transform:none}}
+@keyframes tn-rise{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){.tn-in,.tn-in-back,.tn-next{animation:none}}

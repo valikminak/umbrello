@@ -71,7 +71,6 @@
       "desc": "can, could, be able to",
       "ready": true,
       "forms": ["simple"],
-      "hints": "count",
       "info": "can",
       "items": [
         {
@@ -209,7 +208,6 @@
       "desc": "must, have to, mustn't, don't have to",
       "ready": true,
       "forms": ["simple"],
-      "hints": "count",
       "info": "must",
       "items": [
         {
@@ -344,7 +342,6 @@
       "desc": "should, might, may",
       "ready": true,
       "forms": ["simple"],
-      "hints": "count",
       "info": "should",
       "items": [
         {
@@ -480,8 +477,6 @@
       "ready": true,
       "forms": ["simple", "continuous"],
       "decoys": true,
-      "hints": "none",
-      "check": "button",
       "info": "must-be",
       "items": [
         {
@@ -612,8 +607,6 @@
       "ready": true,
       "forms": ["perfect", "perfect-continuous"],
       "decoys": true,
-      "hints": "none",
-      "check": "button",
       "info": "perfect",
       "items": [
         {
@@ -742,8 +735,6 @@
       "ready": true,
       "forms": ["simple", "continuous", "perfect"],
       "decoys": true,
-      "hints": "none",
-      "check": "button",
       "info": "mix",
       "items": [
         {
