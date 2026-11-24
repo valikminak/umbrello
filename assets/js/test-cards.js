@@ -41,8 +41,6 @@
     let T = null, timer = null;
     const stop = () => { clearTimeout(timer); timer = null; };
     const scoreOf = test => core.score(store.tests[test.id], test);
-    const plural = (n, one, few, many) => (n % 10 === 1 && n % 100 !== 11 ? one
-      : n % 10 >= 2 && n % 10 <= 4 && (n % 100 < 12 || n % 100 > 14) ? few : many);
 
     function render(html, dir) {
       host.innerHTML = html;
@@ -75,14 +73,9 @@
       const p = store.tests[test.id];
       T = { test, p };
       // The page was closed after the last answer of a round: finish that round first.
-      if (core.roundOver(p)) return roundEnd();
-      if (!p.order.length) newRound();
+      if (core.roundOver(p, test, passRating)) return roundEnd();
+      if (!p.round) { core.newRound(p); save(); }
       screen();
-    }
-
-    function newRound() {
-      core.newRound(T.p, T.test);
-      save();
     }
 
     function screen() {
@@ -112,8 +105,8 @@
 
     const items = () => T.test.items;
     function question() {
-      const it = T.it = items().find(item => item.key === T.p.order[T.p.pos]);
-      T.done = false;
+      const it = T.it = items()[T.p.pos];
+      T.done = T.turned = false;
       T.options = core.choices(it);
       host.querySelector("#tcAsk").textContent = isUkrainian(it.right) ? "Обери переклад"
         : isUkrainian(it.q) ? "Як це англійською?" : "Обери відповідь";
@@ -157,15 +150,15 @@
     }
     function flip() {
       if (!T.it.hint) return;
-      if (!T.done && T.p.hinted !== T.it.key) { T.p.hinted = T.it.key; save(); }
+      if (!T.done) T.turned = true;
       turn(!host.querySelector("#tcCard").classList.contains("flipped"));
     }
 
     function choose(i) {
       if (T.done) return;
       T.done = true;
-      const it = T.it, ok = T.options[i] === it.right, hint = T.p.hinted === it.key;
-      core.answer(T.p, ok, hint, T.options[i]);
+      const it = T.it, ok = T.options[i] === it.right;
+      core.answer(T.p, T.test, ok, T.turned, T.options[i]);
       // Kept now, so a page closed at this point keeps the star; the report goes out with the round.
       if (core.passed(core.score(T.p, T.test), passRating)) T.p.passed = true;
       save();
@@ -178,7 +171,7 @@
       });
       if (host.querySelector("#tcCard").classList.contains("flipped")) turn(true);
       stats();
-      const go = () => { stop(); if (core.roundOver(T.p)) roundEnd(); else question(); };
+      const go = () => { stop(); if (core.roundOver(T.p, T.test, passRating)) roundEnd(); else question(); };
       // A right answer moves on by itself; a wrong one waits for the button so the right answer can be read.
       stop();
       if (ok) { timer = setTimeout(go, 1100); return; }
@@ -201,13 +194,13 @@
     function roundEnd() {
       stop();
       const { test, p } = T, sc = scoreOf(test), passed = core.passed(sc, passRating);
-      const text = core.report(p, test, passRating), left = sc.total - sc.right;
+      const text = core.report(p, test, passRating);
       const item = key => items().find(it => it.key === key);
-      const slips = p.log.map(m => `<div>${esc(item(m.key).q)}<br><b>${esc(item(m.key).right)}</b>${m.hint ? ` <span class="tc-turn">${icon("turn")}</span>` : ""}</div>`).join("");
+      const slips = p.log.filter(m => !m.hint).map(m => `<div>${esc(item(m.key).q)}<br><b>${esc(item(m.key).right)}</b></div>`).join("");
       render(`<div class="center" id="tcScreen">
         <h2>${passed ? `Тест ${test.id} складено!` : `Коло ${p.round} пройдено`}</h2>
         <div class="big${passed ? " tn-big" : ""}">${core.fmt(sc.rating)}</div>
-        <p class="sub">${passed ? "Усі відповіді правильні." : `До ${core.fmt(passRating)} лишилося: ${left} ${plural(left, "картка", "картки", "карток")}.`}</p>
+        <p class="sub">${passed ? "Усі відповіді правильні." : `Помилок: ${sc.wrong}.`}</p>
         ${slips ? `<div class="mistakes">${slips}</div>` : ""}
         <p class="status" id="tcStatus"></p>
         <button class="btn ghost" id="tcRetry" type="button" style="display:none">Надіслати ще раз</button>
@@ -216,7 +209,7 @@
         ${passed ? '<button class="btn ghost" id="tcHome" type="button">До меню</button>' : ""}
       </div>`, "in");
       // The round is closed here, so its report goes out once; opening the test later starts the next one.
-      if (passed) { p.passed = true; core.restart(p); } else core.newRound(p, test);
+      if (passed) { p.passed = true; core.restart(p); } else core.newRound(p);
       save();
       host.querySelector("#tcMenu").onclick = () => list("back");
       const home = host.querySelector("#tcHome"), go = host.querySelector("#tcGo");

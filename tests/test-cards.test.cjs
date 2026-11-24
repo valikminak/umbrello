@@ -10,12 +10,18 @@ const seeded = start => { let seed = start * 7919 + 12345; return () => { seed =
 const deck = n => core.validate({ title: 'Тест', desc: 'Слова', items: Array.from({ length: n }, (_, i) => (
   { q: `word${i}`, right: `слово${i}`, wrong: ['а', 'б', 'в'], hint: `Here is [word${i}].` })) }, 'file');
 
-// Answers the whole round; what(key, i) says how each card goes: "r", "w" or "h" (right, but with the hint).
-function playRound(p, what) {
-  const keys = p.order.slice();
-  keys.forEach((key, i) => core.answer(p, what(key, i) !== 'w', what(key, i) === 'h'));
-  return keys;
+// Answers cards one after another; what(i) says how card i goes: "r", "w" or "h" (right, after turning the card over).
+// Stops where the test ends: after the last card, or as soon as everything is right.
+function play(p, data, what = () => 'r') {
+  const asked = [];
+  while (!core.roundOver(p, data, 5)) {
+    const i = p.pos;
+    asked.push(i);
+    core.answer(p, data, what(i) !== 'w', what(i) === 'h', what(i) === 'w' ? 'а' : data.items[i].right);
+  }
+  return asked;
 }
+const range = (from, to) => Array.from({ length: to - from + 1 }, (_, i) => from + i);
 
 test('every profile keeps its tests in numbered folders with valid files', () => {
   for (const { id } of read('users/index.json')) {
@@ -104,93 +110,95 @@ test('a card has four different options with the right one among them', () => {
   assert.equal(seen.size, 6, 'all wrong answers get used');
 });
 
-test('the first round has every card, the next ones only the cards not yet right, until 5.0', () => {
+test('every round goes from the first card; the test is passed the moment the last mistake is put right', () => {
   const data = deck(6), p = core.reconcile(null, data);
-  core.newRound(p, data);
-  assert.equal(p.round, 1);
-  const first = playRound(p, (_, i) => (i === 1 ? 'w' : i === 4 ? 'h' : 'r'));
-  assert.deepEqual([...first].sort(), data.items.map(it => it.key).sort());
-  assert.ok(core.roundOver(p));
+  core.newRound(p);
+  assert.deepEqual(play(p, data, i => (i === 2 ? 'w' : 'r')), range(0, 5), 'a mistake does not stop the round');
   let sc = core.score(p, data);
-  assert.deepEqual([sc.right, sc.wrong, sc.hinted, sc.total], [4, 1, 1, 6]);
-  assert.equal(core.passed(sc, 5), false);
+  assert.deepEqual([sc.right, sc.wrong, core.passed(sc, 5)], [5, 1, false]);
 
-  core.newRound(p, data);
-  assert.equal(p.round, 2);
-  assert.deepEqual([...p.order].sort(), [first[1], first[4]].sort());
-  playRound(p, (_, i) => (i === 0 ? 'w' : 'r'));
-  core.newRound(p, data);
-  assert.equal(p.order.length, 1);
-  playRound(p, () => 'r');
+  core.newRound(p);
+  assert.deepEqual([p.round, p.pos], [2, 0]);
+  assert.deepEqual(play(p, data), [0, 1, 2], 'cards 4–6 were right and need not be answered again');
   sc = core.score(p, data);
-  assert.equal(core.fmt(sc.rating), '5.0');
-  assert.equal(core.passed(sc, 5), true);
+  assert.deepEqual([core.fmt(sc.rating), core.passed(sc, 5)], ['5.0', true]);
 });
 
-test('one card short of all is 4.8, never 5.0, and an answer with the hint does not count', () => {
-  const data = deck(42), p = core.reconcile(null, data);
-  core.newRound(p, data);
-  playRound(p, (_, i) => (i === 0 ? 'h' : 'r'));
+test('a new mistake on the way spoils a right card, and the round goes on to the end', () => {
+  const data = deck(6), p = core.reconcile(null, data);
+  core.newRound(p);
+  play(p, data, i => (i === 4 ? 'w' : 'r'));
+  core.newRound(p);
+  assert.deepEqual(play(p, data, i => (i === 1 ? 'w' : 'r')), range(0, 5), 'card 5 is right now, but card 2 is not');
   const sc = core.score(p, data);
-  assert.equal(core.fmt(sc.rating), '4.8');
-  assert.equal(core.passed(sc, 5), false);
+  assert.deepEqual([sc.right, sc.wrong], [5, 1]);
+  assert.equal(p.marks[data.items[1].key], core.WRONG);
+  assert.equal(p.marks[data.items[4].key], core.RIGHT);
+  core.newRound(p);
+  assert.deepEqual(play(p, data), [0, 1]);
+  assert.equal(p.round, 3);
 });
 
-test('cards come in the order of the file, in every round', () => {
-  const data = deck(8), p = core.reconcile(null, data), keys = data.items.map(it => it.key);
-  core.newRound(p, data);
-  assert.deepEqual(p.order, keys);
-  playRound(p, (_, i) => ([1, 4, 7].includes(i) ? 'w' : i === 5 ? 'h' : 'r'));
-  core.newRound(p, data);
-  assert.deepEqual(p.order, [1, 4, 5, 7].map(i => keys[i]));
+test('all right at once passes in the first round; one mistake in 42 is 4.8, never 5.0', () => {
+  const data = deck(42), clean = core.reconcile(null, data), p = core.reconcile(null, data);
+  core.newRound(clean);
+  assert.equal(play(clean, data).length, 42);
+  assert.equal(core.passed(core.score(clean, data), 5), true);
+  core.newRound(p);
+  play(p, data, i => (i === 41 ? 'w' : 'r'));
+  const sc = core.score(p, data);
+  assert.deepEqual([core.fmt(sc.rating), core.passed(sc, 5)], ['4.8', false]);
 });
 
-test('a round saved when cards were shuffled goes on in order: answered cards stay answered, none is missed', () => {
-  const data = deck(6), keys = data.items.map(it => it.key);
-  const saved = { marks: { [keys[4]]: 'r', [keys[2]]: 'w' }, order: [4, 2, 5, 0, 3, 1].map(i => keys[i]), pos: 2, round: 1, log: [] };
-  const p = core.reconcile(saved, data);
-  assert.equal(p.pos, 2);
-  assert.deepEqual(p.order.slice(2), [0, 1, 3, 5].map(i => keys[i]));
+test('a right answer after turning the card over is a right answer like any other', () => {
+  const data = deck(3), p = core.reconcile(null, data);
+  core.newRound(p);
+  play(p, data, i => (i === 1 ? 'h' : 'r'));
+  assert.deepEqual(Object.values(p.marks), ['r', 'r', 'r']);
+  assert.equal(core.passed(core.score(p, data), 5), true);
 });
 
-test('progress survives an edited file: removed cards leave, new ones wait for the next round', () => {
+test('progress survives an edited file and drops what is not progress', () => {
   const data = deck(4), p = core.reconcile(null, data);
-  core.newRound(p, data);
-  core.answer(p, true, false);
-  const saved = JSON.parse(JSON.stringify(p));
+  core.newRound(p);
+  core.answer(p, data, true, false);
+  core.answer(p, data, false, false, 'а');
   const edited = deck(6);
-  edited.items.splice(edited.items.findIndex(it => it.key === saved.order[2]), 1);
-  const back = core.reconcile(saved, edited);
-  assert.equal(back.pos, 1);
-  assert.ok(back.order.every(key => edited.items.some(it => it.key === key)));
-  assert.equal(core.score(back, edited).right, 1);
-  while (!core.roundOver(back)) core.answer(back, true, false);
-  assert.equal(core.passed(core.score(back, edited), 5), false, 'new cards are still to be answered');
-  core.newRound(back, edited);
-  assert.equal(back.order.length, 2);
-  for (const junk of [null, 5, 'x', { marks: 1, order: 'no', pos: -2, log: 4 }]) {
-    const clean = core.reconcile(junk, data);
-    assert.deepEqual([clean.order, clean.pos, clean.round, clean.passed], [[], 0, 0, false]);
+  edited.items.splice(0, 1);
+  const back = core.reconcile(JSON.parse(JSON.stringify(p)), edited);
+  assert.deepEqual(back.marks, { [edited.items[0].key]: 'w' });
+  play(back, edited);
+  core.newRound(back);
+  play(back, edited);
+  assert.equal(core.passed(core.score(back, edited), 5), true);
+  const shorter = core.reconcile({ marks: {}, pos: 9, round: 1, log: [] }, deck(2));
+  assert.equal(core.roundOver(shorter, deck(2), 5), true);
+  for (const junk of [null, 5, 'x', { marks: 1, pos: -2, round: 'a', log: 4 }]) {
+    assert.deepEqual(core.reconcile(junk, data), { marks: {}, pos: 0, round: 0, log: [], passed: false });
   }
 });
 
-test('the report names the rating, the mistakes with the chosen answer, and the hints', () => {
-  const data = deck(3), p = core.reconcile(null, data);
-  core.newRound(p, data);
-  const [a, b] = p.order;
-  core.answer(p, false, false, 'б');
-  core.answer(p, true, true, 'слово');
-  core.answer(p, true, false);
-  const item = key => data.items.find(it => it.key === key);
+test('progress saved by the first version keeps its answers and starts the round from the first card', () => {
+  const data = deck(6), keys = data.items.map(it => it.key);
+  const saved = { marks: { [keys[4]]: 'r', [keys[2]]: 'w', [keys[3]]: 'h' }, order: [4, 2, 3, 0, 5, 1].map(i => keys[i]), pos: 3, round: 2,
+    log: [{ key: keys[2], chosen: 'а' }], hinted: keys[0], passed: true, seenInfo: true };
+  assert.deepEqual(core.reconcile(saved, data),
+    { marks: { [keys[4]]: 'r', [keys[2]]: 'w', [keys[3]]: 'r' }, pos: 0, round: 2, log: [], passed: true });
+});
+
+test('the report names the rating, the mistakes of the round with the chosen answer, and the hints', () => {
+  const data = deck(3), p = core.reconcile(null, data), [a, b] = data.items;
+  core.newRound(p);
+  play(p, data, i => ['w', 'h', 'r'][i]);
   const text = core.report(p, data, 5);
-  assert.match(text, /^Коло 1\. Рейтинг 1\.6 з 5\.0/);
-  assert.match(text, /Правильно: 1 з 3/);
-  assert.ok(text.includes(`Помилки:\n• ${item(a).q} → ${item(a).right} (обрано: б)`), text);
-  assert.ok(text.includes(`З підказкою:\n• ${item(b).q} → ${item(b).right}`), text);
-  core.newRound(p, data);
+  assert.match(text, /^Коло 1\. Рейтинг 3\.3 з 5\.0/);
+  assert.match(text, /Правильно: 2 з 3/);
+  assert.ok(text.includes(`Помилки:\n• ${a.q} → ${a.right} (обрано: а)`), text);
+  assert.ok(text.includes(`З підказкою:\n• ${b.q} → ${b.right}`), text);
+  core.newRound(p);
   assert.deepEqual(p.log, []);
-  playRound(p, () => 'r');
-  assert.match(core.report(p, data, 5), /^Тест складено! Рейтинг 5\.0\. Кіл: 2/);
+  play(p, data);
+  assert.equal(core.report(p, data, 5), 'Тест складено! Рейтинг 5.0. Кіл: 2');
 });
 
 /* ---------- the page ---------- */
@@ -271,10 +279,9 @@ test('Sophia sees numbered tests, the newest first, all open', async () => {
   assert.doesNotMatch(html, /locked|disabled/);
 });
 
-test('the card flips to a sentence by a tap; an answer after that is not counted and the card comes back', async () => {
+test('the card flips to a sentence by a tap; an answer after that counts and nothing marks it', async () => {
   const app = await open();
   app.start(0);
-  const asked = [app.q()];
   const card = app.host.querySelector('#tcCard');
   assert.equal(card.classList.contains('flipped'), false);
   card.click();
@@ -282,18 +289,42 @@ test('the card flips to a sentence by a tap; an answer after that is not counted
   assert.equal(app.host.querySelector('#tcHint').innerHTML, 'The king lives in a <b>castle</b>.');
   card.click();
   assert.equal(card.classList.contains('flipped'), false, 'a second tap turns it back');
-  app.option(ANSWER[asked[0]][0]).click();
-  assert.equal(app.host.querySelector('#tcRight').textContent, 0);
+  app.option('замок').click();
+  assert.equal(app.host.querySelector('#tcRight').textContent, 1);
+  assert.match(app.host.querySelector('#tcProgress').innerHTML, /^<i class="r"><\/i>/);
   await app.run();
-  asked.push(app.q());
-  app.option(ANSWER[asked[1]][0]).click();
+  app.option('roof').click();
+  await app.run();
+  assert.match(app.host.innerHTML, /складено/);
+  assert.match(app.reports[0].text, /З підказкою/, 'only the teacher sees it');
+});
+
+test('after a round with a mistake it starts from the first card again, with a message each time', async () => {
+  const app = await open();
+  app.start(0);
+  app.option('пором').click();
+  app.host.querySelector('#tcNext').click();
+  app.option('roof').click();
   await app.run();
   assert.equal(app.reports.length, 1);
   assert.match(app.reports[0].title, /Тест 2/);
-  assert.match(app.reports[0].text, /З підказкою/);
-  assert.match(app.host.innerHTML, /2\.5/);
+  assert.match(app.reports[0].text, /Коло 1\. Рейтинг 2\.5/);
   await app.tap('#tcGo');
-  assert.equal(app.q(), asked[0], 'only the hinted card is left');
+  assert.equal(app.q(), 'castle');
+  assert.match(app.host.querySelector('#tcProgress').innerHTML, /^<i class="w cur"><\/i><i class="r"><\/i>$/, 'the mistake stays red until it is put right');
+  app.option('пором').click();
+  app.host.querySelector('#tcNext').click();
+  assert.equal(app.q(), 'дах', 'the whole round again');
+  app.option('roof').click();
+  await app.run();
+  assert.equal(app.reports.length, 2);
+  assert.match(app.reports[1].text, /Коло 2/);
+  await app.tap('#tcGo');
+  app.option('замок').click();
+  await app.run();
+  assert.match(app.host.innerHTML, /складено/, 'the last mistake is right: no need to go on to the second card');
+  assert.equal(app.reports.length, 3);
+  assert.match(app.reports[2].text, /Тест складено! Рейтинг 5\.0\. Кіл: 3/);
 });
 
 test('the sentence hides the word that is asked for until the answer, and the next card never shows its sentence early', async () => {
@@ -334,22 +365,14 @@ test('nothing on the screens explains the hint: no sheet, no label, no note, onl
   assert.match(app.host.innerHTML, /id="tcTurn"[^>]*><span class="tn-ico"/);
   app.host.querySelector('#tcCard').click();
   screens.push(app.host.querySelector('#tcCard').getAttribute('aria-label'));
-  for (let i = 0; i < 2; i++) { app.option(ANSWER[app.q()][0]).click(); await app.run(); }
+  app.option('замок').click();
+  await app.run();
+  app.option('ferry').click();
+  app.host.querySelector('#tcNext').click();
   assert.match(app.host.innerHTML, /Коло 1/);
+  assert.doesNotMatch(app.host.innerHTML, /tc-turn/);
   screens.push(app.host.innerHTML);
   for (const html of screens) assert.doesNotMatch(html, /підказк|Як це працює|повернеться/i);
-});
-
-test('a flip is remembered over a reload, so the hint cannot be had for free', async () => {
-  const storage = {}, first = await open({ storage });
-  first.start(0);
-  const q = first.q();
-  first.host.querySelector('#tcCard').click();
-  const again = await open({ storage });
-  again.start(0);
-  assert.equal(again.q(), q);
-  again.option(ANSWER[q][0]).click();
-  assert.equal(again.host.querySelector('#tcRight').textContent, 0);
 });
 
 test('one try per card: a wrong answer shows the right one, waits, and cannot be changed', async () => {

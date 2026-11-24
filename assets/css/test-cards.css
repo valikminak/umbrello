@@ -14,7 +14,6 @@
 .tc-turn{display:inline-flex;vertical-align:middle;color:var(--hint)}
 .tc-turn[hidden]{display:none}
 .tc-turn .tn-ico{width:20px;height:20px}
-.mistakes .tc-turn .tn-ico{width:15px;height:15px}
 .tc-hint{font-size:22px;font-weight:500;line-height:1.4;text-align:center}
 .tc-hint b{font-weight:700}
 .tc-gap{color:var(--hint);letter-spacing:-1px}
@@ -27,7 +26,6 @@
 /* Room for the button is kept, so the answers do not move when it appears. */
 .tc-go{min-height:69px;margin-top:14px}
 .tc .tn-progress{margin-top:auto}
-.tc .tn-progress i.h{background:#E0A030}
 .tc .tn-progress i{min-width:0}
 /* Small phones: the word, the answers and the button stay on one screen. */
 @media (max-height:640px){.tc-face{min-height:150px;padding:14px}.tc-options .opt{min-height:56px}.tc-options{margin-top:10px}.tc-go{min-height:62px;margin-top:10px}}

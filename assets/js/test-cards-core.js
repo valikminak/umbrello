@@ -3,8 +3,7 @@
 (function (root) {
   "use strict";
   const rules = typeof module !== "undefined" && module.exports ? require("./tenses-core.js") : root.TensesCore;
-  // Marks: right, wrong, and right after looking at the hint, which does not count towards the rating.
-  const { RIGHT, WRONG, fmt } = rules, HINTED = "h";
+  const { RIGHT, WRONG, fmt } = rules;
   const filled = value => typeof value === "string" && value.trim() !== "";
   const isObject = value => Boolean(value) && typeof value === "object" && !Array.isArray(value);
 
@@ -65,43 +64,40 @@
     const known = new Set(data.items.map(it => it.key));
     const marks = {};
     if (isObject(s.marks)) {
-      for (const [key, mark] of Object.entries(s.marks)) if (known.has(key) && [RIGHT, WRONG, HINTED].includes(mark)) marks[key] = mark;
+      for (const [key, mark] of Object.entries(s.marks)) {
+        if (!known.has(key)) continue;
+        // "h", right after the hint, was a mark of its own in the first version.
+        if (mark === RIGHT || mark === "h") marks[key] = RIGHT;
+        else if (mark === WRONG) marks[key] = WRONG;
+      }
     }
-    const savedOrder = (Array.isArray(s.order) ? s.order : []).filter(key => known.has(key));
-    const pos = Number.isSafeInteger(s.pos) && s.pos > 0 && Array.isArray(s.order)
-      ? s.order.slice(0, s.pos).filter(key => known.has(key)).length : 0;
-    // What is still to come goes in the order of the file.
-    const rest = new Set(savedOrder.slice(pos));
-    const order = [...savedOrder.slice(0, pos), ...data.items.map(it => it.key).filter(key => rest.has(key))];
-    const log = (Array.isArray(s.log) ? s.log : []).filter(m => isObject(m) && known.has(m.key));
-    return { marks, order, pos, log, round: Number.isSafeInteger(s.round) && s.round > 0 && order.length ? s.round : 0,
-      hinted: known.has(s.hinted) ? s.hinted : null, passed: s.passed === true };
+    // The first version shuffled the cards and kept their order; its place in the round means nothing now.
+    const shuffledOrder = s.order !== undefined;
+    const whole = n => (Number.isSafeInteger(n) && n > 0 ? n : 0);
+    return { marks, pos: shuffledOrder ? 0 : whole(s.pos), round: whole(s.round),
+      log: shuffledOrder || !Array.isArray(s.log) ? [] : s.log.filter(m => isObject(m) && known.has(m.key)), passed: s.passed === true };
   }
 
-  // The first round has every card, the next ones only those that are not right yet; always in the order of the file.
-  function newRound(p, data) {
-    p.order = data.items.map(it => it.key).filter(key => p.marks[key] !== RIGHT);
-    p.pos = 0;
-    p.log = [];
-    p.hinted = null;
-    p.round++;
-  }
+  // Like Polyglot: every round goes through the cards from the first one, in the order of the file, and each
+  // card keeps its last answer. A mistake is put right only by coming to that card again, and a new mistake
+  // on the way spoils a right one.
+  const newRound = p => Object.assign(p, { pos: 0, log: [], round: p.round + 1 });
   // Taking the test again from the start; a star already earned stays.
-  const restart = p => Object.assign(p, { marks: {}, order: [], pos: 0, log: [], round: 0, hinted: null });
+  const restart = p => Object.assign(p, { marks: {}, pos: 0, log: [], round: 0 });
 
-  function answer(p, ok, hint, chosen) {
-    const key = p.order[p.pos];
-    p.marks[key] = !ok ? WRONG : hint ? HINTED : RIGHT;
+  // hint: the card was turned over before the answer. It changes nothing but the teacher's report.
+  function answer(p, data, ok, hint, chosen) {
+    const { key } = data.items[p.pos];
+    p.marks[key] = ok ? RIGHT : WRONG;
     if (!ok) p.log.push({ key, chosen });
     else if (hint) p.log.push({ key, hint: true });
     p.pos++;
-    p.hinted = null;
   }
-  const roundOver = p => p.order.length > 0 && p.pos >= p.order.length;
 
-  const score = (p, data) => ({ ...rules.score(data.items.length, p.marks),
-    hinted: Object.values(p.marks).filter(m => m === HINTED).length });
+  const score = (p, data) => rules.score(data.items.length, p.marks);
   const passed = (sc, passRating) => rules.passes(sc, passRating);
+  // A round ends after its last card, or at once when the test is passed.
+  const roundOver = (p, data, passRating) => p.round > 0 && (p.pos >= data.items.length || passed(score(p, data), passRating));
 
   function report(p, data, passRating) {
     const sc = score(p, data), item = key => data.items.find(it => it.key === key);
@@ -112,7 +108,7 @@
     return head + list("Помилки", p.log.filter(m => !m.hint)) + list("З підказкою", p.log.filter(m => m.hint));
   }
 
-  const api = { RIGHT, WRONG, HINTED, fmt, validateIndex, validate, choices, reconcile, newRound, restart, answer, roundOver, score, passed, report };
+  const api = { RIGHT, WRONG, fmt, validateIndex, validate, choices, reconcile, newRound, restart, answer, roundOver, score, passed, report };
   if (typeof module !== "undefined" && module.exports) module.exports = api;
   else root.TestCardsCore = api;
 })(typeof window !== "undefined" ? window : globalThis);
