@@ -8,7 +8,7 @@ const root = path.join(__dirname, '..');
 const read = file => JSON.parse(fs.readFileSync(path.join(root, file), 'utf8'));
 const seeded = start => { let seed = start * 7919 + 12345; return () => { seed = (seed * 16807) % 2147483647; return (seed - 1) / 2147483646; }; };
 const deck = n => core.validate({ title: 'Тест', desc: 'Слова', items: Array.from({ length: n }, (_, i) => (
-  { q: `word${i}`, right: `слово${i}`, wrong: ['а', 'б', 'в'], emoji: '🏰' })) }, 'file');
+  { q: `word${i}`, right: `слово${i}`, wrong: ['а', 'б', 'в'], hint: `Here is [word${i}].` })) }, 'file');
 
 // Answers the whole round; what(key, i) says how each card goes: "r", "w" or "h" (right, but with the hint).
 function playRound(p, what) {
@@ -36,21 +36,27 @@ const BOOK = { receive: 'отримувати', building: 'будівля', cast
   ticket: 'квиток', carpet: 'килим', 'chest of drawers': 'комод', cupboard: 'кухонна шафа', curtains: 'штори',
   cushion: 'диванна подушка', 'read magazines': 'читати журнали', 'write a diary': 'вести щоденник' };
 
-test('Sophia’s test 1 asks each of the 21 words both ways, translated as in the exam book, with its own emoji hint', () => {
+test('Sophia’s test 1 asks each of the 21 words both ways, translated as in the exam book, with its own sentence', () => {
   const words = Object.keys(BOOK);
   const { items } = core.validate(read('users/sophia/tests/1/test.json'), 'test 1');
   assert.equal(items.length, words.length * 2);
-  const emoji = new Set();
+  const hints = new Set();
   for (const word of words) {
     const there = items.find(it => it.q === word), back = items.find(it => it.right === word);
     assert.ok(there && back, word);
     assert.equal(there.right, BOOK[word], word);
     assert.equal(back.q, BOOK[word], word);
-    assert.ok(there.emoji, word);
-    assert.equal(there.emoji, back.emoji, word);
-    emoji.add(there.emoji);
+    // The same sentence: the word is in it on one card and left out on the other.
+    assert.deepEqual([there.hint.word.toLowerCase(), there.hint.gap, back.hint.gap], [word, false, true]);
+    const text = ({ before, word: w, after }) => before + w + after;
+    assert.equal(text(there.hint), text(back.hint), word);
+    hints.add(text(there.hint));
+    const rest = ` ${there.hint.before} ${there.hint.after} `.toLowerCase();
+    for (const other of [...back.wrong, word]) assert.doesNotMatch(rest, new RegExp(`\\b${other}\\b`), `${word}: ${other} is in the sentence`);
   }
-  assert.equal(emoji.size, words.length, 'no two words share a hint');
+  assert.equal(hints.size, words.length, 'no two words share a sentence');
+  assert.deepEqual(items.slice(0, words.length).map(it => it.q), words, 'every word comes once before any comes again');
+  assert.doesNotMatch(JSON.stringify(read('users/sophia/tests/1/test.json')), /emoji|\p{Extended_Pictographic}/u);
 });
 
 test('test 1 never offers a word that could be confused with the answer', () => {
@@ -74,7 +80,8 @@ test('a broken file says what to fix', () => {
     [item({ wrong: ['в', 'г'] }), /question 1 needs at least 3 wrong/],
     [item({ wrong: ['в', 'г', 'б'] }), /question 1 repeats an answer/],
     [item({ wrong: ['в', 'в', 'г'] }), /question 1 repeats an answer/],
-    [item({ emoji: 5 }), /question 1: emoji/],
+    [item({ hint: 5 }), /question 1: hint/], [item({ hint: 'No mark.' }), /question 1: hint/],
+    [item({ hint: 'Two [a] marks [a].' }), /question 1: hint/], [item({ hint: 'Wrong [word].' }), /question 1: hint/],
     [{ title: 'T', desc: 'D', items: [...item().items, ...item().items] }, /question 2 repeats/],
   ]) assert.throws(() => core.validate(data, 'file'), message);
   for (const data of [null, {}, { passRating: 6, tests: [1] }, { passRating: 5, tests: [1, 1] }, { passRating: 5, tests: ['../me'] }, { passRating: 5, tests: [0] }]) {
@@ -99,7 +106,7 @@ test('a card has four different options with the right one among them', () => {
 
 test('the first round has every card, the next ones only the cards not yet right, until 5.0', () => {
   const data = deck(6), p = core.reconcile(null, data);
-  core.newRound(p, data, seeded(3));
+  core.newRound(p, data);
   assert.equal(p.round, 1);
   const first = playRound(p, (_, i) => (i === 1 ? 'w' : i === 4 ? 'h' : 'r'));
   assert.deepEqual([...first].sort(), data.items.map(it => it.key).sort());
@@ -108,11 +115,11 @@ test('the first round has every card, the next ones only the cards not yet right
   assert.deepEqual([sc.right, sc.wrong, sc.hinted, sc.total], [4, 1, 1, 6]);
   assert.equal(core.passed(sc, 5), false);
 
-  core.newRound(p, data, seeded(4));
+  core.newRound(p, data);
   assert.equal(p.round, 2);
   assert.deepEqual([...p.order].sort(), [first[1], first[4]].sort());
   playRound(p, (_, i) => (i === 0 ? 'w' : 'r'));
-  core.newRound(p, data, seeded(5));
+  core.newRound(p, data);
   assert.equal(p.order.length, 1);
   playRound(p, () => 'r');
   sc = core.score(p, data);
@@ -122,27 +129,33 @@ test('the first round has every card, the next ones only the cards not yet right
 
 test('one card short of all is 4.8, never 5.0, and an answer with the hint does not count', () => {
   const data = deck(42), p = core.reconcile(null, data);
-  core.newRound(p, data, seeded(1));
+  core.newRound(p, data);
   playRound(p, (_, i) => (i === 0 ? 'h' : 'r'));
   const sc = core.score(p, data);
   assert.equal(core.fmt(sc.rating), '4.8');
   assert.equal(core.passed(sc, 5), false);
 });
 
-test('the same card never opens the next round right after it closed the last one, unless it is the only one', () => {
-  const data = deck(5);
-  for (let seed = 1; seed < 60; seed++) {
-    const p = core.reconcile(null, data);
-    core.newRound(p, data, seeded(seed));
-    const last = playRound(p, () => 'w').at(-1);
-    core.newRound(p, data, seeded(seed + 100));
-    assert.notEqual(p.order[0], last, `seed ${seed}`);
-  }
+test('cards come in the order of the file, in every round', () => {
+  const data = deck(8), p = core.reconcile(null, data), keys = data.items.map(it => it.key);
+  core.newRound(p, data);
+  assert.deepEqual(p.order, keys);
+  playRound(p, (_, i) => ([1, 4, 7].includes(i) ? 'w' : i === 5 ? 'h' : 'r'));
+  core.newRound(p, data);
+  assert.deepEqual(p.order, [1, 4, 5, 7].map(i => keys[i]));
+});
+
+test('a round saved when cards were shuffled goes on in order: answered cards stay answered, none is missed', () => {
+  const data = deck(6), keys = data.items.map(it => it.key);
+  const saved = { marks: { [keys[4]]: 'r', [keys[2]]: 'w' }, order: [4, 2, 5, 0, 3, 1].map(i => keys[i]), pos: 2, round: 1, log: [] };
+  const p = core.reconcile(saved, data);
+  assert.equal(p.pos, 2);
+  assert.deepEqual(p.order.slice(2), [0, 1, 3, 5].map(i => keys[i]));
 });
 
 test('progress survives an edited file: removed cards leave, new ones wait for the next round', () => {
   const data = deck(4), p = core.reconcile(null, data);
-  core.newRound(p, data, seeded(2));
+  core.newRound(p, data);
   core.answer(p, true, false);
   const saved = JSON.parse(JSON.stringify(p));
   const edited = deck(6);
@@ -153,7 +166,7 @@ test('progress survives an edited file: removed cards leave, new ones wait for t
   assert.equal(core.score(back, edited).right, 1);
   while (!core.roundOver(back)) core.answer(back, true, false);
   assert.equal(core.passed(core.score(back, edited), 5), false, 'new cards are still to be answered');
-  core.newRound(back, edited, seeded(2));
+  core.newRound(back, edited);
   assert.equal(back.order.length, 2);
   for (const junk of [null, 5, 'x', { marks: 1, order: 'no', pos: -2, log: 4 }]) {
     const clean = core.reconcile(junk, data);
@@ -163,7 +176,7 @@ test('progress survives an edited file: removed cards leave, new ones wait for t
 
 test('the report names the rating, the mistakes with the chosen answer, and the hints', () => {
   const data = deck(3), p = core.reconcile(null, data);
-  core.newRound(p, data, seeded(9));
+  core.newRound(p, data);
   const [a, b] = p.order;
   core.answer(p, false, false, 'б');
   core.answer(p, true, true, 'слово');
@@ -174,7 +187,7 @@ test('the report names the rating, the mistakes with the chosen answer, and the 
   assert.match(text, /Правильно: 1 з 3/);
   assert.ok(text.includes(`Помилки:\n• ${item(a).q} → ${item(a).right} (обрано: б)`), text);
   assert.ok(text.includes(`З підказкою:\n• ${item(b).q} → ${item(b).right}`), text);
-  core.newRound(p, data, seeded(9));
+  core.newRound(p, data);
   assert.deepEqual(p.log, []);
   playRound(p, () => 'r');
   assert.match(core.report(p, data, 5), /^Тест складено! Рейтинг 5\.0\. Кіл: 2/);
@@ -186,8 +199,8 @@ async function open({ profile = { id: 'sophia', name: 'Sophia', reports: true },
     'users/sophia/tests/index.json': { passRating: 5, tests: [1, 2] },
     'users/sophia/tests/1/test.json': { title: 'Перший', desc: 'Один', items: [{ q: 'old', right: 'старий', wrong: ['а', 'б', 'в'] }] },
     'users/sophia/tests/2/test.json': { title: 'Другий', desc: 'Два', items: [
-      { q: 'castle', right: 'замок', wrong: ['квиток', 'пором', 'дах'], emoji: '🏰' },
-      { q: 'дах', right: 'roof', wrong: ['ferry', 'coach', 'ticket'], emoji: '🔺 🏠' }] },
+      { q: 'castle', right: 'замок', wrong: ['квиток', 'пором', 'дах'], hint: 'The king lives in a [castle].' },
+      { q: 'дах', right: 'roof', wrong: ['ferry', 'coach', 'ticket'], hint: 'The cat is on the [roof].' }] },
   };
   const reports = [], timers = [], requested = [];
   const element = () => {
@@ -243,7 +256,7 @@ async function open({ profile = { id: 'sophia', name: 'Sophia', reports: true },
   await tick();
   return { host, body, reports, requested, storage, tick,
     async tap(sel) { host.querySelector(sel).click(); await tick(); },
-    start(n) { host.querySelectorAll('[data-test]')[n].click(); const ok = body.child?.querySelector('#tcClose'); if (ok && !body.child.removed) ok.click(); },
+    start(n) { host.querySelectorAll('[data-test]')[n].click(); },
     option(text) { return host.querySelectorAll('[data-o]')[host.querySelector('#tcOptions').innerHTML.split('data-o').slice(1).findIndex(s => s.includes(`>${text}<`))]; },
     async run() { const list = timers.splice(0); for (const fn of list) if (fn) fn(); await tick(); },
     q: () => host.querySelector('#tcWord').textContent };
@@ -258,7 +271,7 @@ test('Sophia sees numbered tests, the newest first, all open', async () => {
   assert.doesNotMatch(html, /locked|disabled/);
 });
 
-test('the card flips to its emoji by a tap; an answer after that is not counted and the card comes back', async () => {
+test('the card flips to a sentence by a tap; an answer after that is not counted and the card comes back', async () => {
   const app = await open();
   app.start(0);
   const asked = [app.q()];
@@ -266,7 +279,7 @@ test('the card flips to its emoji by a tap; an answer after that is not counted 
   assert.equal(card.classList.contains('flipped'), false);
   card.click();
   assert.equal(card.classList.contains('flipped'), true);
-  assert.match(app.host.querySelector('#tcEmoji').textContent, /🏰|🏠/);
+  assert.equal(app.host.querySelector('#tcHint').innerHTML, 'The king lives in a <b>castle</b>.');
   card.click();
   assert.equal(card.classList.contains('flipped'), false, 'a second tap turns it back');
   app.option(ANSWER[asked[0]][0]).click();
@@ -283,17 +296,48 @@ test('the card flips to its emoji by a tap; an answer after that is not counted 
   assert.equal(app.q(), asked[0], 'only the hinted card is left');
 });
 
-test('the next card never shows its emoji before it is turned over', async () => {
+test('the sentence hides the word that is asked for until the answer, and the next card never shows its sentence early', async () => {
   const app = await open();
   app.start(0);
-  const emoji = () => app.host.querySelector('#tcEmoji').textContent;
-  assert.equal(emoji(), '');
+  const hint = () => app.host.querySelector('#tcHint').innerHTML;
+  assert.equal(hint(), '');
   app.host.querySelector('#tcCard').click();
-  assert.notEqual(emoji(), '');
-  app.option(ANSWER[app.q()][0]).click();
+  assert.match(hint(), /castle/);
+  app.option('замок').click();
   await app.run();
+  assert.equal(app.q(), 'дах', 'in the order of the file');
   assert.equal(app.host.querySelector('#tcCard').classList.contains('flipped'), false);
-  assert.equal(emoji(), '');
+  assert.equal(hint(), '');
+  app.host.querySelector('#tcCard').click();
+  assert.match(hint(), /on the <span class="tc-gap">_+<\/span>\./);
+  assert.doesNotMatch(hint() + app.host.querySelector('#tcCard').getAttribute('aria-label'), /roof/);
+  app.option('ferry').click();
+  assert.match(hint(), /on the <b>roof<\/b>\./, 'filled in after the answer');
+});
+
+test('a right answer moves on by itself with no button; only a wrong one has «Далі»', async () => {
+  const app = await open();
+  app.start(0);
+  app.option('замок').click();
+  assert.doesNotMatch(app.host.querySelector('#tcGoBox').innerHTML, /button/);
+  await app.run();
+  assert.equal(app.q(), 'дах');
+  app.option('ferry').click();
+  assert.match(app.host.querySelector('#tcGoBox').innerHTML, /id="tcNext"[^>]*>Далі</);
+});
+
+test('nothing on the screens explains the hint: no sheet, no label, no note, only the turn icon on the card', async () => {
+  const app = await open();
+  app.start(0);
+  const screens = [app.host.innerHTML];
+  assert.equal(app.body.child, undefined, 'no sheet opens');
+  assert.match(app.host.innerHTML, /id="tcTurn"[^>]*><span class="tn-ico"/);
+  app.host.querySelector('#tcCard').click();
+  screens.push(app.host.querySelector('#tcCard').getAttribute('aria-label'));
+  for (let i = 0; i < 2; i++) { app.option(ANSWER[app.q()][0]).click(); await app.run(); }
+  assert.match(app.host.innerHTML, /Коло 1/);
+  screens.push(app.host.innerHTML);
+  for (const html of screens) assert.doesNotMatch(html, /підказк|Як це працює|повернеться/i);
 });
 
 test('a flip is remembered over a reload, so the hint cannot be had for free', async () => {
@@ -376,14 +420,13 @@ test('reports: false sends nothing', async () => {
   assert.equal(quiet.reports.length, 0);
 });
 
-test('any profile opens its own folders; a card without an emoji does not turn and asks by its answers', async () => {
+test('any profile opens its own folders; a card without a sentence does not turn and asks by its answers', async () => {
   const long = 'Що означає «compelling» у реченні «She put forward a compelling argument for reform»?';
   const storage = {}, me = await open({ storage, profile: { id: 'me', name: 'me', reports: false }, files: {
     'users/me/tests/index.json': { passRating: 5, tests: [1] },
     'users/me/tests/1/test.json': { title: 'Лексика', desc: 'C1', items: [{ q: long, right: 'переконливий', wrong: ['а', 'б', 'такий, що викликає суперечки'] }] } } });
   assert.deepEqual(me.requested, ['users/me/tests/index.json', 'users/me/tests/1/test.json']);
   me.start(0);
-  assert.doesNotMatch(me.body.child.innerHTML, /підказк/i);
   const card = me.host.querySelector('#tcCard');
   assert.equal(card.disabled, true);
   card.onclick();

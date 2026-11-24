@@ -1,4 +1,4 @@
-/* Card tests: a list of numbered tests; in a test each card has four answers and turns over to its emoji hint.
+/* Card tests: a list of numbered tests; in a test each card has four answers and turns over to a sentence with the word.
    Mounted by test.js for the profile's users/<id>/tests/. Rules live in test-cards-core.js; the look is
    shared with Grammar lessons (tenses.css). */
 (function () {
@@ -6,7 +6,6 @@
   const core = window.TestCardsCore;
   const ICON = {
     back: '<svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg>',
-    info: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5v.5"/></svg>',
     star: '<svg viewBox="0 0 24 24"><path d="M12 3.5l2.6 5.3 5.9.9-4.3 4.1 1 5.8-5.2-2.8-5.2 2.8 1-5.8-4.3-4.1 5.9-.9z"/></svg>',
     ok: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M8 12.5l3 3 5-6"/></svg>',
     bad: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9 9l6 6M15 9l-6 6"/></svg>',
@@ -79,7 +78,6 @@
       if (core.roundOver(p)) return roundEnd();
       if (!p.order.length) newRound();
       screen();
-      if (!p.seenInfo) { p.seenInfo = true; save(); info(true); }
     }
 
     function newRound() {
@@ -95,22 +93,19 @@
           <span class="tn-stat" title="Рейтинг">${icon("star")}<span id="tcRating"></span></span>
           <span class="tn-stat ok" title="Правильно">${icon("ok")}<span id="tcRight"></span></span>
           <span class="tn-stat bad" title="Помилки">${icon("bad")}<span id="tcWrong"></span></span>
-          <button class="tn-icon-btn" id="tcInfo" type="button" aria-label="Як це працює">${icon("info")}</button>
         </div>
         <p class="tn-hint" id="tcAsk"></p>
         <button class="tc-card" id="tcCard" type="button">
           <span class="tc-flip">
-            <span class="tc-face" id="tcFront"><span class="tc-word" id="tcWord"></span><span class="tc-turn" id="tcTurn">${icon("turn")}Підказка</span></span>
-            <span class="tc-face tc-back" id="tcFaceBack" aria-hidden="true"><span class="tc-emoji" id="tcEmoji"></span></span>
+            <span class="tc-face" id="tcFront"><span class="tc-word" id="tcWord"></span><span class="tc-turn" id="tcTurn">${icon("turn")}</span></span>
+            <span class="tc-face tc-back" id="tcFaceBack" aria-hidden="true"><span class="tc-hint" id="tcHint" lang="en"></span></span>
           </span>
         </button>
-        <p class="tc-note" id="tcNote" aria-live="polite"></p>
         <div class="tc-options" id="tcOptions"></div>
         <div class="tc-go" id="tcGoBox"></div>
         <div class="tn-progress" id="tcProgress" aria-hidden="true"></div>
       </div>`, "in");
       host.querySelector("#tcBack").onclick = () => list("back");
-      host.querySelector("#tcInfo").onclick = () => info();
       host.querySelector("#tcCard").onclick = flip;
       question();
     }
@@ -127,11 +122,10 @@
       // A word is set large; a question with a whole sentence in it, like a text.
       word.classList.toggle("long", it.q.length > 50);
       word.setAttribute("lang", langOf(it.q));
-      host.querySelector("#tcTurn").hidden = !it.emoji;
-      host.querySelector("#tcCard").disabled = !it.emoji;
+      host.querySelector("#tcTurn").hidden = !it.hint;
+      host.querySelector("#tcCard").disabled = !it.hint;
       turn(false);
-      host.querySelector("#tcEmoji").textContent = "";
-      note();
+      host.querySelector("#tcHint").innerHTML = "";
       host.querySelector("#tcGoBox").innerHTML = "";
       const box = host.querySelector("#tcOptions");
       // Two columns hold a word or two; longer answers, and words too long for half a small phone, go one under another.
@@ -143,24 +137,28 @@
       stats();
     }
 
-    // The card turns over to its emoji and back. Seen before the answer, it is a hint.
-    // The emoji is put on the back only when it is asked for: a card left turned over swings
-    // back to the next word and would show that word's emoji on the way.
+    // The card turns over to its sentence and back. Seen before the answer, it is a hint.
+    // The sentence is put on the back only when it is asked for: a card left turned over swings
+    // back to the next word and would show that word's sentence on the way.
     function turn(over) {
       const card = host.querySelector("#tcCard");
-      if (over) host.querySelector("#tcEmoji").textContent = T.it.emoji;
+      if (over) sentence();
       card.classList.toggle("flipped", over);
       host.querySelector("#tcFront").setAttribute("aria-hidden", String(over));
       host.querySelector("#tcFaceBack").setAttribute("aria-hidden", String(!over));
-      card.setAttribute("aria-label", over ? `${T.it.emoji}. Повернути картку` : T.it.emoji ? `${T.it.q}. Показати підказку` : T.it.q);
+      card.setAttribute("aria-label", over ? `${sentenceText()} Повернути картку` : T.it.hint ? `${T.it.q}. Перевернути картку` : T.it.q);
+    }
+    // The word that is asked for is left out until the answer is given.
+    const hidden = () => T.it.hint.gap && !T.done;
+    const sentenceText = () => T.it.hint.before + (hidden() ? "…" : T.it.hint.word) + T.it.hint.after;
+    function sentence() {
+      const { before, word, after } = T.it.hint;
+      host.querySelector("#tcHint").innerHTML = esc(before) + (hidden() ? '<span class="tc-gap">______</span>' : `<b>${esc(word)}</b>`) + esc(after);
     }
     function flip() {
-      if (!T.it.emoji) return;
-      if (!T.done && T.p.hinted !== T.it.key) { T.p.hinted = T.it.key; save(); note(); }
+      if (!T.it.hint) return;
+      if (!T.done && T.p.hinted !== T.it.key) { T.p.hinted = T.it.key; save(); }
       turn(!host.querySelector("#tcCard").classList.contains("flipped"));
-    }
-    function note() {
-      host.querySelector("#tcNote").textContent = T.p.hinted === T.it.key ? "З підказкою картка повернеться ще раз" : "";
     }
 
     function choose(i) {
@@ -178,15 +176,16 @@
         if (text === it.right) button.classList.add("right");
         else if (+button.dataset.o === i) button.classList.add("wrong");
       });
+      if (host.querySelector("#tcCard").classList.contains("flipped")) turn(true);
       stats();
       const go = () => { stop(); if (core.roundOver(T.p)) roundEnd(); else question(); };
-      const box = host.querySelector("#tcGoBox");
-      box.innerHTML = '<button class="btn" id="tcNext" type="button">Далі</button>';
-      box.querySelector("#tcNext").onclick = go;
-      box.querySelector("#tcNext").focus({ preventScroll: true });
-      // A right answer moves on by itself; a wrong one waits so the right answer can be read.
+      // A right answer moves on by itself; a wrong one waits for the button so the right answer can be read.
       stop();
-      if (ok) timer = setTimeout(go, 1100);
+      if (ok) { timer = setTimeout(go, 1100); return; }
+      host.querySelector("#tcGoBox").innerHTML = '<button class="btn" id="tcNext" type="button">Далі</button>';
+      const next = host.querySelector("#tcNext");
+      next.onclick = go;
+      next.focus({ preventScroll: true });
     }
 
     function stats() {
@@ -204,7 +203,7 @@
       const { test, p } = T, sc = scoreOf(test), passed = core.passed(sc, passRating);
       const text = core.report(p, test, passRating), left = sc.total - sc.right;
       const item = key => items().find(it => it.key === key);
-      const slips = p.log.map(m => `<div>${esc(item(m.key).q)}<br><b>${esc(item(m.key).right)}</b>${m.hint ? " <span>· з підказкою</span>" : ""}</div>`).join("");
+      const slips = p.log.map(m => `<div>${esc(item(m.key).q)}<br><b>${esc(item(m.key).right)}</b>${m.hint ? ` <span class="tc-turn">${icon("turn")}</span>` : ""}</div>`).join("");
       render(`<div class="center" id="tcScreen">
         <h2>${passed ? `Тест ${test.id} складено!` : `Коло ${p.round} пройдено`}</h2>
         <div class="big${passed ? " tn-big" : ""}">${core.fmt(sc.rating)}</div>
@@ -227,37 +226,6 @@
       const send = () => sendReport(`📝 Тест ${test.id}: ${test.title}`, text, host.querySelector("#tcStatus"), host.querySelector("#tcRetry"));
       host.querySelector("#tcRetry").onclick = send;
       send();
-    }
-
-    /* ---------- how it works ---------- */
-    function info(first = false) {
-      stop();
-      const started = scoreOf(T.test).answered > 0;
-      const veil = document.createElement("div");
-      const close = () => { veil.remove(); document.removeEventListener("keydown", onKey, true); if (T.done) host.querySelector("#tcNext")?.focus({ preventScroll: true }); };
-      const onKey = event => { if (event.key === "Escape") { event.stopPropagation(); close(); } };
-      veil.className = "tn-veil";
-      veil.innerHTML = `<div class="tn-sheet" role="dialog" aria-modal="true"><h2>Як це працює</h2>
-        <p class="sub">На картці слово, під нею чотири відповіді. Спроба одна.</p>
-        ${items().some(it => it.emoji) ? '<p class="sub">Натисни на картку, і вона перевернеться: на звороті підказка. Відповідь із підказкою не додає рейтингу, і картка повернеться ще раз.</p>' : ""}
-        <p class="sub">У першому колі всі картки, далі тільки ті, де ще немає правильної відповіді. Рейтинг ${core.fmt(passRating)} — тест складено.</p>
-        <button class="btn" id="tcClose" type="button">${first ? "Почати" : "Зрозуміло"}</button>
-        ${started ? '<button class="btn ghost tn-reset" id="tcReset" type="button">Почати тест заново</button>' : ""}</div>`;
-      veil.addEventListener("click", event => { if (event.target === veil) close(); });
-      document.addEventListener("keydown", onKey, true);
-      document.body.appendChild(veil);
-      veil.querySelector("#tcClose").onclick = close;
-      veil.querySelector("#tcClose").focus({ preventScroll: true });
-      const reset = veil.querySelector("#tcReset");
-      if (!reset) return;
-      let armed = false;
-      reset.onclick = () => {
-        if (!armed) { armed = true; reset.textContent = "Точно скинути відповіді?"; return; }
-        core.restart(T.p);
-        newRound();
-        close();
-        screen();
-      };
     }
 
     list();

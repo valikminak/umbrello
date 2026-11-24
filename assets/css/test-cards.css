@@ -1,4 +1,4 @@
-/* Card tests. The head, list, progress and sheet come from tenses.css, the answers from style.css. */
+/* Card tests. The head, list and progress come from tenses.css, the answers from style.css. */
 .tc-card{display:block;width:100%;padding:0;border:0;background:none;color:var(--text);font:inherit;cursor:pointer;
   perspective:1000px;border-radius:20px}
 .tc-card:disabled{cursor:default}
@@ -11,12 +11,14 @@
 @media (prefers-color-scheme:dark){.tc-back{background:#293c37}}
 .tc-word{font-size:clamp(28px,9vw,40px);font-weight:650;line-height:1.15;letter-spacing:-.02em;text-align:center;overflow-wrap:anywhere;margin:auto 0}
 .tc-word.long{font-size:18px;font-weight:600;line-height:1.4;letter-spacing:0}
-.tc-turn{display:flex;align-items:center;gap:6px;color:var(--hint);font-size:14px}
+.tc-turn{display:inline-flex;vertical-align:middle;color:var(--hint)}
 .tc-turn[hidden]{display:none}
-.tc-turn .tn-ico{width:16px;height:16px}
-.tc-emoji{font-size:clamp(52px,18vw,76px);line-height:1.2;text-align:center}
-.tc-note{min-height:20px;margin:8px 0;color:var(--hint);font-size:14px;line-height:20px;text-align:center}
-.tc-options{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.tc-turn .tn-ico{width:20px;height:20px}
+.mistakes .tc-turn .tn-ico{width:15px;height:15px}
+.tc-hint{font-size:22px;font-weight:500;line-height:1.4;text-align:center}
+.tc-hint b{font-weight:700}
+.tc-gap{color:var(--hint);letter-spacing:-1px}
+.tc-options{margin-top:16px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
 .tc-options.long{grid-template-columns:minmax(0,1fr);gap:8px}
 .tc-options .opt{min-height:64px;text-align:center;padding:10px 8px;overflow-wrap:break-word}
 .tc-options.long .opt{min-height:48px;padding:8px 12px}
@@ -28,4 +30,4 @@
 .tc .tn-progress i.h{background:#E0A030}
 .tc .tn-progress i{min-width:0}
 /* Small phones: the word, the answers and the button stay on one screen. */
-@media (max-height:640px){.tc-face{min-height:150px;padding:14px}.tc-options .opt{min-height:56px}.tc-note{margin:4px 0}.tc-go{min-height:62px;margin-top:10px}}
+@media (max-height:640px){.tc-face{min-height:150px;padding:14px}.tc-options .opt{min-height:56px}.tc-options{margin-top:10px}.tc-go{min-height:62px;margin-top:10px}}

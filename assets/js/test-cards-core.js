@@ -14,6 +14,15 @@
     return a;
   }
 
+  // "The king lives in a [castle]." The marked word must be the question or the answer itself. On the card
+  // that asks for it, it is left out (gap), so the sentence helps without giving the answer.
+  function parseHint(text, q, right) {
+    const parts = /^([^[\]]*)\[([^[\]]+)\]([^[\]]*)$/.exec(text.trim());
+    if (!parts) return null;
+    const [, before, word, after] = parts, same = other => word.toLowerCase() === other.toLowerCase();
+    return same(q) || same(right) ? { before, word, after, gap: same(right) } : null;
+  }
+
   // users/<id>/tests/index.json: the numbers of the folders, oldest first.
   function validateIndex(data) {
     const fail = problem => { throw new Error(`Check tests/index.json: ${problem}`); };
@@ -36,12 +45,13 @@
       if (!Array.isArray(item.wrong) || item.wrong.length < 3 || !item.wrong.every(filled)) fail(`${at} needs at least 3 wrong answers.`);
       const answers = [item.right, ...item.wrong].map(s => s.trim());
       if (new Set(answers.map(s => s.toLowerCase())).size !== answers.length) fail(`${at} repeats an answer.`);
-      if (item.emoji !== undefined && !filled(item.emoji)) fail(`${at}: emoji must be text.`);
+      const hint = item.hint === undefined ? null : filled(item.hint) && parseHint(item.hint, item.q.trim(), answers[0]);
+      if (item.hint !== undefined && !hint) fail(`${at}: hint must be a sentence with the question or the answer once in [ ].`);
       // Progress is kept by the question itself, so adding or moving questions does not lose it.
       const key = `${item.q.trim()} → ${answers[0]}`;
       if (keys.has(key)) fail(`${at} repeats "${key}".`);
       keys.add(key);
-      return { key, q: item.q.trim(), right: answers[0], wrong: answers.slice(1), emoji: item.emoji ? item.emoji.trim() : "" };
+      return { key, q: item.q.trim(), right: answers[0], wrong: answers.slice(1), hint };
     });
     return { title: data.title.trim(), desc: data.desc.trim(), items };
   }
@@ -57,19 +67,20 @@
     if (isObject(s.marks)) {
       for (const [key, mark] of Object.entries(s.marks)) if (known.has(key) && [RIGHT, WRONG, HINTED].includes(mark)) marks[key] = mark;
     }
-    const order = (Array.isArray(s.order) ? s.order : []).filter(key => known.has(key));
+    const savedOrder = (Array.isArray(s.order) ? s.order : []).filter(key => known.has(key));
     const pos = Number.isSafeInteger(s.pos) && s.pos > 0 && Array.isArray(s.order)
       ? s.order.slice(0, s.pos).filter(key => known.has(key)).length : 0;
+    // What is still to come goes in the order of the file.
+    const rest = new Set(savedOrder.slice(pos));
+    const order = [...savedOrder.slice(0, pos), ...data.items.map(it => it.key).filter(key => rest.has(key))];
     const log = (Array.isArray(s.log) ? s.log : []).filter(m => isObject(m) && known.has(m.key));
     return { marks, order, pos, log, round: Number.isSafeInteger(s.round) && s.round > 0 && order.length ? s.round : 0,
-      hinted: known.has(s.hinted) ? s.hinted : null, passed: s.passed === true, seenInfo: s.seenInfo === true };
+      hinted: known.has(s.hinted) ? s.hinted : null, passed: s.passed === true };
   }
 
-  // The first round has every card; after it only those that are not right yet.
-  function newRound(p, data, rand = Math.random) {
-    const last = p.order[p.order.length - 1];
-    p.order = shuffled(data.items.map(it => it.key).filter(key => p.marks[key] !== RIGHT), rand);
-    if (p.order.length > 1 && p.order[0] === last) p.order.push(p.order.shift());
+  // The first round has every card, the next ones only those that are not right yet; always in the order of the file.
+  function newRound(p, data) {
+    p.order = data.items.map(it => it.key).filter(key => p.marks[key] !== RIGHT);
     p.pos = 0;
     p.log = [];
     p.hinted = null;
