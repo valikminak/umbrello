@@ -1,0 +1,31 @@
+/* Card tests. The head, list, progress and sheet come from tenses.css, the answers from style.css. */
+.tc-card{display:block;width:100%;padding:0;border:0;background:none;color:var(--text);font:inherit;cursor:pointer;
+  perspective:1000px;border-radius:20px}
+.tc-card:disabled{cursor:default}
+.tc-flip{display:grid;transform-style:preserve-3d;transition:transform .45s cubic-bezier(.3,.7,.2,1)}
+.tc-card.flipped .tc-flip{transform:rotateY(180deg)}
+/* Both faces share one cell, so the card keeps its size when it turns. */
+.tc-face{grid-area:1/1;min-height:200px;padding:20px;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  border:1px solid var(--line);border-radius:20px;background:var(--card);backface-visibility:hidden;-webkit-backface-visibility:hidden}
+.tc-back{transform:rotateY(180deg);background:#e0eee8}
+@media (prefers-color-scheme:dark){.tc-back{background:#293c37}}
+.tc-word{font-size:clamp(28px,9vw,40px);font-weight:650;line-height:1.15;letter-spacing:-.02em;text-align:center;overflow-wrap:anywhere;margin:auto 0}
+.tc-word.long{font-size:18px;font-weight:600;line-height:1.4;letter-spacing:0}
+.tc-turn{display:flex;align-items:center;gap:6px;color:var(--hint);font-size:14px}
+.tc-turn[hidden]{display:none}
+.tc-turn .tn-ico{width:16px;height:16px}
+.tc-emoji{font-size:clamp(52px,18vw,76px);line-height:1.2;text-align:center}
+.tc-note{min-height:20px;margin:8px 0;color:var(--hint);font-size:14px;line-height:20px;text-align:center}
+.tc-options{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.tc-options.long{grid-template-columns:minmax(0,1fr);gap:8px}
+.tc-options .opt{min-height:64px;text-align:center;padding:10px 8px;overflow-wrap:break-word}
+.tc-options.long .opt{min-height:48px;padding:8px 12px}
+.tc-options .opt:disabled{cursor:default}
+.tc-options .opt:disabled:not(.right):not(.wrong){opacity:.5}
+/* Room for the button is kept, so the answers do not move when it appears. */
+.tc-go{min-height:69px;margin-top:14px}
+.tc .tn-progress{margin-top:auto}
+.tc .tn-progress i.h{background:#E0A030}
+.tc .tn-progress i{min-width:0}
+/* Small phones: the word, the answers and the button stay on one screen. */
+@media (max-height:640px){.tc-face{min-height:150px;padding:14px}.tc-options .opt{min-height:56px}.tc-note{margin:4px 0}.tc-go{min-height:62px;margin-top:10px}}

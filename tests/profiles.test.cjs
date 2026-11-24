@@ -20,7 +20,7 @@ async function page(script, search = '', failFile, options = {}) {
     });
     return nodes.get(id);
   }
-  const requested = [], errors = [], backs = [], quizzes = [], fetches = [], timers = [], locks = new Set();
+  const requested = [], errors = [], backs = [], fetches = [], timers = [], locks = new Set();
   const context = vm.createContext({
     URL, URLSearchParams, Date, console, AbortController,
     setTimeout: options.holdTimers ? (fn, ms) => timers.push({ fn, ms }) : setTimeout,
@@ -41,8 +41,7 @@ async function page(script, search = '', failFile, options = {}) {
       if (file === 'users/index.json' && options.profiles) return options.profiles;
       return JSON.parse(fs.readFileSync(path.join(root, file), 'utf8'));
     },
-    showError: (_, e) => errors.push(e.message),
-    runQuiz: (_, questions) => quizzes.push(questions)
+    showError: (_, e) => errors.push(e.message)
   });
   context.window = context;
   context.addEventListener = () => {};
@@ -52,6 +51,9 @@ async function page(script, search = '', failFile, options = {}) {
     setItem: (key, value) => { options.storage[key] = String(value); },
   };
   vm.runInContext(fs.readFileSync(path.join(root, 'assets/js/profiles.js'), 'utf8'), context);
+  if (script === 'test') for (const file of ['tenses-core', 'test-cards-core', 'test-cards']) {
+    vm.runInContext(fs.readFileSync(path.join(root, `assets/js/${file}.js`), 'utf8'), context);
+  }
   if (script === 'vocabulary') vm.runInContext(fs.readFileSync(path.join(root, 'assets/js/vocabulary-core.js'), 'utf8'), context);
   await vm.runInContext(fs.readFileSync(path.join(root, `assets/js/${script}.js`), 'utf8'), context);
   await new Promise(resolve => setImmediate(resolve));
@@ -59,7 +61,7 @@ async function page(script, search = '', failFile, options = {}) {
     for (const timer of timers.filter(Boolean)) timer.fn();
     await new Promise(resolve => setImmediate(resolve));
   };
-  return { context, node, requested, errors, backs, quizzes, fetches, fire, locked: () => locks.has('access-locked') };
+  return { context, node, requested, errors, backs, fetches, fire, locked: () => locks.has('access-locked') };
 }
 
 const refusals = [
@@ -95,7 +97,6 @@ test('the umbrella never asks the Worker again, even after every pending timer f
     await app.fire();
     assert.equal(app.fetches.length, 1, name);
     assert.deepEqual(app.requested, [], name);
-    assert.deepEqual(app.quizzes, [], name);
   }
 });
 
@@ -364,15 +365,14 @@ test('Vocabulary progress is read per account and book: the lists show progress 
   assert.doesNotMatch(fresh.node('app').innerHTML, /Start the unit over/);
 });
 
-test('Sophia and me have their own tests and nothing else is requested from their folders', async () => {
-  const sophia = await page('test', '?user=sophia');
-  assert.deepEqual(sophia.errors, []);
-  assert.ok(sophia.quizzes[0].length > 0);
-  assert.deepEqual(sophia.requested, ['users/index.json', 'users/sophia/test.json']);
-  const me = await page('test', '?user=me');
-  assert.deepEqual(me.errors, []);
-  assert.deepEqual(me.quizzes[0], JSON.parse(fs.readFileSync(path.join(root, 'users/me/test.json'), 'utf8')));
-  assert.deepEqual(me.requested, ['users/index.json', 'users/me/test.json']);
+test('every profile opens its own numbered tests and nothing else is requested from the folders', async () => {
+  for (const id of ['sophia', 'me']) {
+    const app = await page('test', `?user=${id}`);
+    assert.deepEqual(app.errors, [], id);
+    assert.deepEqual(app.requested, ['users/index.json', `users/${id}/tests/index.json`, `users/${id}/tests/1/test.json`]);
+    assert.match(app.node('app').innerHTML, /data-test="1"/, id);
+    assert.deepEqual(app.backs, [`index.html?v=10&user=${id}`]);
+  }
 });
 
 test('missing or unknown profiles redirect before any lesson content is requested', async () => {
@@ -386,13 +386,13 @@ test('missing or unknown profiles redirect before any lesson content is requeste
 });
 
 test('loading errors never fall back to another profile and paths stay inside the user folder', async () => {
-  const app = await page('test', '?user=me', 'users/me/test.json');
+  const app = await page('test', '?user=me', 'users/me/tests/index.json');
   assert.deepEqual(app.errors, ['Unavailable']);
-  assert.deepEqual(app.requested, ['users/index.json', 'users/me/test.json']);
+  assert.deepEqual(app.requested, ['users/index.json', 'users/me/tests/index.json']);
   for (const file of ['../sophia/test.json', '/users/sophia/test.json', 'https://example.com/test.json']) {
     assert.throws(() => app.context.Profiles.content(file));
   }
-  assert.equal(app.context.Profiles.content('test.json'), 'users/me/test.json');
+  assert.equal(app.context.Profiles.content('tests/1/test.json'), 'users/me/tests/1/test.json');
 });
 
 test('Profiles.refuse locks an already open page behind the umbrella when the Worker refuses later', async () => {

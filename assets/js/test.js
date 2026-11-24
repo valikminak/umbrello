@@ -1,3 +1,4 @@
+/* test.html: the profile's numbered card tests from users/<id>/tests/. */
 (async function () {
 "use strict";
 const app = document.getElementById("app");
@@ -5,41 +6,5 @@ const profile = await Profiles.require(app);
 if (!profile) return;
 const menuUrl = Profiles.url("index.html");
 backTo(menuUrl);
-
-let questions = [];
-
-async function load() {
-  try {
-    const data = await loadJSON(Profiles.content("test.json"));
-    questions = data.filter(x => x && x.q && x.right && Array.isArray(x.wrong));
-    if (!questions.length) { Profiles.empty(app, "Test", "No tests yet."); return; }
-    start();
-  } catch (e) {
-    showError(app, e, load);
-  }
-}
-
-function start() {
-  runQuiz(app, questions, finish);
-}
-
-function finish(r) {
-  // reports: false in users/index.json keeps results on the phone, nothing goes to the bot.
-  const reports = profile.reports !== false;
-  if (r.log.length) {
-    if (reports) sendReport("📝 Тест", quizReportText(r));
-    runQuiz(app, r.log.map(m => m.item), finish);
-    return;
-  }
-  app.innerHTML = quizSummaryHTML(r);
-  const status = app.querySelector("#status"), retry = app.querySelector("#retry");
-  app.querySelector("#again").onclick = start;
-  app.querySelector("#menu").onclick = () => { location.href = menuUrl; };
-  if (!reports) { status?.remove(); retry?.remove(); return; }
-  const send = () => sendReport("📝 Тест", "Тест завершено успішно!\n\n" + quizReportText(r), status, retry);
-  retry.onclick = send;
-  send();
-}
-
-load();
+await TestCards.mount(app, profile, menuUrl);
 })();
