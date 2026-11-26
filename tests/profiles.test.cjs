@@ -369,7 +369,8 @@ test('every profile opens its own numbered tests and nothing else is requested f
   for (const id of ['sophia', 'me']) {
     const app = await page('test', `?user=${id}`);
     assert.deepEqual(app.errors, [], id);
-    assert.deepEqual(app.requested, ['users/index.json', `users/${id}/tests/index.json`, `users/${id}/tests/1/test.json`]);
+    const { tests } = JSON.parse(fs.readFileSync(path.join(root, `users/${id}/tests/index.json`), 'utf8'));
+    assert.deepEqual(app.requested, ['users/index.json', `users/${id}/tests/index.json`, ...tests.map(n => `users/${id}/tests/${n}/test.json`)]);
     assert.match(app.node('app').innerHTML, /data-test="1"/, id);
     assert.deepEqual(app.backs, [`index.html?v=10&user=${id}`]);
   }

@@ -1,9 +1,6 @@
 {
-  "title": "Дім, будівлі, подорожі",
-  "desc": "21 слово, в обидва боки",
   "items": [
     {"q": "receive", "right": "отримувати", "wrong": ["підніматися (вгору)", "подорожувати", "помирати", "грати"], "hint": "I often [receive] presents from my grandma."},
-    {"q": "building", "right": "будівля", "wrong": ["квиток", "килим", "клієнти, покупці", "паром"], "hint": "My school is a very old [building]."},
     {"q": "castle", "right": "замок, фортеця", "wrong": ["політ, переліт", "клієнти, покупці", "гід, екскурсовод", "художник, художниця"], "hint": "The king and queen live in a big [castle]."},
     {"q": "cathedral", "right": "собор", "wrong": ["кухонна шафа", "квиток", "політ, переліт", "килим"], "hint": "The [cathedral] is the biggest church in our city."},
     {"q": "ceiling", "right": "стеля", "wrong": ["паром", "клієнти, покупці", "квиток", "замок, фортеця"], "hint": "There is a lamp on the [ceiling] in my room."},
@@ -24,7 +21,6 @@
     {"q": "read magazines", "right": "читати журнали", "wrong": ["ходити в походи", "кататися на велосипеді", "грати на гітарі", "купувати подарунки"], "hint": "I [read magazines] about fashion and sport."},
     {"q": "write a diary", "right": "вести щоденник", "wrong": ["ходити в походи", "кататися на велосипеді", "грати на гітарі", "купувати подарунки"], "hint": "Every evening I [write a diary] about my day."},
     {"q": "отримувати", "right": "receive", "wrong": ["climb", "travel", "die", "play"], "hint": "I often [receive] presents from my grandma."},
-    {"q": "будівля", "right": "building", "wrong": ["ticket", "carpet", "customers", "ferry"], "hint": "My school is a very old [building]."},
     {"q": "замок, фортеця", "right": "castle", "wrong": ["flight", "customers", "tour guide", "artist"], "hint": "The king and queen live in a big [castle]."},
     {"q": "собор", "right": "cathedral", "wrong": ["cupboard", "ticket", "flight", "carpet"], "hint": "The [cathedral] is the biggest church in our city."},
     {"q": "стеля", "right": "ceiling", "wrong": ["ferry", "customers", "ticket", "castle"], "hint": "There is a lamp on the [ceiling] in my room."},

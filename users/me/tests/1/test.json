@@ -1,6 +1,4 @@
 {
-  "title": "Лексика C1–C2",
-  "desc": "24 слова і вирази в реченнях",
   "items": [
     {"q": "Що означає «compelling» у реченні «She put forward a compelling argument for reform»?", "right": "переконливий", "wrong": ["суперечливий", "поверховий", "двозначний"]},
     {"q": "Що означає «meticulous» у реченні «The researcher kept meticulous records of every experiment»?", "right": "ретельний, скрупульозний", "wrong": ["приблизний, неточний", "стислий, лаконічний", "упереджений, необ’єктивний"]},

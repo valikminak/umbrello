@@ -1,0 +1,26 @@
+{
+  "items": [
+    {"q": "poor", "right": "бідний", "wrong": ["прибувати, приїжджати", "повертатися", "шлях, спосіб", "цінний", "просто, щойно"], "hint": "The family was [poor] and had no money for food."},
+    {"q": "become", "right": "ставати", "wrong": ["бідний", "цінний", "шлях, спосіб", "залишати, йти", "просто, щойно"], "hint": "I want to [become] a doctor when I grow up."},
+    {"q": "leave", "right": "залишати, йти", "wrong": ["ставати", "бідний", "подорож", "небезпечний", "цінний"], "hint": "Please don't [leave] your bag on the floor."},
+    {"q": "journey", "right": "подорож", "wrong": ["цінний", "прибувати, приїжджати", "бідний", "просто, щойно", "ставати"], "hint": "The [journey] to London takes three hours by train."},
+    {"q": "dangerous", "right": "небезпечний", "wrong": ["бідний", "подорож", "цінний", "залишати, йти", "ставати"], "hint": "Don't swim here, it is [dangerous]."},
+    {"q": "arrive", "right": "прибувати, приїжджати", "wrong": ["просто, щойно", "небезпечний", "ставати", "бідний", "цінний"], "hint": "Our train will [arrive] at five o'clock."},
+    {"q": "return", "right": "повертатися", "wrong": ["шлях, спосіб", "просто, щойно", "небезпечний", "ставати", "бідний"], "hint": "I need to [return] this book to the library."},
+    {"q": "way", "right": "шлях, спосіб", "wrong": ["бідний", "цінний", "просто, щойно", "ставати", "прибувати, приїжджати"], "hint": "Can you show me the [way] to the station?"},
+    {"q": "valuable", "right": "цінний", "wrong": ["залишати, йти", "просто, щойно", "шлях, спосіб", "повертатися", "ставати"], "hint": "This old ring is very [valuable]."},
+    {"q": "just", "right": "просто, щойно", "wrong": ["цінний", "подорож", "ставати", "прибувати, приїжджати", "повертатися"], "hint": "It's [just] a game, don't be sad."},
+    {"q": "building", "right": "будівля", "wrong": ["квиток", "килим", "клієнти, покупці", "паром"], "hint": "My school is a very old [building]."},
+    {"q": "бідний", "right": "poor", "wrong": ["journey", "become", "arrive", "way", "return"], "hint": "The family was [poor] and had no money for food."},
+    {"q": "ставати", "right": "become", "wrong": ["journey", "poor", "dangerous", "way", "valuable"], "hint": "I want to [become] a doctor when I grow up."},
+    {"q": "залишати, йти", "right": "leave", "wrong": ["journey", "poor", "valuable", "way", "dangerous"], "hint": "Please don't [leave] your bag on the floor."},
+    {"q": "подорож", "right": "journey", "wrong": ["poor", "become", "arrive", "dangerous", "valuable"], "hint": "The [journey] to London takes three hours by train."},
+    {"q": "небезпечний", "right": "dangerous", "wrong": ["journey", "become", "arrive", "way", "return"], "hint": "Don't swim here, it is [dangerous]."},
+    {"q": "прибувати, приїжджати", "right": "arrive", "wrong": ["journey", "poor", "valuable", "building", "dangerous"], "hint": "Our train will [arrive] at five o'clock."},
+    {"q": "повертатися", "right": "return", "wrong": ["journey", "poor", "dangerous", "way", "valuable"], "hint": "I need to [return] this book to the library."},
+    {"q": "шлях, спосіб", "right": "way", "wrong": ["poor", "become", "arrive", "valuable", "dangerous"], "hint": "Can you show me the [way] to the station?"},
+    {"q": "цінний", "right": "valuable", "wrong": ["journey", "become", "arrive", "way", "building"], "hint": "This old ring is very [valuable]."},
+    {"q": "просто, щойно", "right": "just", "wrong": ["poor", "journey", "become", "arrive", "valuable"], "hint": "It's [just] a game, don't be sad."},
+    {"q": "будівля", "right": "building", "wrong": ["ticket", "carpet", "customers", "ferry"], "hint": "My school is a very old [building]."}
+  ]
+}

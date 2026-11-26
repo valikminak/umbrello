@@ -29,3 +29,15 @@
 .tc .tn-progress i{min-width:0}
 /* Small phones: the word, the answers and the button stay on one screen. */
 @media (max-height:640px){.tc-face{min-height:150px;padding:14px}.tc-options .opt{min-height:56px}.tc-options{margin-top:10px}.tc-go{min-height:62px;margin-top:10px}}
+/* The list: the mix above the tests; each test with its ⓘ beside it. */
+.tc-mix{margin:0 0 14px}
+.tc-item{display:flex;gap:8px}
+.tc-item .tn-row{flex:1;min-width:0}
+.tc-info{flex:none;width:54px;display:grid;place-items:center;padding:0;border:0;border-radius:16px;background:var(--card);
+  color:var(--hint);cursor:pointer}
+.tc-info .tn-ico{width:22px;height:22px}
+.tc-words{list-style:none;margin:0 0 16px;padding:0}
+.tc-words li{display:flex;justify-content:space-between;align-items:baseline;gap:14px;padding:9px 2px;border-bottom:1px solid var(--line);
+  font-size:16px;line-height:1.35}
+.tc-words b{font-weight:600}
+.tc-words span{color:var(--hint);text-align:right}
