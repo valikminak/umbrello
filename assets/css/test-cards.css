@@ -29,8 +29,8 @@
 .tc .tn-progress i{min-width:0}
 /* Small phones: the word, the answers and the button stay on one screen. */
 @media (max-height:640px){.tc-face{min-height:150px;padding:14px}.tc-options .opt{min-height:56px}.tc-options{margin-top:10px}.tc-go{min-height:62px;margin-top:10px}}
-/* The list: the mix above the tests; each test with its ⓘ beside it. */
-.tc-mix{margin:0 0 14px}
+/* The list: the mixes above the tests; each test with its ⓘ beside it. */
+.tc-mixes{display:flex;flex-direction:column;gap:10px;margin:0 0 16px}
 .tc-item{display:flex;gap:8px}
 .tc-item .tn-row{flex:1;min-width:0}
 .tc-info{flex:none;width:54px;display:grid;place-items:center;padding:0;border:0;border-radius:16px;background:var(--card);
@@ -41,3 +41,17 @@
   font-size:16px;line-height:1.35}
 .tc-words b{font-weight:600}
 .tc-words span{color:var(--hint);text-align:right}
+/* Writing: the first letter with a place for each of the others, a field and its button. */
+.tc-writing .tc-face{min-height:150px}
+.tc-mask{margin:14px 0 10px;text-align:center;font:600 22px/1.2 ui-monospace,SFMono-Regular,Menlo,monospace;white-space:pre;color:var(--hint)}
+.tc-field{display:flex;gap:8px}
+.tc-input{flex:1;min-width:0;height:54px;padding:0 14px;border:2px solid var(--line);border-radius:14px;background:var(--card);
+  color:var(--text);font:inherit;font-size:20px;outline:none}
+.tc-input:focus{border-color:var(--accent)}
+.tc-input.right{border-color:var(--ok);color:var(--ok);background:var(--ok-soft)}
+.tc-input.wrong{border-color:var(--bad);color:var(--bad);background:var(--bad-soft);text-decoration:line-through}
+.tc-field .btn{width:auto;margin:0;padding:0 16px}
+.tc-field .btn[hidden]{display:none}
+.tc-correct{min-height:26px;margin:10px 0 0;text-align:center;font-size:18px}
+.tc-correct b{color:var(--ok)}
+@media (max-height:640px){.tc-writing .tc-face{min-height:120px}.tc-mask{margin:10px 0 8px}}

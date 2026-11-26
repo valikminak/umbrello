@@ -1,5 +1,5 @@
-/* Card tests: a list of numbered tests and the mix; in a test each card has four answers and turns over to a sentence
-   with the word. Mounted by test.js for the profile's users/<id>/tests/. Rules live in test-cards-core.js; the look is
+/* Card tests: a list of numbered tests and two mixes; a card has four answers, or a field to write the English word in,
+   and turns over to a sentence with the word. Mounted by test.js for the profile's users/<id>/tests/. Rules live in test-cards-core.js; the look is
    shared with Grammar lessons (tenses.css). */
 (function () {
   "use strict";
@@ -11,6 +11,7 @@
     bad: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9 9l6 6M15 9l-6 6"/></svg>',
     turn: '<svg viewBox="0 0 24 24"><path d="M20 11a8 8 0 0 0-14.6-3.5M4 4v4h4M4 13a8 8 0 0 0 14.6 3.5M20 20v-4h-4"/></svg>',
     info: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v5.5M12 7.6v.1"/></svg>',
+    write: '<svg viewBox="0 0 24 24"><path d="M4 20h4L19 9l-4-4L4 16zM13.5 6.5l4 4"/></svg>',
     mix: '<svg viewBox="0 0 24 24"><path d="M4 7h3.5c4.5 0 4.5 10 9 10H20M17 14l3 3-3 3M4 17h3.5c1.6 0 2.6-1.3 3.4-3M20 7h-3.5c-1.6 0-2.6 1.3-3.4 3M17 4l3 3-3 3"/></svg>',
   };
   const icon = name => `<span class="tn-ico" aria-hidden="true">${ICON[name]}</span>`;
@@ -38,6 +39,8 @@
     }
     if (!tests.length) { Profiles.empty(host, "Test", "Тестів поки немає."); return; }
     for (const test of tests) store.tests[test.id] = core.reconcile(store.tests[test.id], test);
+    // The words that went wrong, wherever: the mixes take them first.
+    store.weak = core.cleanWeak(store.weak, tests, store.tests);
 
     let T = null, timer = null;
     const stop = () => { clearTimeout(timer); timer = null; };
@@ -55,9 +58,12 @@
       // The newest test is this week's homework, so the numbers go down; every test is open whatever its rating.
       render(`<div class="tn" id="tcScreen">
         <h1>Тести</h1>
-        <button class="tn-row tc-mix" id="tcMix" type="button">
-          <span class="tn-num">${icon("mix")}</span>
-          <span><b>Мікс</b><span>${core.words(core.mix(tests).items.length)} з усіх тестів, щоразу нові</span></span></button>
+        <div class="tc-mixes">
+          <button class="tn-row" id="tcMix" type="button">
+            <span class="tn-num">${icon("mix")}</span><span><b>Мікс</b><span>Обираєш відповідь</span></span></button>
+          ${core.mix(tests, { write: true }).items.length ? `<button class="tn-row" id="tcWriteMix" type="button">
+            <span class="tn-num">${icon("write")}</span><span><b>Мікс: пишу</b><span>Пишеш англійською</span></span></button>` : ""}
+        </div>
         <ul class="tn-lessons">${tests.slice().sort((a, b) => b.id - a.id).map(test => {
           const p = store.tests[test.id], answered = test.items.filter(it => p.marks[it.key]).length;
           const status = answered ? `${answered}/${test.items.length}` : p.last === null ? "" : icon("star") + core.fmt(p.last);
@@ -68,7 +74,9 @@
             <button class="tc-info" type="button" data-info="${test.id}" aria-label="Слова тесту ${test.id}">${icon("info")}</button></li>`;
         }).join("")}</ul></div>`, dir);
       const byId = id => tests.find(test => test.id === +id);
-      host.querySelector("#tcMix").onclick = openMix;
+      host.querySelector("#tcMix").onclick = () => openMix(false);
+      const writeMix = host.querySelector("#tcWriteMix");
+      if (writeMix) writeMix.onclick = () => openMix(true);
       host.querySelectorAll("[data-test]").forEach(button => { button.onclick = () => open(byId(button.dataset.test)); });
       host.querySelectorAll("[data-info]").forEach(button => { button.onclick = () => info(byId(button.dataset.info)); });
     }
@@ -95,24 +103,32 @@
       veil.querySelector("button")?.focus({ preventScroll: true });
     }
 
-    /* ---------- one test, or the mix ---------- */
+    /* ---------- a run: a test, a mix, or the mistakes of a run once more ---------- */
     // A test goes on from the first card without an answer; it is saved after every answer.
     function open(test) {
-      T = { test, p: store.tests[test.id], name: `Тест ${test.id}` };
+      T = { test, p: store.tests[test.id], name: `Тест ${test.id}`, report: `📝 Тест ${test.id}`,
+        again: () => open(test), againText: "Пройти ще раз" };
       // The page was closed right after the last answer: show the result and send it first.
       if (core.over(T.p, test)) return result();
       screen();
     }
-    // The mix is new every time and is not saved: closed, it is gone.
-    function openMix() {
-      const test = core.mix(tests);
-      T = { test, p: core.reconcile(null, test), name: "Мікс", mix: true };
+    // A mix is new every time and its place is not saved: closed, it is gone. Only the words that went wrong are kept.
+    function openMix(write) {
+      const test = core.mix(tests, { weak: store.weak, write });
+      T = { test, p: core.reconcile(null, test), name: write ? "Мікс: пишу" : "Мікс", report: write ? "✍️ Мікс: пишу" : "🎲 Мікс",
+        again: () => openMix(write), againText: "Новий мікс" };
       screen();
     }
-    const keep = () => { if (!T.mix) save(); };
+    // The cards that went wrong, in the same way (written, if they were written), until none is left.
+    function repeat(run, wrong) {
+      const from = run.from || run.name;
+      T = { test: wrong, p: core.reconcile(null, wrong), name: "Помилки", report: `🔁 Помилки: ${from}`, from };
+      screen();
+    }
 
     function screen() {
-      render(`<div class="tn tn-lesson tc" id="tcScreen">
+      const write = T.test.write === true;
+      render(`<div class="tn tn-lesson tc${write ? " tc-writing" : ""}" id="tcScreen">
         <div class="tn-head">
           <button class="tn-icon-btn" id="tcBack" type="button" aria-label="До списку тестів">${icon("back")}</button>
           <h2>${T.name}</h2>
@@ -127,12 +143,24 @@
             <span class="tc-face tc-back" id="tcFaceBack" aria-hidden="true"><span class="tc-hint" id="tcHint" lang="en"></span></span>
           </span>
         </button>
-        <div class="tc-options" id="tcOptions"></div>
+        ${write ? `<div class="tc-write">
+          <p class="tc-mask" id="tcMask" lang="en" aria-hidden="true"></p>
+          <div class="tc-field">
+            <input class="tc-input" id="tcInput" type="text" lang="en" autocomplete="off" autocapitalize="off" autocorrect="off"
+              spellcheck="false" enterkeyhint="done" aria-label="Слово англійською">
+            <button class="btn" id="tcCheck" type="button">Перевірити</button>
+          </div>
+          <p class="tc-correct" id="tcCorrect"></p>
+        </div>` : '<div class="tc-options" id="tcOptions"></div>'}
         <div class="tc-go" id="tcGoBox"></div>
         <div class="tn-progress" id="tcProgress" aria-hidden="true"></div>
       </div>`, "in");
       host.querySelector("#tcBack").onclick = () => list("back");
       host.querySelector("#tcCard").onclick = flip;
+      if (write) {
+        host.querySelector("#tcCheck").onclick = check;
+        host.querySelector("#tcInput").onkeydown = event => { if (event.key === "Enter") { event.preventDefault(); check(); } };
+      }
       question();
     }
 
@@ -140,8 +168,7 @@
     function question() {
       const it = T.it = items()[core.next(T.p, T.test)];
       T.done = T.turned = false;
-      T.options = core.choices(it);
-      host.querySelector("#tcAsk").textContent = isUkrainian(it.right) ? "Обери переклад"
+      host.querySelector("#tcAsk").textContent = T.test.write ? "Напиши англійською" : isUkrainian(it.right) ? "Обери переклад"
         : isUkrainian(it.q) ? "Як це англійською?" : "Обери відповідь";
       const word = host.querySelector("#tcWord");
       word.textContent = it.q;
@@ -153,6 +180,19 @@
       turn(false);
       host.querySelector("#tcHint").innerHTML = "";
       host.querySelector("#tcGoBox").innerHTML = "";
+      if (T.test.write) {
+        host.querySelector("#tcMask").textContent = core.mask(it.right);
+        const input = host.querySelector("#tcInput");
+        input.value = "";
+        input.disabled = false;
+        input.classList.remove("right", "wrong");
+        host.querySelector("#tcCheck").hidden = false;
+        host.querySelector("#tcCorrect").innerHTML = "";
+        stats();
+        input.focus({ preventScroll: true });
+        return;
+      }
+      T.options = core.choices(it);
       const box = host.querySelector("#tcOptions");
       // Two columns hold a word or two; longer answers, and words too long for half a small phone, go one under another.
       // Decided by the longest answer of the card, so the layout is the same each time it comes up.
@@ -187,19 +227,42 @@
       turn(!host.querySelector("#tcCard").classList.contains("flipped"));
     }
 
+    // The answer is kept at once: a test's place, and in any run the words that went wrong.
+    function answered(ok, given) {
+      T.done = true;
+      core.answer(T.p, T.it, ok, T.turned, given);
+      core.track(store.weak, T.it, ok);
+      save();
+      vibrate(ok ? "success" : "error");
+    }
+
     function choose(i) {
       if (T.done) return;
-      T.done = true;
       const it = T.it, ok = T.options[i] === it.right;
-      core.answer(T.p, it, ok, T.turned, T.options[i]);
-      keep();
-      vibrate(ok ? "success" : "error");
+      answered(ok, T.options[i]);
       host.querySelectorAll("[data-o]").forEach(button => {
         const text = T.options[+button.dataset.o];
         button.disabled = true;
         if (text === it.right) button.classList.add("right");
         else if (+button.dataset.o === i) button.classList.add("wrong");
       });
+      after(ok);
+    }
+
+    // One try: an empty field is not an answer yet.
+    function check() {
+      const input = host.querySelector("#tcInput");
+      if (T.done || !input.value.trim()) return;
+      const ok = core.written(T.it, input.value);
+      answered(ok, input.value.trim());
+      input.disabled = true;
+      input.classList.add(ok ? "right" : "wrong");
+      host.querySelector("#tcCheck").hidden = true;
+      if (!ok) host.querySelector("#tcCorrect").innerHTML = `Правильно: <b lang="en">${esc(T.it.right)}</b>`;
+      after(ok);
+    }
+
+    function after(ok) {
       if (host.querySelector("#tcCard").classList.contains("flipped")) turn(true);
       stats();
       const go = () => { stop(); if (core.over(T.p, T.test)) result(); else question(); };
@@ -221,29 +284,31 @@
         `<i class="${T.p.marks[it.key] || ""}${it.key === current ? " cur" : ""}"></i>`).join("");
     }
 
-    /* ---------- end of the pass ---------- */
+    /* ---------- end of a run ---------- */
     function result() {
       stop();
-      const { test, p } = T, sc = core.score(p, test), text = core.report(p, test);
+      const run = T, { test, p } = run, sc = core.score(p, test), text = core.report(p, test), wrong = core.mistakes(p, test);
       const item = key => items().find(it => it.key === key);
       const slips = p.log.filter(m => !m.hint).map(m => `<div>${esc(item(m.key).q)}<br><b>${esc(item(m.key).right)}</b></div>`).join("");
+      const n = wrong.items.length;
       render(`<div class="center" id="tcScreen">
-        <h2>${T.name}: готово</h2>
+        <h2>${run.name}: готово</h2>
         <div class="big${sc.wrong ? "" : " tn-big"}">${core.fmt(sc.rating)}</div>
         <p class="sub">Правильно: ${sc.right} з ${sc.total}.</p>
         ${slips ? `<div class="mistakes">${slips}</div>` : ""}
         <p class="status" id="tcStatus"></p>
         <button class="btn ghost" id="tcRetry" type="button" style="display:none">Надіслати ще раз</button>
-        <button class="btn" id="tcAgain" type="button">${T.mix ? "Новий мікс" : "Пройти ще раз"}</button>
+        ${n ? `<button class="btn" id="tcRepeat" type="button">Повторити помилки (${n})</button>` : ""}
+        ${run.again ? `<button class="btn${n ? " ghost" : ""}" id="tcAgain" type="button">${run.againText}</button>` : ""}
         <button class="btn ghost" id="tcMenu" type="button">До тестів</button>
       </div>`, "in");
-      // The pass is closed here, so its report goes out once; opening the test again starts from the first card.
-      if (!T.mix) { core.finish(p, test); save(); }
+      // The run is closed here, so its report goes out once; a test opened again starts from the first card.
+      if (p === store.tests[test.id]) { core.finish(p, test); save(); }
       host.querySelector("#tcMenu").onclick = () => list("back");
-      host.querySelector("#tcAgain").onclick = T.mix ? openMix : () => open(test);
+      if (n) host.querySelector("#tcRepeat").onclick = () => repeat(run, wrong);
+      if (run.again) host.querySelector("#tcAgain").onclick = run.again;
       if (profile.reports === false) return;
-      const title = T.mix ? "🎲 Мікс" : `📝 Тест ${test.id}`;
-      const send = () => sendReport(title, text, host.querySelector("#tcStatus"), host.querySelector("#tcRetry"));
+      const send = () => sendReport(run.report, text, host.querySelector("#tcStatus"), host.querySelector("#tcRetry"));
       host.querySelector("#tcRetry").onclick = send;
       send();
     }

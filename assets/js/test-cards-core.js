@@ -1,6 +1,6 @@
-/* Card tests (users/<id>/tests/<number>/test.json): file checks, the pass through the cards, the mix, report text.
-   Shared by test.html and Node tests. The rating is worked out as in Grammar lessons (tenses-core.js) and is only shown:
-   it opens and closes nothing. */
+/* Card tests (users/<id>/tests/<number>/test.json): file checks, the pass through the cards, the words that go wrong,
+   the mixes (choose or write the English word), the repeat of mistakes, report text. Shared by test.html and Node tests.
+   The rating is worked out as in Grammar lessons (tenses-core.js) and is only shown: it opens and closes nothing. */
 (function (root) {
   "use strict";
   const rules = typeof module !== "undefined" && module.exports ? require("./tenses-core.js") : root.TensesCore;
@@ -123,29 +123,79 @@
     p.log = [];
   }
 
-  // The mix: words picked at random from all the tests, each asked once, one way or the other.
-  function mix(tests, rand = Math.random, size = MIX_SIZE) {
+  /* ---------- the words that go wrong ---------- */
+  // weak: { word: right answers in a row since the last mistake }. A mistake anywhere (a test, a mix, a repeat) makes
+  // a word weak; two right answers in a row make it right again, as one right answer out of four can be a guess.
+  const RIGHTS_TO_LEARN = 2;
+  function track(weak, item, ok) {
+    const key = wordKey(item);
+    if (!ok) weak[key] = 0;
+    else if (has(weak, key) && ++weak[key] >= RIGHTS_TO_LEARN) delete weak[key];
+  }
+  // Saved weak words checked against the tests as they are now. The first time, the mistakes of the passes in hand count.
+  function cleanWeak(saved, tests, progress) {
+    const known = new Set(tests.flatMap(test => test.items.map(wordKey))), weak = {};
+    if (isObject(saved)) {
+      for (const [key, n] of Object.entries(saved)) if (known.has(key) && Number.isSafeInteger(n) && n >= 0 && n < RIGHTS_TO_LEARN) weak[key] = n;
+      return weak;
+    }
+    for (const test of tests) for (const it of test.items) if (progress[test.id]?.marks[it.key] === WRONG) weak[wordKey(it)] = 0;
+    return weak;
+  }
+
+  /* ---------- the mixes ---------- */
+  // To write a word, the card shows its Ukrainian side and the English one is typed. Words with no English side
+  // (a question about a word, answered in Ukrainian) cannot be written.
+  function writeCard(it) {
+    const en = !isUkrainian(it.right) ? it.right : !isUkrainian(it.q) ? it.q : null;
+    const uk = en === it.right ? it.q : it.right;
+    if (!en || !isUkrainian(uk)) return null;
+    const hint = it.hint && { ...it.hint, gap: it.hint.word.toLowerCase() === en.toLowerCase() };
+    return { key: `${uk} → ${en}`, q: uk, right: en, wrong: [], hint };
+  }
+
+  // A mix: up to 20 different words from all the tests, weak words first, the rest at random, in random order.
+  // Each word comes once, one way or the other, or written in English (write).
+  function mix(tests, { rand = Math.random, size = MIX_SIZE, weak = {}, write = false } = {}) {
     const groups = new Map();
     for (const test of tests) {
       for (const it of test.items) {
+        const card = write ? writeCard(it) : it;
+        if (!card) continue;
         const key = wordKey(it);
         if (!groups.has(key)) groups.set(key, []);
-        if (!groups.get(key).some(other => other.key === it.key)) groups.get(key).push(it);
+        if (!groups.get(key).some(other => other.key === card.key)) groups.get(key).push(card);
       }
     }
-    return { items: shuffled([...groups.values()], rand).slice(0, size).map(group => group[Math.floor(rand() * group.length)]) };
+    const words = shuffled([...groups.keys()], rand), first = words.filter(key => has(weak, key));
+    const picked = [...first, ...words.filter(key => !has(weak, key))].slice(0, size);
+    const items = shuffled(picked, rand).map(key => { const group = groups.get(key); return group[Math.floor(rand() * group.length)]; });
+    return { items, write };
+  }
+
+  // The written word is right when it is the word itself: case, spaces and the kind of apostrophe do not matter.
+  const plain = text => text.toLowerCase().replace(/[’‘ʼ`´]/g, "'").replace(/\s+/g, " ").trim().replace(/[.!?]+$/, "");
+  const written = (item, text) => plain(text) === plain(item.right);
+  // The first letter and a place for each of the others: "c _ _ _ _ _", "f _ _   _ _ _ _", "l _ _ ' _".
+  const mask = word => [...word.trim()].map((ch, i) => (i === 0 ? ch : /\p{L}/u.test(ch) ? "_" : ch)).join(" ");
+
+  // The cards that went wrong in a run, to go through them once more in the same way.
+  function mistakes(p, data) {
+    const wrong = new Set(p.log.filter(m => !m.hint).map(m => m.key));
+    return { items: data.items.filter(it => wrong.has(it.key)), write: data.write === true };
   }
 
   function report(p, data) {
     const sc = score(p, data), item = key => data.items.find(it => it.key === key);
-    const line = m => `• ${item(m.key).q} → ${item(m.key).right}${m.chosen ? ` (обрано: ${m.chosen})` : ""}`;
+    const said = data.write ? "написано" : "обрано";
+    const line = m => `• ${item(m.key).q} → ${item(m.key).right}${m.chosen ? ` (${said}: ${m.chosen})` : ""}`;
     const list = (title, marks) => (marks.length ? `\n\n${title}:\n${marks.map(line).join("\n")}` : "");
     return `Рейтинг ${fmt(sc.rating)} з 5\nПравильно: ${sc.right} з ${sc.total}`
       + list("Помилки", p.log.filter(m => !m.hint)) + list("З підказкою", p.log.filter(m => m.hint));
   }
 
   const api = { RIGHT, WRONG, MIX_SIZE, fmt, words, isUkrainian, validateIndex, validate, wordList, choices, reconcile,
-    next, over, answer, score, finish, mix, report };
+    next, over, answer, score, finish, track, cleanWeak, writeCard, mix, written, mask, mistakes, report };
   if (typeof module !== "undefined" && module.exports) module.exports = api;
   else root.TestCardsCore = api;
 })(typeof window !== "undefined" ? window : globalThis);
